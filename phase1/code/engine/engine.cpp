@@ -1,74 +1,149 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include "tinyxml2.h"
+#include <stdlib.h>
 
-struct Camera {
-    float position[3];
-    float lookAt[3];
-    float up[3];
-    struct Projection {
-        float fov;
-        float near;
-        float far;
-    } projection;
-};
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
 
-struct Model {
-    std::string file;
-};
+#include <math.h>
+#include <stdio.h>
+#include "xml_parser.hpp"
 
-struct Group {
-    std::vector<Model> models;
-};
 
-struct World {
-    int windowWidth;
-    int windowHeight;
-    Camera camera;
-    Group group;
-};
+WORLD world;
+float posx = 0, posz = 0, angle = 0, scalex = 1, scaley = 1, scalez = 1;
 
-void parse_config_file(const char* filename, World& world) {
-    tinyxml2::XMLDocument doc;
-    doc.LoadFile(filename);
+void changeSize(int w, int h) {
 
-    if (doc.Error()) {
-        std::cerr << "Error loading XML file: " << doc.ErrorStr() << std::endl;
-        return;
-    }
+	// Prevent a divide by zero, when window is too short
+	// (you cant make a window with zero width).
+	if(h == 0)
+		h = 1;
 
-    // Parse XML elements and fill the World structure
-    // ...
+	// compute window's aspect ratio 
+	float ratio = w * 1.0 / h;
 
-    // Example: Parse window settings
-    tinyxml2::XMLElement* windowElement = doc.FirstChildElement("world")->FirstChildElement("window");
-    if (windowElement) {
-        windowElement->QueryIntAttribute("width", &world.windowWidth);
-        windowElement->QueryIntAttribute("height", &world.windowHeight);
-    }
+	// Set the projection matrix as current
+	glMatrixMode(GL_PROJECTION);
+	// Load Identity Matrix
+	glLoadIdentity();
+	
+	// Set the viewport to be the entire window
+    glViewport(0, 0, w, h);
 
-    // Example: Parse camera settings
-    tinyxml2::XMLElement* cameraElement = doc.FirstChildElement("world")->FirstChildElement("camera");
-    if (cameraElement) {
-        // Parse camera attributes
-    }
+	// Set perspective
+	gluPerspective(45.0f ,ratio, 1.0f ,1000.0f);
 
-    // Example: Parse models
-    tinyxml2::XMLElement* modelsElement = doc.FirstChildElement("world")->FirstChildElement("group")->FirstChildElement("models");
-    for (tinyxml2::XMLElement* modelElement = modelsElement->FirstChildElement("model"); modelElement; modelElement = modelElement->NextSiblingElement("model")) {
-        Model model;
-        modelElement->QueryStringAttribute("file", &model.file);
-        world.group.models.push_back(model);
-    }
+	// return to the model view matrix mode
+	glMatrixMode(GL_MODELVIEW);
 }
 
-int main() {
-    World world;
-    parse_config_file("config.xml", world);
+void renderScene(void) {
 
-    // Implement rendering using the parsed data
-    // ...
+	// clear buffers
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    return 0;
+	// set the camera
+	glLoadIdentity();
+	gluLookAt(5.0,5.0,5.0, 
+		      0.0,0.0,0.0,
+			  0.0f,0.0f,0.0f);
+
+
+
+// put drawing instructions here
+
+
+	// End of frame
+	glutSwapBuffers();
+}
+
+
+
+// write function to process keyboard events
+
+void keyboardFunc(unsigned char key, int x, int y) {
+	switch(key) {
+		case 'a':
+			posx -= 0.1;
+			break;
+		case 'd':
+			posx += 0.1;
+			break;
+		case 's':
+			posz += 0.1;
+			break;
+		case 'w':
+			posz -= 0.1;
+			break;
+		case 'q':
+			angle -= 15;
+			break;
+		case 'e':
+			angle += 15;
+			break;   
+		case 'i':
+			scalez += 0.1;
+			break;
+		case 'k':
+			scalez -= 0.1;
+			break;
+		case 'j':
+			scalex -= 0.1;
+			break;
+		case 'l':
+			scalex += 0.1;
+			break;
+		case 'u':
+			scaley -= 0.1;
+			break;
+		case 'o':
+			scaley += 0.1;
+			break;
+		case '+':
+			scalex += 0.1;
+			scaley += 0.1;
+			scalez += 0.1;
+			break;
+		case '-':
+			scalex -= 0.1;
+			scaley -= 0.1;
+			scalez -= 0.1;
+			break;
+	}
+	glutPostRedisplay();
+}
+
+
+
+
+int main(int argc, char **argv) {
+
+// init GLUT and the window
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
+	glutInitWindowPosition(100,100);
+	glutInitWindowSize(800,800);
+	glutCreateWindow("Phase1");
+
+    parse_config_file(argv[1], world);
+		
+// Required callback registry 
+	glutDisplayFunc(renderScene);
+	glutReshapeFunc(changeSize);
+
+	
+// put here the registration of the keyboard callbacks
+
+	glutKeyboardFunc(keyboardFunc);
+
+//  OpenGL settings
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	
+// enter GLUT's main cycle
+	glutMainLoop();
+	
+	return 1;
 }

@@ -6,6 +6,7 @@
 #include "cone.hpp"
 #include "sphere.hpp"
 #include "../utils/figure.hpp"
+#include "../utils/utils.hpp"
 
 int main(int argc, char* argv[]) {
     // Check the number of command-line arguments
@@ -19,7 +20,7 @@ int main(int argc, char* argv[]) {
     std::string output_file = argv[argc - 1];
 
     // Create a figure object
-    FIGURE figure;
+    FIGURE figure = create_figure();
 
     // Check the primitive type and generate the corresponding shape
     if (primitive_type == "plane" && argc == 6) {
@@ -45,8 +46,6 @@ int main(int argc, char* argv[]) {
         std::cerr << "Invalid arguments or primitive type." << std::endl;
         return 1;
     }
-
-    // Save the generated figure to the output file
     save_file(figure, output_file);
 
     return 0;

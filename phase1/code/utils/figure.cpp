@@ -1,38 +1,74 @@
-#include "ponto.hpp"
+#include "point.hpp"
+#include <stdio.h>
 
-typedef enum {
+enum FIGURE_TYPE {
     BOX,
     CONE,
     PLANE,
     SPHERE
-} FIGURE_TYPE;
+};
 
 typedef struct figure {
     FIGURE_TYPE type;
-
     union {
         struct {
-            PONTO *centro;
-            float raio;
+            float radius;
+            int slices;
+            int stacks;
         } sphere;
 
         struct {
-            PONTO *base;
-            float altura;
-            float raio;
+            float height;
+            float radius;
+            int slices;
+            int stacks;
         } cone;
 
         struct {
-            PONTO *ponto1;
-            PONTO *ponto2;
-            PONTO *ponto3;
-        } box;
+            int length;
+            int divisions;
+        } plane;
 
         struct {
-            PONTO *ponto1;
-            PONTO *ponto2;
-            PONTO *ponto3;
-            PONTO *ponto4;
-        } plane;
+            int length;
+            int divisions;
+        } box;
     };
-} FIGURE;
+} *FIGURE;
+
+FIGURE create_figure() {
+    FIGURE f = (FIGURE) malloc(sizeof(struct figure));
+    return f;
+}
+
+void save_file(const FIGURE f, const char* filename) {
+    FILE* file = fopen(filename, "w");
+
+    if (!file) {
+        fprintf(stderr, "Erro: Não foi possível abrir o arquivo %s\n", filename);
+        return;
+    }
+
+    switch (f->type) {
+        case BOX:
+            fprintf(file, "CAIXA\nLength: %d\nDivisions: %d\n", f->box.length, f->box.divisions);
+            break;
+        case CONE:
+            fprintf(file, "CONE\nHeight: %.2f\nRadius: %.2f\nSlices: %d\nStacks: %d\n",
+                    f->cone.height, f->cone.radius, f->cone.slices, f->cone.stacks);
+            break;
+        case PLANE:
+            fprintf(file, "PLANO\nLength: %d\nDivisions: %d\n", f->plane.length, f->plane.divisions);
+            break;
+        case SPHERE:
+            fprintf(file, "ESFERA\nRadius: %.2f\nSlices: %d\nStacks: %d\n",
+                    f->sphere.radius, f->sphere.slices, f->sphere.stacks);
+            break;
+        default:
+            fprintf(stderr, "Erro: Tipo desconhecido\n");
+            break;
+    }
+
+    fclose(file);
+    free(f); 
+}

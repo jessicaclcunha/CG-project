@@ -1,15 +1,15 @@
 #include <stdlib.h>
-#include "ponto.hpp"
+#include "point.hpp"
 #include <math.h>
 
-typedef struct ponto {
+typedef struct point {
     float x;
     float y;
     float z;
-} PONTO;
+} *POINT;
 
-PONTO* new_ponto (float x, float y, float z) {
-    PONTO* p = (PONTO *)malloc (sizeof(struct ponto));
+POINT new_point (float x, float y, float z) {
+    POINT p = (POINT )malloc (sizeof(struct point));
     if (p != NULL)
     {
         p->x = x;
@@ -19,21 +19,21 @@ PONTO* new_ponto (float x, float y, float z) {
     return p;
 }
 
-float get_X (PONTO *p) {
+float get_X (POINT p) {
     if (p != NULL)
         return p->x;
 }
 
-float get_Y (PONTO *p) {
+float get_Y (POINT p) {
     if (p != NULL)
         return p->y;
 }
 
-float get_Z (PONTO *p) {
+float get_Z (POINT p) {
     if (p != NULL)
         return p->z;
 }
 
-float distance_2_origin(PONTO* p) {
+float distance_2_origin(POINT p) {
     return sqrt(p->x * p->x + p->y * p->y + p->z * p->z);
 }
