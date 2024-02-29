@@ -22,14 +22,14 @@ struct Group {
     std::vector<Model> models;
 };
 
-struct World {
+typedef struct WORLD {
     int windowWidth;
     int windowHeight;
     Camera camera;
     Group group;
-};
+} WORLD;
 
-void parse_config_file(const char* filename, World& world) {
+void parse_config_file(const char* filename, WORLD& world) {
     TiXmlDocument doc(filename);
     if (!doc.LoadFile()) {
         std::cerr << "Error loading XML file: " << doc.ErrorDesc() << std::endl;
@@ -99,4 +99,19 @@ void parse_config_file(const char* filename, World& world) {
     }
 }
 
+void delete_world(WORLD &w) {
+    w.windowWidth = 0;
+    w.windowHeight = 0;
+    for (int i = 0; i < 3; ++i) {
+        w.camera.position[i] = 0.0f;
+        w.camera.lookAt[i] = 0.0f;
+        w.camera.up[i] = 0.0f;
+    }
+    w.camera.projection.fov = 0.0f;
+    w.camera.projection.near = 0.0f;
+    w.camera.projection.far = 0.0f;
 
+    for (Model& model : w.group.models)
+        model.file.clear();
+    w.group.models.clear();
+}

@@ -1,5 +1,8 @@
 #include "point.hpp"
 #include <stdio.h>
+#include <vector>
+
+using namespace std;
 
 enum FIGURE_TYPE {
     BOX,
@@ -27,6 +30,8 @@ typedef struct figure {
         struct {
             int length;
             int divisions;
+            std::vector<POINT> vertices;
+            std::vector<int> indices;
         } plane;
 
         struct {
@@ -39,6 +44,45 @@ typedef struct figure {
 FIGURE create_figure() {
     FIGURE f = (FIGURE) malloc(sizeof(struct figure));
     return f;
+}
+
+void add_vertex(FIGURE f, POINT p) {
+    if (f != NULL) {
+        // Assuming type is PLANE
+        if (f->type == PLANE) {
+            f->plane.vertices.push_back(p);
+        }
+        // Add similar checks for other figure types if needed
+    }
+}
+
+void add_index(FIGURE f, int index) {
+    if (f != NULL) {
+        // Assuming type is PLANE
+        if (f->type == PLANE) {
+            f->plane.indices.push_back(index);
+        }
+        // Add similar checks for other figure types if needed
+    }
+}
+
+void add_face(FIGURE f, POINT p1, POINT p2, POINT p3, POINT p4, int divisions) {
+    // Add vertices for the face
+    add_vertex(f, p1);
+    add_vertex(f, p2);
+    add_vertex(f, p3);
+    add_vertex(f, p4);
+
+    // Add indices for two triangles (forming a rectangle) for each subdivision
+    for (int i = 0; i < divisions; ++i) {
+        add_index(f, 4 * i);             // Bottom left
+        add_index(f, 4 * i + 1);         // Top left
+        add_index(f, 4 * i + 2);         // Top right
+
+        add_index(f, 4 * i);             // Bottom left
+        add_index(f, 4 * i + 2);         // Top right
+        add_index(f, 4 * i + 3);         // Bottom right
+    }
 }
 
 void save_file(const FIGURE f, const char* filename) {

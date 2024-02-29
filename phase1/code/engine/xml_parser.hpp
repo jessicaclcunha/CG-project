@@ -18,4 +18,6 @@ typedef struct World WORLD;
 
 void parse_config_file(const char* filename, World& world);
 
+void delete_world(WORLD &w);
+
 #endif // XML_PARSER_H

@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include "xml_parser.hpp"
 
+#define RED 1.0f, 0.0f, 0.0f
+#define GREEN 0.0f, 1.0f, 0.0f
+#define BLUE 0.0f, 0.0f, 1.0f
 
 WORLD world;
 float posx = 0, posz = 0, angle = 0, scalex = 1, scaley = 1, scalez = 1;
@@ -39,6 +42,25 @@ void changeSize(int w, int h) {
 	glMatrixMode(GL_MODELVIEW);
 }
 
+
+void draw_axis() {
+	glBegin(GL_LINES);
+	//X Axis
+	glColor3f(RED);
+	glVertex3f( 0.0f, 0.0f, 0.0f);
+    glVertex3f( 100.0f, 0.0f, 0.0f);
+    //Y Axis
+    glColor3f(GREEN);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 100.0f, 0.0f);
+    //Z Axis
+    glColor3f(BLUE);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, 100.0f);
+    glEnd();
+
+}
+
 void renderScene(void) {
 
 	// clear buffers
@@ -53,7 +75,7 @@ void renderScene(void) {
 
 
 // put drawing instructions here
-
+	draw_axis();
 
 	// End of frame
 	glutSwapBuffers();
@@ -144,6 +166,8 @@ int main(int argc, char **argv) {
 	
 // enter GLUT's main cycle
 	glutMainLoop();
+
+	delete_world(world);
 	
 	return 1;
 }
