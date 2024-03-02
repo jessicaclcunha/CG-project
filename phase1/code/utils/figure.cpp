@@ -1,6 +1,7 @@
 #include "point.hpp"
 #include <stdio.h>
 #include <vector>
+#include <memory>
 
 using namespace std;
 
@@ -10,6 +11,7 @@ enum FIGURE_TYPE {
     PLANE,
     SPHERE
 };
+
 
 typedef struct figure {
     FIGURE_TYPE type;
@@ -27,11 +29,11 @@ typedef struct figure {
             int stacks;
         } cone;
 
-        struct {
+        struct  {
             int length;
             int divisions;
-            std::vector<POINT> vertices;
-            std::vector<int> indices;
+            vector<POINT>* vertices;
+            vector<int>* indices;
         } plane;
 
         struct {
@@ -42,46 +44,46 @@ typedef struct figure {
 } *FIGURE;
 
 FIGURE create_figure() {
-    FIGURE f = (FIGURE) malloc(sizeof(struct figure));
+    FIGURE f = (FIGURE)malloc(sizeof(struct figure));
+    f->plane.vertices = new vector<POINT>();
+    f->plane.indices = new vector<int>();
     return f;
 }
 
 void add_vertex(FIGURE f, POINT p) {
     if (f != NULL) {
-        // Assuming type is PLANE
         if (f->type == PLANE) {
-            f->plane.vertices.push_back(p);
+            f->plane.vertices->push_back(p);
         }
-        // Add similar checks for other figure types if needed
+        // Adicionar verificações semelhantes para outros tipos de figura, se necessário
     }
 }
 
 void add_index(FIGURE f, int index) {
     if (f != NULL) {
-        // Assuming type is PLANE
         if (f->type == PLANE) {
-            f->plane.indices.push_back(index);
+            f->plane.indices->push_back(index);
         }
-        // Add similar checks for other figure types if needed
+        // Adicionar verificações semelhantes para outros tipos de figura, se necessário
     }
 }
 
 void add_face(FIGURE f, POINT p1, POINT p2, POINT p3, POINT p4, int divisions) {
-    // Add vertices for the face
+    // Adicionar vértices para o rosto
     add_vertex(f, p1);
     add_vertex(f, p2);
     add_vertex(f, p3);
     add_vertex(f, p4);
 
-    // Add indices for two triangles (forming a rectangle) for each subdivision
+    // Adicionar índices para dois triângulos (formando um retângulo) para cada subdivisão
     for (int i = 0; i < divisions; ++i) {
-        add_index(f, 4 * i);             // Bottom left
-        add_index(f, 4 * i + 1);         // Top left
-        add_index(f, 4 * i + 2);         // Top right
+        add_index(f, 4 * i);             // Inferior esquerdo
+        add_index(f, 4 * i + 1);         // Superior esquerdo
+        add_index(f, 4 * i + 2);         // Superior direito
 
-        add_index(f, 4 * i);             // Bottom left
-        add_index(f, 4 * i + 2);         // Top right
-        add_index(f, 4 * i + 3);         // Bottom right
+        add_index(f, 4 * i);             // Inferior esquerdo
+        add_index(f, 4 * i + 2);         // Superior direito
+        add_index(f, 4 * i + 3);         // Inferior direito
     }
 }
 
@@ -103,6 +105,19 @@ void save_file(const FIGURE f, const char* filename) {
             break;
         case PLANE:
             fprintf(file, "PLANO\nLength: %d\nDivisions: %d\n", f->plane.length, f->plane.divisions);
+
+            // Imprimir informações sobre os vértices
+            fprintf(file, "Vertices:\n");
+            for (const POINT vertex : *(f->plane.vertices)) {
+                fprintf(file, "(%.2f, %.2f, %.2f)\n", get_X(vertex), get_Y(vertex), get_Z(vertex));
+            }
+
+            // Imprimir informações sobre os índices
+            fprintf(file, "Indices:\n");
+            for (int index : *(f->plane.indices)) {
+                fprintf(file, "%d\n", index);
+            }
+
             break;
         case SPHERE:
             fprintf(file, "ESFERA\nRadius: %.2f\nSlices: %d\nStacks: %d\n",
@@ -114,5 +129,5 @@ void save_file(const FIGURE f, const char* filename) {
     }
 
     fclose(file);
-    free(f); 
+    free(f);
 }

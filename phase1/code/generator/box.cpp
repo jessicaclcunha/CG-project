@@ -27,15 +27,6 @@ FIGURE generate_box(float length, int divisions) {
     add_face(f, p1, p4, p8, p5, divisions);  // Bottom face
     add_face(f, p2, p3, p7, p6, divisions);  // Top face
 
-    // Free the memory allocated for individual points
-    free(p1);
-    free(p2);
-    free(p3);
-    free(p4);
-    free(p5);
-    free(p6);
-    free(p7);
-    free(p8);
 
     return f;
 }
