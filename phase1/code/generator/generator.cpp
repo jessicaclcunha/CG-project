@@ -28,6 +28,8 @@ int main(int argc, char* argv[]) {
         int length = std::stoi(argv[2]);
         int divisions = std::stoi(argv[3]);
         figure = generate_planeXZ(length, divisions);
+        //printf ("%d\n", length);
+        //printf ("%d\n", divisions);
    /* } else if (primitive_type == "box" && argc == 6) {
         float length = std::stof(argv[2]);
         int divisions = std::stoi(argv[3]);

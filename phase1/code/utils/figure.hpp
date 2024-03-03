@@ -25,5 +25,9 @@ void add_vertex(FIGURE f, POINT p);
 void add_index(FIGURE f, int index);
 void add_face(FIGURE f, POINT p1, POINT p2, POINT p3, POINT p4, int divisions);
 void save_file(FIGURE f, std::string filename);
+void print_vertex(POINT p);
+void print_index(int index);
+void print_all_vertices(FIGURE f);
+void print_all_indices(FIGURE f);
 
 #endif /* FIGURE_HPP */

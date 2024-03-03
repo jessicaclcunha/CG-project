@@ -23,6 +23,12 @@ FIGURE generate_plane(int length, int divisions, float x, float y, float z, floa
     POINT p3 = new_point(x + 2 * dx, y + 2 * dy, z + 2 * dz);
     POINT p4 = new_point(x + 3 * dx, y + 3 * dy, z + 3 * dz);
 
+    add_vertex(figure, p1);
+    add_vertex(figure, p2);
+    add_vertex(figure, p3);
+    add_vertex(figure, p4);
+
+
     // Add indices for two triangles (forming a rectangle) for each subdivision
     for (int i = 0; i < divisions; ++i) {
         add_index(figure, 0);
@@ -33,6 +39,9 @@ FIGURE generate_plane(int length, int divisions, float x, float y, float z, floa
         add_index(figure, (i + 2) % divisions + 1);
         add_index(figure, (i + 1) % divisions + 1);
     }
+
+    //print_all_vertices(figure);
+    //print_all_indices(figure);
 
     return figure;
 }
