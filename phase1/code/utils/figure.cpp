@@ -34,10 +34,42 @@ typedef struct figure {
     };
 } *FIGURE;
 
-FIGURE create_figure() {
+FIGURE create_figure_empty() {
     FIGURE f = (FIGURE)malloc(sizeof(struct figure));
     f->plane.vertices = new vector<POINT>();
     f->plane.indices = new vector<int>();
+    return f;
+}
+
+FIGURE create_figure (FIGURE_TYPE type, int length, int divisions) {
+    FIGURE f = create_figure_empty();
+    f->type = type;
+
+    /*switch (type) {
+        case SPHERE:
+            f->sphere.radius = length;
+            f->sphere.slices = divisions;
+            f->sphere.stacks = divisions;
+            break;
+        case CONE:
+            f->cone.height = length;
+            f->cone.radius = divisions;
+            f->cone.slices = divisions;
+            f->cone.stacks = divisions;
+            break;
+        case PLANE:*/
+            f->plane.length = length;
+            f->plane.divisions = divisions;
+           /* break;
+        case BOX:
+            f->box.length = length;
+            f->box.divisions = divisions;
+            break;
+        default:
+            fprintf(stderr, "Erro: Tipo desconhecido\n");
+            break;
+    }*/
+
     return f;
 }
 
@@ -78,11 +110,14 @@ void add_face(FIGURE f, POINT p1, POINT p2, POINT p3, POINT p4, int divisions) {
     }
 }
 
-void save_file(FIGURE f, const char* filename) {
-    FILE* file = fopen(filename, "w");
+void save_file(FIGURE f, std::string filename) {
+    // Obter a representação C-style da string do filename
+    const char* filename_cstr = filename.c_str();
+
+    FILE* file = fopen(filename_cstr, "w"); // Use a representação C-style
 
     if (!file) {
-        fprintf(stderr, "Erro: Não foi possível abrir o arquivo %s\n", filename);
+        fprintf(stderr, "Erro: Não foi possível abrir o arquivo %s\n", filename_cstr);
         return;
     }
 

@@ -7,7 +7,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Define os executáveis a serem construídos neste projecto
 add_executable(engine.exe ./engine/engine.cpp)
-add_executable(generator.exe ./generator/generator.cpp)
+add_executable(generator.exe ./generator/generator.cpp ./generator/plane.cpp)
 
 # Biblioteca das figuras e dos pontos
 add_library(

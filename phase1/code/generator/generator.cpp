@@ -6,11 +6,12 @@
 //#include "../generator/cone.hpp"
 //#include "../generator/sphere.hpp"
 #include "../utils/figure.hpp"
-#include "../utils/utils.hpp"
+#include "../utils/point.hpp"
+//#include "../utils/utils.hpp"
 
 int main(int argc, char* argv[]) {
     // Check the number of command-line arguments
-    if (argc != 6) {
+    if (argc < 5) {
         std::cerr << "Usage: generator <primitive_type> <params...> <output_file>" << std::endl;
         return 1;
     }
@@ -20,10 +21,10 @@ int main(int argc, char* argv[]) {
     std::string output_file = argv[argc - 1];
 
     // Create a figure object
-    FIGURE figure = create_figure();
+    FIGURE figure = create_figure_empty();
 
     // Check the primitive type and generate the corresponding shape
-    if (primitive_type == "plane" && argc == 6) {
+    if (primitive_type == "plane" && argc == 5) {
         int length = std::stoi(argv[2]);
         int divisions = std::stoi(argv[3]);
         figure = generate_planeXZ(length, divisions);
@@ -46,7 +47,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "Invalid arguments or primitive type." << std::endl;
         return 1;
     }
-    //save_file(figure, output_file);
+    save_file(figure, output_file);
 
     return 0;
 }

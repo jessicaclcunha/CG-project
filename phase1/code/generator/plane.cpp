@@ -14,10 +14,8 @@ FIGURE generate_planeYZ(int length, int divisions) {
 
 
 FIGURE generate_plane(int length, int divisions, float x, float y, float z, float dx, float dy, float dz) {
-    FIGURE f = create_figure();
-    f->type = PLANE;
-    f->plane.length = length;
-    f->plane.divisions = divisions;
+    FIGURE_TYPE type = PLANE;
+    FIGURE figure = create_figure(type, length, divisions);
 
     // Add vertices for the corners of the plane
     POINT p1 = new_point(x, y, z);
@@ -27,14 +25,14 @@ FIGURE generate_plane(int length, int divisions, float x, float y, float z, floa
 
     // Add indices for two triangles (forming a rectangle) for each subdivision
     for (int i = 0; i < divisions; ++i) {
-        add_index(f, 0);
-        add_index(f, (i + 1) % divisions + 1);
-        add_index(f, i + 1);
+        add_index(figure, 0);
+        add_index(figure, (i + 1) % divisions + 1);
+        add_index(figure, i + 1);
 
-        add_index(f, 0);
-        add_index(f, (i + 2) % divisions + 1);
-        add_index(f, (i + 1) % divisions + 1);
+        add_index(figure, 0);
+        add_index(figure, (i + 2) % divisions + 1);
+        add_index(figure, (i + 1) % divisions + 1);
     }
 
-    return f;
+    return figure;
 }
