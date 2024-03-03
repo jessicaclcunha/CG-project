@@ -2,9 +2,9 @@
 #include <fstream>
 #include <cmath>
 #include "plane.hpp"
-#include "box.hpp"
-#include "cone.hpp"
-#include "sphere.hpp"
+//#include "../generator/box.hpp"
+//#include "../generator/cone.hpp"
+//#include "../generator/sphere.hpp"
 #include "../utils/figure.hpp"
 #include "../utils/utils.hpp"
 
@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
         int length = std::stoi(argv[2]);
         int divisions = std::stoi(argv[3]);
         figure = generate_planeXZ(length, divisions);
-    } else if (primitive_type == "box" && argc == 6) {
+   /* } else if (primitive_type == "box" && argc == 6) {
         float length = std::stof(argv[2]);
         int divisions = std::stoi(argv[3]);
         figure = generate_box(length, divisions);
@@ -41,12 +41,12 @@ int main(int argc, char* argv[]) {
         float height = std::stof(argv[3]);
         int slices = std::stoi(argv[4]);
         int stacks = std::stoi(argv[5]);
-        figure = generate_cone(bottom_radius, height, slices, stacks);
+        figure = generate_cone(bottom_radius, height, slices, stacks);*/
     } else {
         std::cerr << "Invalid arguments or primitive type." << std::endl;
         return 1;
     }
-    save_file(figure, output_file);
+    //save_file(figure, output_file);
 
     return 0;
 }

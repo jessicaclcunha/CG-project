@@ -1,16 +1,7 @@
-#include "point.hpp"
-#include <stdio.h>
-#include <vector>
-#include <memory>
+#define GL_SILENCE_DEPRECATION
+#include "figure.hpp"
 
 using namespace std;
-
-enum FIGURE_TYPE {
-    BOX,
-    CONE,
-    PLANE,
-    SPHERE
-};
 
 
 typedef struct figure {
@@ -87,7 +78,7 @@ void add_face(FIGURE f, POINT p1, POINT p2, POINT p3, POINT p4, int divisions) {
     }
 }
 
-void save_file(const FIGURE f, const char* filename) {
+void save_file(FIGURE f, const char* filename) {
     FILE* file = fopen(filename, "w");
 
     if (!file) {

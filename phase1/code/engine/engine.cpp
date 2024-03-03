@@ -1,3 +1,4 @@
+#define GL_SILENCE_DEPRECATION
 #include <stdlib.h>
 
 #ifdef __APPLE__
@@ -14,7 +15,7 @@
 #define GREEN 0.0f, 1.0f, 0.0f
 #define BLUE 0.0f, 0.0f, 1.0f
 
-WORLD world;
+//WORLD world;
 float posx = 0, posz = 0, angle = 0, scalex = 1, scaley = 1, scalez = 1;
 
 void changeSize(int w, int h) {
@@ -149,7 +150,7 @@ int main(int argc, char **argv) {
 	glutInitWindowSize(800,800);
 	glutCreateWindow("Phase1");
 
-    parse_config_file(argv[1], world);
+    //parse_config_file(argv[1], world);
 		
 // Required callback registry 
 	glutDisplayFunc(renderScene);
@@ -167,7 +168,7 @@ int main(int argc, char **argv) {
 // enter GLUT's main cycle
 	glutMainLoop();
 
-	delete_world(world);
+	//delete_world(world);
 	
 	return 1;
 }

@@ -3,6 +3,10 @@
 #define PLANE_H
 
 #include "../utils/figure.hpp"
+#include "../utils/point.hpp"
+#include <stdio.h>
+#include <vector>
+#include <memory>
 
 FIGURE generate_plane(int length, int divisions, float x, float y, float z, float dx, float dy, float dz);
 

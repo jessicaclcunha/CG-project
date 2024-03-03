@@ -8,11 +8,11 @@
 #include <string>
 #include "../tinyxml/tinyxml.h"
 
-struct Camera CAMERA;
+struct Camera ;
 
 struct Model;
 
-struct Group GROUP;
+struct Group ;
 
 typedef struct World WORLD;
 

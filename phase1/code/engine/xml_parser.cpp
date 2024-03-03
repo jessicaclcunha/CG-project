@@ -1,3 +1,4 @@
+#define GL_SILENCE_DEPRECATION
 #include <iostream>
 #include <vector>
 #include <string>
@@ -111,7 +112,7 @@ void delete_world(WORLD &w) {
     w.camera.projection.near = 0.0f;
     w.camera.projection.far = 0.0f;
 
-    for (Model& model : w.group.models)
-        model.file.clear();
+    /*for (Model& model : w.group.models)
+        model.file.clear();*/
     w.group.models.clear();
 }

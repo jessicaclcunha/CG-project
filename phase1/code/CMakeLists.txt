@@ -11,32 +11,33 @@ add_executable(generator.exe ./generator/generator.cpp)
 
 # Biblioteca das figuras e dos pontos
 add_library(
-	utils_lib
-	./utils/point.cpp
-	./utils/point.hpp
-	./utils/figure.cpp
-	./utils/figure.hpp
+    utils_lib
+    ./utils/point.cpp
+    ./utils/point.hpp
+    ./utils/figure.cpp
+    ./utils/figure.hpp
 )
 
 # Biblioteca de parsing de xml
 add_library(
-	tinyxml_lib
-	./tinyxml/tinystr.cpp
-	./tinyxml/tinyxmlerror.cpp
-	./tinyxml/tinyxmlparser.cpp
-	./tinyxml/tinystr.h
-	./tinyxml/tinyxml.h
-	./tinyxml/tinyxml.cpp
+    tinyxml_lib
+    ./tinyxml/tinystr.cpp
+    ./tinyxml/tinyxmlerror.cpp
+    ./tinyxml/tinyxmlparser.cpp
+    ./tinyxml/tinystr.h
+    ./tinyxml/tinyxml.h
+    ./tinyxml/tinyxml.cpp
 )
 
 # Biblioteca de configuração do engine.
 add_library(
-	config_lib
-	./engine/xml_parser.cpp
-	./engine/xml_parser.hpp
+    config_lib
+    ./engine/xml_parser.cpp
+    ./engine/xml_parser.hpp
 )
 
-target_link_libraries(config_lib tinyxml)
+# Link tinyxml_lib com config_lib
+target_link_libraries(config_lib tinyxml_lib)
 
 # Associa a biblioteca das figuras e dos pontos aos executáveis
 target_link_libraries(generator.exe utils_lib)

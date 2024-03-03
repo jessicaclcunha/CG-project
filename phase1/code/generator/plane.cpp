@@ -1,6 +1,17 @@
 #include "plane.hpp"
-#include "../utils/figure.hpp"
-#include "../utils/point.hpp"
+
+FIGURE generate_planeXZ(int length, int divisions) {
+    return generate_plane(length, divisions, -length / 2.0f, 0.0f, -length / 2.0f, length / divisions, 0.0f, length / divisions);
+}
+
+FIGURE generate_planeXY(int length, int divisions) {
+    return generate_plane(length, divisions, -length / 2.0f, -length / 2.0f, 0.0f, length / divisions, length / divisions, 0.0f);
+}
+
+FIGURE generate_planeYZ(int length, int divisions) {
+    return generate_plane(length, divisions, 0.0f, -length / 2.0f, -length / 2.0f, 0.0f, length / divisions, length / divisions);
+}
+
 
 FIGURE generate_plane(int length, int divisions, float x, float y, float z, float dx, float dy, float dz) {
     FIGURE f = create_figure();
@@ -26,16 +37,4 @@ FIGURE generate_plane(int length, int divisions, float x, float y, float z, floa
     }
 
     return f;
-}
-
-FIGURE generate_planeXZ(int length, int divisions) {
-    return generate_plane(length, divisions, -length / 2.0f, 0.0f, -length / 2.0f, length / divisions, 0.0f, length / divisions);
-}
-
-FIGURE generate_planeXY(int length, int divisions) {
-    return generate_plane(length, divisions, -length / 2.0f, -length / 2.0f, 0.0f, length / divisions, length / divisions, 0.0f);
-}
-
-FIGURE generate_planeYZ(int length, int divisions) {
-    return generate_plane(length, divisions, 0.0f, -length / 2.0f, -length / 2.0f, 0.0f, length / divisions, length / divisions);
 }
