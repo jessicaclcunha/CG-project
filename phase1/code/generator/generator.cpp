@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
     if (primitive_type == "plane" && argc == 5) {
         int length = std::stoi(argv[2]);
         int divisions = std::stoi(argv[3]);
-        figure = generate_planeXZ(length, divisions);
+        figure = generate_plane_XZ(length, divisions);
         //printf ("%d\n", length);
         //printf ("%d\n", divisions);
    /* } else if (primitive_type == "box" && argc == 6) {

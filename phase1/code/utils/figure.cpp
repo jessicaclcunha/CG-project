@@ -60,6 +60,8 @@ FIGURE create_figure (FIGURE_TYPE type, int length, int divisions) {
         case PLANE:*/
             f->plane.length = length;
             f->plane.divisions = divisions;
+            f->plane.vertices = new std::vector<POINT>();
+            f->plane.indices = new std::vector<int>();
            /* break;
         case BOX:
             f->box.length = length;
@@ -82,6 +84,34 @@ void add_vertex(FIGURE f, POINT p) {
     }
 }
 
+void add_vertexs(FIGURE f, vector<POINT> p) {
+    if (f != NULL) {
+        if (f->type == PLANE) {
+            for (auto it = p.begin(); it != p.end(); ++it) {
+                f->plane.vertices->push_back(*it);
+            }
+        }
+    }
+}
+
+int get_size_vertices(FIGURE f){
+    if (f != NULL){
+        if (f->type == PLANE){
+            return f->plane.vertices->size();
+        }
+    }
+    return 0;
+}
+
+int count_vertices(FIGURE f){
+    if (f != NULL){
+        if (f->type == PLANE){
+            return f->plane.vertices->size();
+        }
+    }
+    return 0;
+}
+
 void add_index(FIGURE f, int index) {
     if (f != NULL) {
         if (f->type == PLANE) {
@@ -92,6 +122,27 @@ void add_index(FIGURE f, int index) {
 
 }
 
+
+void add_indexs(FIGURE f, vector<int> index) {
+    if (f != NULL) {
+        if (f->type == PLANE) {
+            for (int i : index){
+                f->plane.indices->push_back(i);
+            }
+        }
+    }
+}
+
+int get_size_indices(FIGURE f){
+    if (f != NULL){
+        if (f->type == PLANE){
+            return f->plane.indices->size();
+        }
+    }
+    return 0;
+}   
+
+/*
 void add_face(FIGURE f, POINT p1, POINT p2, POINT p3, POINT p4, int divisions) {
     // Adicionar vértices para o rosto
     add_vertex(f, p1);
@@ -110,7 +161,7 @@ void add_face(FIGURE f, POINT p1, POINT p2, POINT p3, POINT p4, int divisions) {
         add_index(f, 4 * i + 3);         // Inferior direito
     }
 }
-
+*/
 void save_file(FIGURE f, std::string filename) {
     // Obter a representação C-style da string do filename
     const char* filename_cstr = filename.c_str();
@@ -131,7 +182,7 @@ void save_file(FIGURE f, std::string filename) {
                     f->cone.height, f->cone.radius, f->cone.slices, f->cone.stacks);
             break;*/
         case PLANE:
-            fprintf(file, "PLANO\nLength: %d\nDivisions: %d\n", f->plane.length, f->plane.divisions);
+            fprintf(file, "PLANO\nLength: %d\nDivisions: %d\nNº de Vertices: %d\n", f->plane.length, f->plane.divisions, count_vertices(f));
 
             // Imprimir informações sobre os vértices
             fprintf(file, "Vertices:\n");

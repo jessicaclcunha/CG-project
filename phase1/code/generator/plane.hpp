@@ -7,14 +7,13 @@
 #include <stdio.h>
 #include <vector>
 #include <memory>
+#include <string>
 
-FIGURE generate_plane(int length, int divisions, float x, float y, float z, float dx, float dy, float dz);
+FIGURE generate_plane_XZ(int length, int divisions, float h = 0.0f, int baixo = 0);
 
-FIGURE generate_planeXZ(int length, int divisions);
+FIGURE generate_plane_XY(int length, int divisions, float h = 0.0f, int baixo = 0);
 
-FIGURE generate_planeXY(int length, int divisions);
-
-FIGURE generate_planeYZ(int length, int divisions);
+FIGURE generate_plane_YZ(int length, int divisions, float h = 0.0f, int baixo = 0);
 
 
 #endif // PLANE_H
