@@ -1,4 +1,6 @@
 // sphere.hpp
+#include <vector>
+#include <cmath>
 #ifndef SPHERE_H
 #define SPHERE_H
 

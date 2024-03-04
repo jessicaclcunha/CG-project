@@ -1,5 +1,7 @@
 // cone.hpp
 #include <string>
+#include <vector>
+#include <cmath>
 #ifndef CONE_H
 #define CONE_H
 

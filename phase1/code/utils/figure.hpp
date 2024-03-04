@@ -11,6 +11,7 @@
 
 // Definição completa do enum FIGURE_TYPE
 enum FIGURE_TYPE {
+    UNKNOWN,
     SPHERE,
     CONE,
     PLANE,
@@ -19,7 +20,7 @@ enum FIGURE_TYPE {
 
 typedef struct figure *FIGURE;
 
-FIGURE create_figure_empty();
+FIGURE create_empty_figure();
 FIGURE create_figure(FIGURE_TYPE type, int length, int divisions);
 void add_vertex(FIGURE f, POINT p);
 void add_vertexs(FIGURE f, std::vector<POINT> p);

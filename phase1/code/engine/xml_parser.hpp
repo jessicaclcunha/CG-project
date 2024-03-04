@@ -56,6 +56,8 @@ WORLD create_world(int windowWidth, int windowHeight);
 
 void parse_config_file(const char* filename, WORLD world);
 
+void parse_vector_attribute(TiXmlElement* parentElement, const char* attributeName, float* vector);
+
 void delete_world(WORLD &w);
 
 #endif // XML_PARSER_H

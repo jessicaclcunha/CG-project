@@ -6,27 +6,23 @@ using namespace std;
 
 typedef struct figure {
     FIGURE_TYPE type;
+    std::vector<POINT>* vertices;
+    std::vector<int>* indices;
     union {
         struct {
             float radius;
             int slices;
             int stacks;
         } sphere;
-
         struct {
             float height;
             float radius;
             int slices;
-            int stacks;
         } cone;
-
-        struct  {
+        struct {
             int length;
             int divisions;
-            vector<POINT>* vertices;
-            vector<int>* indices;
         } plane;
-
         struct {
             int length;
             int divisions;
@@ -34,18 +30,19 @@ typedef struct figure {
     };
 } *FIGURE;
 
-FIGURE create_figure_empty() {
+FIGURE create_empty_figure() {
     FIGURE f = (FIGURE)malloc(sizeof(struct figure));
-    f->plane.vertices = new vector<POINT>();
-    f->plane.indices = new vector<int>();
+    f->type = UNKNOWN;
+    f->vertices = new vector<POINT>();
+    f->indices = new vector<int>();
     return f;
 }
 
 FIGURE create_figure (FIGURE_TYPE type, int length, int divisions) {
-    FIGURE f = create_figure_empty();
+    FIGURE f = create_empty_figure();
     f->type = type;
 
-    /*switch (type) {
+    switch (type) {/*
         case SPHERE:
             f->sphere.radius = length;
             f->sphere.slices = divisions;
@@ -56,13 +53,11 @@ FIGURE create_figure (FIGURE_TYPE type, int length, int divisions) {
             f->cone.radius = divisions;
             f->cone.slices = divisions;
             f->cone.stacks = divisions;
-            break;
-        case PLANE:*/
+            break; */
+        case PLANE:
             f->plane.length = length;
             f->plane.divisions = divisions;
-            f->plane.vertices = new std::vector<POINT>();
-            f->plane.indices = new std::vector<int>();
-           /* break;
+            break;
         case BOX:
             f->box.length = length;
             f->box.divisions = divisions;
@@ -70,53 +65,42 @@ FIGURE create_figure (FIGURE_TYPE type, int length, int divisions) {
         default:
             fprintf(stderr, "Erro: Tipo desconhecido\n");
             break;
-    }*/
+    }
 
     return f;
 }
 
 void add_vertex(FIGURE f, POINT p) {
     if (f != NULL) {
-        if (f->type == PLANE) {
-            f->plane.vertices->push_back(p);
-        }
-        // Adicionar verificações semelhantes para outros tipos de figura, se necessário
+        f->vertices->push_back(p);
     }
 }
 
 void add_vertexs(FIGURE f, vector<POINT> p) {
     if (f != NULL) {
-        if (f->type == PLANE) {
-            for (auto it = p.begin(); it != p.end(); ++it) {
-                f->plane.vertices->push_back(*it);
-            }
+        for (auto it = p.begin(); it != p.end(); ++it) {
+            f->vertices->push_back(*it);
         }
     }
 }
 
 int get_size_vertices(FIGURE f){
     if (f != NULL){
-        if (f->type == PLANE){
-            return f->plane.vertices->size();
-        }
+            return f->vertices->size();
     }
     return 0;
 }
 
 int count_vertices(FIGURE f){
     if (f != NULL){
-        if (f->type == PLANE){
-            return f->plane.vertices->size();
-        }
+            return f->vertices->size();
     }
     return 0;
 }
 
 void add_index(FIGURE f, int index) {
     if (f != NULL) {
-        if (f->type == PLANE) {
-            f->plane.indices->push_back(index);
-        }
+        f->indices->push_back(index);
         // Adicionar verificações semelhantes para outros tipos de figura, se necessário
     }
 
@@ -125,19 +109,15 @@ void add_index(FIGURE f, int index) {
 
 void add_indexs(FIGURE f, vector<int> index) {
     if (f != NULL) {
-        if (f->type == PLANE) {
-            for (int i : index){
-                f->plane.indices->push_back(i);
-            }
+        for (int i : index){
+            f->indices->push_back(i);
         }
     }
 }
 
 int get_size_indices(FIGURE f){
     if (f != NULL){
-        if (f->type == PLANE){
-            return f->plane.indices->size();
-        }
+        return f->indices->size();
     }
     return 0;
 }   
@@ -186,7 +166,7 @@ void save_file(FIGURE f, std::string filename) {
 
             // Imprimir informações sobre os vértices
             fprintf(file, "Vertices:\n");
-            for (const POINT vertex : *(f->plane.vertices)) {
+            for (const POINT vertex : *(f->vertices)) {
                 fprintf(file, "(%.2f, %.2f, %.2f)\n", get_X(vertex), get_Y(vertex), get_Z(vertex));
             }
             break;
@@ -213,10 +193,8 @@ void print_index(int index) {
 
 void print_all_vertices(FIGURE f) {
     if (f != NULL) {
-        if (f->type == PLANE) {
-            for (const POINT vertex : *(f->plane.vertices)) {
-                print_vertex(vertex);
-            }
+        for (const POINT vertex : *(f->vertices)) {
+            print_vertex(vertex);
         }
     }
 }
@@ -224,7 +202,7 @@ void print_all_vertices(FIGURE f) {
 void print_all_indices(FIGURE f) {
     if (f != NULL) {
         if (f->type == PLANE) {
-            for (int index : *(f->plane.indices)) {
+            for (int index : *(f->indices)) {
                 print_index(index);
             }
         }

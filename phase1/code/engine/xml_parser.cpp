@@ -108,6 +108,17 @@ WORLD create_world(int windowWidth, int windowHeight) {
     w->windowHeight = windowHeight;
     return w;
 }
+
+// Função auxiliar para analisar atributos de vetor (x, y, z)
+void parse_vector_attribute(TiXmlElement* parentElement, const char* attributeName, float* vector) {
+    TiXmlElement* vectorElement = parentElement->FirstChildElement(attributeName);
+    if (vectorElement) {
+        vectorElement->QueryFloatAttribute("x", &vector[0]);
+        vectorElement->QueryFloatAttribute("y", &vector[1]);
+        vectorElement->QueryFloatAttribute("z", &vector[2]);
+    }
+}
+
 void parse_config_file(const char* filename, WORLD world) {
     TiXmlDocument doc(filename);
     if (!doc.LoadFile()) {
@@ -161,17 +172,6 @@ void parse_config_file(const char* filename, WORLD world) {
         }
     }
 }
-
-// Função auxiliar para analisar atributos de vetor (x, y, z)
-void parse_vector_attribute(TiXmlElement* parentElement, const char* attributeName, float* vector) {
-    TiXmlElement* vectorElement = parentElement->FirstChildElement(attributeName);
-    if (vectorElement) {
-        vectorElement->QueryFloatAttribute("x", &vector[0]);
-        vectorElement->QueryFloatAttribute("y", &vector[1]);
-        vectorElement->QueryFloatAttribute("z", &vector[2]);
-    }
-}
-
 
 void delete_world(WORLD &w) {
     w->windowWidth = 0;

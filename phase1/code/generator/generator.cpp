@@ -20,17 +20,14 @@ int main(int argc, char* argv[]) {
     std::string primitive_type = argv[1];
     std::string output_file = argv[argc - 1];
 
-    // Create a figure object
-    FIGURE figure = create_figure_empty();
+    FIGURE figure = create_empty_figure();
 
     // Check the primitive type and generate the corresponding shape
     if (primitive_type == "plane" && argc == 5) {
         int length = std::stoi(argv[2]);
         int divisions = std::stoi(argv[3]);
-        figure = generate_plane_XZ(length, divisions);
-        //printf ("%d\n", length);
-        //printf ("%d\n", divisions);
-   /* } else if (primitive_type == "box" && argc == 6) {
+        figure = generate_plane_XZ(length, divisions); /*
+    } else if (primitive_type == "box" && argc == 6) {
         float length = std::stof(argv[2]);
         int divisions = std::stoi(argv[3]);
         figure = generate_box(length, divisions);
