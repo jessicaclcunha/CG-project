@@ -23,14 +23,92 @@ struct Group {
     std::vector<Model> models;
 };
 
-typedef struct WORLD {
+typedef struct World {
     int windowWidth;
     int windowHeight;
     Camera camera;
     Group group;
-} WORLD;
+} *WORLD;
 
-void parse_config_file(const char* filename, WORLD& world) {
+float get_position_camX(WORLD w) {
+    return w->camera.position[0];
+}
+
+void set_position_camX(WORLD w, float x) {
+    w->camera.position[0] = x;
+}
+
+float get_position_camY(WORLD w) {
+    return w->camera.position[1];
+}
+
+void set_position_camY(WORLD w, float y) {
+    w->camera.position[1] = y;
+}
+
+float get_position_camZ(WORLD w) {
+    return w->camera.position[2];
+}
+
+void set_position_camZ(WORLD w, float z) {
+    w->camera.position[2] = z;
+}
+
+float get_lookAt_camX(WORLD w) {
+    return w->camera.lookAt[0];
+}
+
+void set_lookAt_camX(WORLD w, float x) {
+    w->camera.lookAt[0] = x;
+}
+
+float get_lookAt_camY(WORLD w) {
+    return w->camera.lookAt[1];
+}
+
+void set_lookAt_camY(WORLD w, float y) {
+    w->camera.lookAt[1] = y;
+}
+
+float get_lookAt_camZ(WORLD w) {
+    return w->camera.lookAt[2];
+}
+
+void set_lookAt_camZ(WORLD w, float z) {
+    w->camera.lookAt[2] = z;
+}
+
+float get_up_camX(WORLD w) {
+    return w->camera.up[0];
+}
+
+void set_up_camX(WORLD w, float x) {
+    w->camera.up[0] = x;
+}
+
+float get_up_camY(WORLD w) {
+    return w->camera.up[1];
+}
+
+void set_up_camY(WORLD w, float y) {
+    w->camera.up[1] = y;
+}
+
+float get_up_camZ(WORLD w) {
+    return w->camera.up[2];
+}
+
+void set_up_camZ(WORLD w, float z) {
+    w->camera.up[2] = z;
+}
+
+WORLD create_world(int windowWidth, int windowHeight) {
+    WORLD w =  (WORLD)malloc(sizeof(struct World));
+    w->windowWidth = windowWidth;
+    w->windowHeight = windowHeight;
+    return w;
+}
+void parse_config_file(const char* filename, WORLD world) {
     TiXmlDocument doc(filename);
     if (!doc.LoadFile()) {
         std::cerr << "Error loading XML file: " << doc.ErrorDesc() << std::endl;
@@ -44,55 +122,39 @@ void parse_config_file(const char* filename, WORLD& world) {
         return;
     }
 
-    // Example: Parse window settings
+    // Parse window settings
     TiXmlElement* windowElement = worldElement->FirstChildElement("window");
     if (windowElement) {
-        windowElement->QueryIntAttribute("width", &world.windowWidth);
-        windowElement->QueryIntAttribute("height", &world.windowHeight);
+        windowElement->QueryIntAttribute("width", &world->windowWidth);
+        windowElement->QueryIntAttribute("height", &world->windowHeight);
     }
 
-    // Example: Parse camera settings
+    // Parse camera settings
     TiXmlElement* cameraElement = worldElement->FirstChildElement("camera");
     if (cameraElement) {
         // Parse camera attributes
-        TiXmlElement* positionElement = cameraElement->FirstChildElement("position");
-        if (positionElement) {
-            positionElement->QueryFloatAttribute("x", &world.camera.position[0]);
-            positionElement->QueryFloatAttribute("y", &world.camera.position[1]);
-            positionElement->QueryFloatAttribute("z", &world.camera.position[2]);
-        }
+        parse_vector_attribute(cameraElement, "position", world->camera.position);
+        parse_vector_attribute(cameraElement, "lookAt", world->camera.lookAt);
+        parse_vector_attribute(cameraElement, "up", world->camera.up);
 
-        TiXmlElement* lookAtElement = cameraElement->FirstChildElement("lookAt");
-        if (lookAtElement) {
-            lookAtElement->QueryFloatAttribute("x", &world.camera.lookAt[0]);
-            lookAtElement->QueryFloatAttribute("y", &world.camera.lookAt[1]);
-            lookAtElement->QueryFloatAttribute("z", &world.camera.lookAt[2]);
-        }
-
-        TiXmlElement* upElement = cameraElement->FirstChildElement("up");
-        if (upElement) {
-            upElement->QueryFloatAttribute("x", &world.camera.up[0]);
-            upElement->QueryFloatAttribute("y", &world.camera.up[1]);
-            upElement->QueryFloatAttribute("z", &world.camera.up[2]);
-        }
-
+        // Parse projection element
         TiXmlElement* projectionElement = cameraElement->FirstChildElement("projection");
         if (projectionElement) {
-            projectionElement->QueryFloatAttribute("fov", &world.camera.projection.fov);
-            projectionElement->QueryFloatAttribute("near", &world.camera.projection.near);
-            projectionElement->QueryFloatAttribute("far", &world.camera.projection.far);
+            projectionElement->QueryFloatAttribute("fov", &world->camera.projection.fov);
+            projectionElement->QueryFloatAttribute("near", &world->camera.projection.near);
+            projectionElement->QueryFloatAttribute("far", &world->camera.projection.far);
         }
     }
 
-    // Example: Parse models
+    // Parse models
     TiXmlElement* modelsElement = worldElement->FirstChildElement("group")->FirstChildElement("models");
     if (modelsElement) {
         for (TiXmlElement* modelElement = modelsElement->FirstChildElement("model"); modelElement; modelElement = modelElement->NextSiblingElement("model")) {
             Model model;
-            const char* fileAttribute = modelElement->Attribute("file"); // Corrected line
+            const char* fileAttribute = modelElement->Attribute("file");
             if (fileAttribute) {
                 model.file = fileAttribute;
-                world.group.models.push_back(model);
+                world->group.models.push_back(model);
             } else {
                 std::cerr << "Error: Model element is missing 'file' attribute." << std::endl;
             }
@@ -100,19 +162,30 @@ void parse_config_file(const char* filename, WORLD& world) {
     }
 }
 
-void delete_world(WORLD &w) {
-    w.windowWidth = 0;
-    w.windowHeight = 0;
-    for (int i = 0; i < 3; ++i) {
-        w.camera.position[i] = 0.0f;
-        w.camera.lookAt[i] = 0.0f;
-        w.camera.up[i] = 0.0f;
+// Função auxiliar para analisar atributos de vetor (x, y, z)
+void parse_vector_attribute(TiXmlElement* parentElement, const char* attributeName, float* vector) {
+    TiXmlElement* vectorElement = parentElement->FirstChildElement(attributeName);
+    if (vectorElement) {
+        vectorElement->QueryFloatAttribute("x", &vector[0]);
+        vectorElement->QueryFloatAttribute("y", &vector[1]);
+        vectorElement->QueryFloatAttribute("z", &vector[2]);
     }
-    w.camera.projection.fov = 0.0f;
-    w.camera.projection.near = 0.0f;
-    w.camera.projection.far = 0.0f;
+}
+
+
+void delete_world(WORLD &w) {
+    w->windowWidth = 0;
+    w->windowHeight = 0;
+    for (int i = 0; i < 3; ++i) {
+        w->camera.position[i] = 0.0f;
+        w->camera.lookAt[i] = 0.0f;
+        w->camera.up[i] = 0.0f;
+    }
+    w->camera.projection.fov = 0.0f;
+    w->camera.projection.near = 0.0f;
+    w->camera.projection.far = 0.0f;
 
     /*for (Model& model : w.group.models)
         model.file.clear();*/
-    w.group.models.clear();
+    w->group.models.clear();
 }
