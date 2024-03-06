@@ -1,9 +1,10 @@
 #include "plane.hpp"
                                                                           //o length é o tamanho do lado do plano
                                                                           //o divisions é o número de divisões do plano
-FIGURE generate_plane_XZ(int length, int divisions, float h, int baixo) { //o h é a altura do plano em relação ao eixo y
+FIGURE generate_plane_XZ(int length, int divisions, float h, int baixo) { 
+    //o h é a altura do plano em relação ao eixo y
                                                                           //o baixo é para inverter o plano
-    FIGURE f = create_figure(PLANE, length, divisions); 
+    FIGURE f = create_figure_plane_box(PLANE, length, divisions); 
 
     float dimension = (float)length / 2; //isto serve para centrar o plano no centro do eixo (0,0,0) 
     float division = (float)length / divisions; //isto serve para dividir o plano nas várias partes que queremos gerar
@@ -24,10 +25,10 @@ FIGURE generate_plane_XZ(int length, int divisions, float h, int baixo) { //o h 
         Xs[2] = x2;
         Zs[1] = z3;
         Zs[2] = z2;
-    }
+    } 
 
     //ao usarmos estes dois ciclos for, vamos criar os vários pontos do plano de maneira a que fiquem divididos nas várias partes que queremos
-
+   // printf("XZ\n");
     for (int linha = 0; linha < divisions; linha++){ //itera sobre o eixo do Z (neste caso)
         for (int coluna = 0; coluna < divisions; coluna++){ //itera sobre o eixo do X
             // Primeiro triângulo do quadrado
@@ -36,6 +37,7 @@ FIGURE generate_plane_XZ(int length, int divisions, float h, int baixo) { //o h 
             // o coluna * division é para nos dar a partição à qual fará parte o ponto, como se fosse um ponto de referência
             // o h é a altura do plano em relação ao eixo y
             // o Zs[0] é o ponto inicial do plano, ou seja, está no canto inferior esquerdo
+
             //isto vai ser replicado para os outros pontos
             POINT p1 = new_point(Xs[0] + coluna * division, h, Zs[0]); 
             POINT p2 = new_point(Xs[1] + coluna * division, h, Zs[1]);
@@ -45,35 +47,32 @@ FIGURE generate_plane_XZ(int length, int divisions, float h, int baixo) { //o h 
             POINT p5 = new_point(Xs[3] + coluna * division, h, Zs[3]);
             POINT p6 = new_point(Xs[2] + coluna * division, h, Zs[2]);
 
-            //print_point(p1);
-            //print_point(p2);
-            //print_point(p3);
-            //print_point(p4);
-            //print_point(p5);
-            //print_point(p6);
+            /*print_point(p1);
+            print_point(p2);
+            print_point(p3);
+
+            print_point(p4);
+            print_point(p5);
+            print_point(p6);*/
 
             // Inicialize vetores vazios
-            std::vector<POINT> vertices; //"lista" de vertices
-            std::vector<int> indices; //"lista" de indices
+            std::vector<POINT> vertices1;
+            std::vector<POINT> vertices2; 
 
             // Adicione os elementos um a um
-            vertices.push_back(p1); //adiciona o ponto 1 à lista de vertices
-            vertices.push_back(p2); //...
-            vertices.push_back(p3); //...
-            vertices.push_back(p4); //...
-            vertices.push_back(p5); //...
-            vertices.push_back(p6); //...
+            vertices1.push_back(p1); //adiciona o ponto 1 à lista de vertices
+            vertices1.push_back(p2); //...
+            vertices1.push_back(p3); //...
+            vertices2.push_back(p4); //...
+            vertices2.push_back(p5); //...
+            vertices2.push_back(p6); //...
 
-            // Adicione os índices um a um
-            indices.push_back(get_size_vertices(f) - 6); //adiciona o indice do ponto 1 à lista de indices, temos que fazer -6 porque estamos a adicionar 6 pontos, ou seja, queremos que comece no indice 0
-            indices.push_back(get_size_vertices(f) - 5); //...
-            indices.push_back(get_size_vertices(f) - 4); //...
-            indices.push_back(get_size_vertices(f) - 3); //...
-            indices.push_back(get_size_vertices(f) - 2); //...
-            indices.push_back(get_size_vertices(f) - 1); //...
 
-            add_vertexs(f, vertices); //adicionamos oficialmente à figura os vertices
-            add_indexs(f, indices);  //adicionamos oficialmente à figura os indices
+            TRIANGLE t1 = create_triangle_with_vertices(vertices1);
+            TRIANGLE t2 = create_triangle_with_vertices(vertices2);
+
+            add_triangle(f, t1);
+            add_triangle(f, t2);
 
         }
         Zs[0] += division; //aumentamos o Z do ponto inicial
@@ -88,7 +87,7 @@ FIGURE generate_plane_XZ(int length, int divisions, float h, int baixo) { //o h 
 }
 
 FIGURE generate_plane_XY(int length, int divisions, float h, int baixo) {
-    FIGURE f = create_figure(PLANE, length, divisions);
+    FIGURE f = create_figure_plane_box(PLANE, length, divisions);
 
     float dimension = (float)length / 2;
     float division = (float)length / divisions;
@@ -106,7 +105,7 @@ FIGURE generate_plane_XY(int length, int divisions, float h, int baixo) {
         Ys[1] = y3;
         Ys[2] = y2;
     }
-
+    //printf("XY\n");
     for (int linha = 0; linha < divisions; linha++){
         for (int coluna = 0; coluna < divisions; coluna++){
             // Primeiro triângulo do quadrado
@@ -118,28 +117,27 @@ FIGURE generate_plane_XY(int length, int divisions, float h, int baixo) {
             POINT p5 = new_point(Xs[3] + coluna * division, Ys[3], h);
             POINT p6 = new_point(Xs[2] + coluna * division, Ys[2], h);
 
+
+
             // Inicialize vetores vazios
-            std::vector<POINT> vertices;
-            std::vector<int> indices;
+            std::vector<POINT> vertices1;
+            std::vector<POINT> vertices2; 
+
 
             // Adicione os elementos um a um
-            vertices.push_back(p1);
-            vertices.push_back(p2);
-            vertices.push_back(p3);
-            vertices.push_back(p4);
-            vertices.push_back(p5);
-            vertices.push_back(p6);
+            vertices1.push_back(p1); //adiciona o ponto 1 à lista de vertices
+            vertices1.push_back(p2); //...
+            vertices1.push_back(p3); //...
+            vertices2.push_back(p4); //...
+            vertices2.push_back(p5); //...
+            vertices2.push_back(p6); //...
 
-            // Adicione os índices um a um
-            indices.push_back(get_size_vertices(f) - 6);
-            indices.push_back(get_size_vertices(f) - 5);
-            indices.push_back(get_size_vertices(f) - 4);
-            indices.push_back(get_size_vertices(f) - 3);
-            indices.push_back(get_size_vertices(f) - 2);
-            indices.push_back(get_size_vertices(f) - 1);
 
-            add_vertexs(f, vertices);
-            add_indexs(f, indices);
+            TRIANGLE t1 = create_triangle_with_vertices(vertices1);
+            TRIANGLE t2 = create_triangle_with_vertices(vertices2);
+
+            add_triangle(f, t1);
+            add_triangle(f, t2);
 
         }
         Ys[0] += division;
@@ -152,7 +150,7 @@ FIGURE generate_plane_XY(int length, int divisions, float h, int baixo) {
 }
 
 FIGURE generate_plane_YZ(int length, int divisions, float h, int baixo) {
-    FIGURE f = create_figure(PLANE, length, divisions);
+    FIGURE f = create_figure_plane_box(PLANE, length, divisions);
 
     float dimension = (float)length / 2;
     float division = (float)length / divisions;
@@ -170,7 +168,7 @@ FIGURE generate_plane_YZ(int length, int divisions, float h, int baixo) {
         Zs[1] = z3;
         Zs[2] = z2;
     }
-
+    //printf ("YZ\n");
     for (int linha = 0; linha < divisions; linha++){
         for (int coluna = 0; coluna < divisions; coluna++){
             // Primeiro triângulo do quadrado
@@ -181,29 +179,27 @@ FIGURE generate_plane_YZ(int length, int divisions, float h, int baixo) {
             POINT p4 = new_point(h, Ys[1] + coluna * division, Zs[1]);
             POINT p5 = new_point(h, Ys[3] + coluna * division, Zs[3]);
             POINT p6 = new_point(h, Ys[2] + coluna * division, Zs[2]);
+            
+           
 
             // Inicialize vetores vazios
-            std::vector<POINT> vertices;
-            std::vector<int> indices;
+            std::vector<POINT> vertices1;
+            std::vector<POINT> vertices2;
+
+            vertices1.push_back(p1); //adiciona o ponto 1 à lista de vertices
+            vertices1.push_back(p2); //...
+            vertices1.push_back(p3); //...
+            vertices2.push_back(p4); //...
+            vertices2.push_back(p5); //...
+            vertices2.push_back(p6); //...
+            
 
             // Adicione os elementos um a um
-            vertices.push_back(p1);
-            vertices.push_back(p2);
-            vertices.push_back(p3);
-            vertices.push_back(p4);
-            vertices.push_back(p5);
-            vertices.push_back(p6);
+            TRIANGLE t1 = create_triangle_with_vertices(vertices1);
+            TRIANGLE t2 = create_triangle_with_vertices(vertices2);
 
-            // Adicione os índices um a um
-            indices.push_back(get_size_vertices(f) - 6);
-            indices.push_back(get_size_vertices(f) - 5);
-            indices.push_back(get_size_vertices(f) - 4);
-            indices.push_back(get_size_vertices(f) - 3);
-            indices.push_back(get_size_vertices(f) - 2);
-            indices.push_back(get_size_vertices(f) - 1);
-
-            add_vertexs(f, vertices);
-            add_indexs(f, indices);
+            add_triangle(f, t1);
+            add_triangle(f, t2);
 
         }
         Zs[0] += division;

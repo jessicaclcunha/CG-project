@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <iostream>
 #include <stdio.h>
 #include <vector>
 #include <memory>
@@ -37,4 +38,9 @@ POINT dup_point(POINT p);
 void print_point(POINT p);
 
 void free_point(POINT p);
+
+bool equals_point(POINT p1, POINT p2);
+
+//vector<POINT> criar_vector_points();
+
 #endif // POINT_H

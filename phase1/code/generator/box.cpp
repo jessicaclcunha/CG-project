@@ -1,32 +1,33 @@
 #include "box.hpp"
-#include "../utils/figure.hpp"
 
 FIGURE generate_box(float length, int divisions) {
-    FIGURE f = create_figure();
-    f->type = BOX;
-    f->box.length = length;
-    f->box.divisions = divisions;
+    FIGURE box = create_figure_plane_box(BOX, length, divisions);
+    if (box){
+    float dimension2 = (float)length / 2; 
+    FIGURE faceCima = generate_plane_XZ(length, divisions, dimension2, 0);
+    FIGURE faceBaixo = generate_plane_XZ(length, divisions, -dimension2, 1);
+    FIGURE faceLateral1 = generate_plane_XY(length, divisions, -dimension2, 0);
+    FIGURE faceLateral2 = generate_plane_XY(length, divisions, dimension2, 1);
+    FIGURE faceLateral3 = generate_plane_YZ(length, divisions, -dimension2, 0);
+    FIGURE faceLateral4 = generate_plane_YZ(length, divisions, dimension2, 1);
 
-    float halfLength = length / 2.0f;
+    //modificar esta merda
+    concatenateAndRemoveDuplicates(box, faceCima);
+    concatenateAndRemoveDuplicates(box, faceBaixo);
+    concatenateAndRemoveDuplicates(box, faceLateral1);
+    concatenateAndRemoveDuplicates(box, faceLateral2);
+    concatenateAndRemoveDuplicates(box, faceLateral3);
+    concatenateAndRemoveDuplicates(box, faceLateral4);
 
-    // Define the vertices of the box
-    POINT p1 = new_point(-halfLength, -halfLength, -halfLength);  // Front bottom left
-    POINT p2 = new_point(-halfLength, halfLength, -halfLength);   // Front top left
-    POINT p3 = new_point(halfLength, halfLength, -halfLength);    // Front top right
-    POINT p4 = new_point(halfLength, -halfLength, -halfLength);   // Front bottom right
-    POINT p5 = new_point(-halfLength, -halfLength, halfLength);   // Back bottom left
-    POINT p6 = new_point(-halfLength, halfLength, halfLength);    // Back top left
-    POINT p7 = new_point(halfLength, halfLength, halfLength);     // Back top right
-    POINT p8 = new_point(halfLength, -halfLength, halfLength);    // Back bottom right
-
-    // Add vertices and indices for each face
-    add_face(f, p1, p2, p3, p4, divisions);  // Front face
-    add_face(f, p5, p6, p7, p8, divisions);  // Back face
-    add_face(f, p1, p2, p6, p5, divisions);  // Left face
-    add_face(f, p4, p3, p7, p8, divisions);  // Right face
-    add_face(f, p1, p4, p8, p5, divisions);  // Bottom face
-    add_face(f, p2, p3, p7, p6, divisions);  // Top face
-
-
-    return f;
+    free_figure(faceCima);
+    free_figure(faceBaixo);
+    free_figure(faceLateral1);
+    free_figure(faceLateral2);
+    free_figure(faceLateral3);
+    free_figure(faceLateral4);
+    }
+    else{
+        printf("Error: Box not created\n");
+    }
+    return box;
 }

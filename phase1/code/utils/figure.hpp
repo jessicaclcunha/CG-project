@@ -7,7 +7,10 @@
 #include <memory>
 #include <string>
 #include <cstdio>
+#include <iostream>
 #include "point.hpp" // Inclua o arquivo de cabeçalho do ponto aqui
+#include "triangle.hpp"
+#include "figure.hpp"
 
 // Definição completa do enum FIGURE_TYPE
 enum FIGURE_TYPE {
@@ -20,19 +23,18 @@ enum FIGURE_TYPE {
 
 typedef struct figure *FIGURE;
 
-FIGURE create_empty_figure();
-FIGURE create_figure(FIGURE_TYPE type, int length, int divisions);
-void add_vertex(FIGURE f, POINT p);
-void add_vertexs(FIGURE f, std::vector<POINT> p);
-void add_index(FIGURE f, int index);
-void add_indexs(FIGURE f, std::vector<int> indices);
-//void add_face(FIGURE f, POINT p1, POINT p2, POINT p3, POINT p4, int divisions);
+FIGURE create_figure_empty();
+FIGURE create_figure_plane_box (FIGURE_TYPE type, int length, int divisions);
+FIGURE create_figure_sphere (float radius, int slices, int stacks);
+FIGURE create_figure_cone (float height, float radius, int slices, int stacks);
+void add_triangle(FIGURE f, TRIANGLE t);
 void save_file(FIGURE f, std::string filename);
-void print_vertex(POINT p);
-void print_index(int index);
-void print_all_vertices(FIGURE f);
-void print_all_indices(FIGURE f);
-int get_size_vertices(FIGURE f);
-int get_size_indices(FIGURE f);
+FIGURE file2figure(const std::string& filename);
+void add_triangles(FIGURE f, std::vector<TRIANGLE> t);
+//void concatenateAndRemoveDuplicates(FIGURE f, FIGURE f2);
+//bool comparePoints(POINT a, POINT b);
+void print_figura(FIGURE f);
+int number_triangles(FIGURE f);
+std::string print_triangulos(FIGURE f);
 
 #endif /* FIGURE_HPP */

@@ -8,4 +8,6 @@
 
 FIGURE generate_box(float length, int divisions);
 
+        
+
 #endif // BOX_H

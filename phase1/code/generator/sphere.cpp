@@ -1,42 +1,42 @@
 #include "sphere.hpp"
-#include <vector>
-#include <cmath>
-
 
 FIGURE generate_sphere(float radius, int slices, int stacks) {
-    FIGURE f = create_figure(SPHERE, length, divisions);
-    std::vector<POINT> vertices;
-    std::vector<int> indices;
-    for (int stack = 0; stack <= stacks; ++stack) {
-        float phi = M_PI * float(stack) / float(stacks); // [0, PI]
+    FIGURE sphere = create_figure_sphere(radius, slices, stacks);
 
-        for (int slice = 0; slice <= slices; ++slice) {
-            float theta = 2.0 * M_PI * float(slice) / float(slices); // [0, 2PI]
+    for (int i = 0; i < stacks; ++i) {
+        for (int j = 0; j < slices-1; ++j) {
+            float phi = 2 * M_PI * j / slices;
+            float theta = M_PI * (i + 1) / (stacks + 1);
+            float nextTheta = M_PI * (i + 2) / (stacks + 1);
 
-            Point vertex;
-            vertex.x = radius * sin(phi) * cos(theta);
-            vertex.y = radius * cos(phi);
-            vertex.z = radius * sin(phi) * sin(theta);
+            POINT p1, p2, p3, p4;
+            p1 = new_point( radius * sin(theta) * cos(phi),
+            radius * sin(theta) * sin(phi),
+            radius * cos(theta));
 
-            vertices.push_back(vertex);
+            p2 = new_point(radius * sin(theta) * cos(phi + 2 * M_PI / slices),
+            radius * sin(theta) * sin(phi + 2 * M_PI / slices),
+            radius * cos(theta));
+
+            p3 = new_point (radius * sin(nextTheta) * cos(phi),
+            radius * sin(nextTheta) * sin(phi),
+            radius * cos(nextTheta));
+
+            p4 = new_point (radius * sin(nextTheta) * cos(phi + 2 * M_PI / slices),
+            radius * sin(nextTheta) * sin(phi + 2 * M_PI / slices),
+            radius * cos(nextTheta));
+
+            // Adiciona os pontos do triângulo superior
+            add_vertex (sphere, p1);
+            add_vertex (sphere, p3);
+            add_vertex (sphere, p2);
+
+            // Adiciona os pontos do triângulo inferior
+            add_vertex (sphere, p2);
+            add_vertex (sphere, p3);
+            add_vertex (sphere, p4);
         }
     }
 
-    // Generate indices
-    for (int stack = 0; stack < stacks; ++stack) {
-        for (int slice = 0; slice < slices; ++slice) {
-            int first = (stack * (slices + 1)) + slice;
-            int second = first + slices + 1;
-
-            indices.push_back(first);
-            indices.push_back(second);
-            indices.push_back(first + 1);
-
-            indices.push_back(second);
-            indices.push_back(second + 1);
-            indices.push_back(first + 1);
-        }
-    }
-    add_vertexs(f, vertices);
-    add_indexs(f, indices);
-};
+    return sphere;
+}

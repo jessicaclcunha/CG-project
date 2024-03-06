@@ -78,3 +78,7 @@ void print_point(POINT p){
 void free_point(POINT p){
     free(p);
 }
+
+bool equals_point(POINT p1, POINT p2){
+    return (get_X(p1) == get_X(p2) && get_Y(p1) == get_Y(p2) && get_Z(p1) == get_Z(p2));
+}

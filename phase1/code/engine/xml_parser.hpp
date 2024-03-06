@@ -2,19 +2,44 @@
 #ifndef XML_PARSER_H
 #define XML_PARSER_H
 
-
 #include <iostream>
 #include <vector>
 #include <string>
 #include "../tinyxml/tinyxml.h"
 
-struct Camera ;
+struct Camera {
+    float position[3];
+    float lookAt[3];
+    float up[3];
+    struct Projection {
+        float fov;
+        float near;
+        float far;
+    } projection;
+};
 
-struct Model;
+struct Model {
+    std::string file;
+};
 
-struct Group ;
+struct Group {
+    std::vector<Model> models;
+};
 
-typedef struct World *WORLD;
+struct WORLD {
+    int windowWidth;
+    int windowHeight;
+    Camera camera;
+    Group group;
+};
+
+WORLD create_world ();
+
+Camera create_new_camera();
+
+Model create_new_model();
+
+Group create_new_group();
 
 float get_position_camX(WORLD w);
 
@@ -52,11 +77,15 @@ float get_up_camZ(WORLD w);
 
 void set_up_camZ(WORLD w, float z);
 
-WORLD create_world(int windowWidth, int windowHeight);
+float get_fov(WORLD w);
 
-void parse_config_file(const char* filename, WORLD world);
+float get_near(WORLD w);
 
-void parse_vector_attribute(TiXmlElement* parentElement, const char* attributeName, float* vector);
+float get_far(WORLD w);
+
+std::vector<Model> get_models(WORLD w);
+
+void parse_config_file(const char* filename, WORLD& world) ;
 
 void delete_world(WORLD &w);
 
