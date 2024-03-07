@@ -4,7 +4,7 @@ FIGURE generate_sphere(float radius, int slices, int stacks) {
     FIGURE sphere = create_figure_sphere(radius, slices, stacks);
 
     for (int i = 0; i < stacks; ++i) {
-        for (int j = 0; j < slices-1; ++j) {
+        for (int j = 0; j < slices; ++j) {
             float phi = 2 * M_PI * j / slices;
             float theta = M_PI * (i + 1) / (stacks + 1);
             float nextTheta = M_PI * (i + 2) / (stacks + 1);
@@ -26,15 +26,22 @@ FIGURE generate_sphere(float radius, int slices, int stacks) {
             radius * sin(nextTheta) * sin(phi + 2 * M_PI / slices),
             radius * cos(nextTheta));
 
-            // Adiciona os pontos do triângulo superior
-            add_vertex (sphere, p1);
-            add_vertex (sphere, p3);
-            add_vertex (sphere, p2);
+            std::vector<POINT> vertices1;
+            std::vector<POINT> vertices2; 
 
-            // Adiciona os pontos do triângulo inferior
-            add_vertex (sphere, p2);
-            add_vertex (sphere, p3);
-            add_vertex (sphere, p4);
+            vertices1.push_back(p1); //adiciona o ponto 1 à lista de vertices
+            vertices1.push_back(p3); //...
+            vertices1.push_back(p2); //...
+            vertices2.push_back(p2); //...
+            vertices2.push_back(p3); //...
+            vertices2.push_back(p4); //...
+
+            TRIANGLE t1 = create_triangle_with_vertices(vertices1);
+            TRIANGLE t2 = create_triangle_with_vertices(vertices2);
+
+            add_triangle(sphere, t1);
+            add_triangle(sphere, t2);
+
         }
     }
 

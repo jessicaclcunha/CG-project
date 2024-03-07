@@ -12,12 +12,12 @@ FIGURE generate_box(float length, int divisions) {
     FIGURE faceLateral4 = generate_plane_YZ(length, divisions, dimension2, 1);
 
     //modificar esta merda
-    concatenateAndRemoveDuplicates(box, faceCima);
-    concatenateAndRemoveDuplicates(box, faceBaixo);
-    concatenateAndRemoveDuplicates(box, faceLateral1);
-    concatenateAndRemoveDuplicates(box, faceLateral2);
-    concatenateAndRemoveDuplicates(box, faceLateral3);
-    concatenateAndRemoveDuplicates(box, faceLateral4);
+    concat_FIGURES(box, faceCima);
+    concat_FIGURES(box, faceBaixo);
+    concat_FIGURES(box, faceLateral1);
+    concat_FIGURES(box, faceLateral2);
+    concat_FIGURES(box, faceLateral3);
+    concat_FIGURES(box, faceLateral4);
 
     free_figure(faceCima);
     free_figure(faceBaixo);

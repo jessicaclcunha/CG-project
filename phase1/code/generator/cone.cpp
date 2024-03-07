@@ -3,15 +3,14 @@
 using namespace std;
 
 POINT calcula_pontos(float radius, float height, int slices, int stacks, int slice_atual, int stack_atual){
-    double z = (stack_atual-1) * height/stacks;
-    radius = (height-z) * (radius / height);
+    double y = (stack_atual-1) * height/stacks;
+    radius = (height-y) * (radius / height);
     double theta = 2 * M_PI * slice_atual / slices; // Calcula o ângulo em radianos
     double x = radius * cos(theta); // Coordenada x
-    double y = radius * sin(theta); // Coordenada y
-    POINT p = new_point (x,y,z);
+    double z = radius * sin(theta); // Coordenada z
+    POINT p = new_point(x, y, z);
     return p;
 }
-
 
 //pontos adjacentes trianguláveis
 std::vector<TRIANGLE> PAT (float radius, float height, int slices, int stacks, int slice_atual, int stack_atual){
@@ -33,18 +32,18 @@ std::vector<TRIANGLE> PAT (float radius, float height, int slices, int stacks, i
     {
         if (slice_atual == slices) 
         {   
-            POINT p1 = calcula_pontos(radius, height, slices, stacks, slice_atual, stack_atual);
-            POINT p2 = calcula_pontos(radius, height, slices, stacks, 1, stack_atual);
-            POINT p3 = new_point(0, 0, height);
+            POINT p1 = calcula_pontos(radius, height, slices, stacks, stack_atual, slice_atual);
+            POINT p2 = calcula_pontos(radius, height, slices, stacks, stack_atual, 1);
+            POINT p3 = new_point(0, height, 0);
             pontos.push_back(p1);
             pontos.push_back(p2);
             pontos.push_back(p3);
         }
         else 
         {   
-            POINT p1 = calcula_pontos(radius, height, slices, stacks , slice_atual, stack_atual);
-            POINT p2 = calcula_pontos(radius, height, slices, stacks , slice_atual + 1, stack_atual);
-            POINT p3 = new_point(0, 0, height);
+            POINT p1 = calcula_pontos(radius, height, slices, stacks , stack_atual, slice_atual);
+            POINT p2 = calcula_pontos(radius, height, slices, stacks , stack_atual, slice_atual + 1);
+            POINT p3 = new_point(0, height, 0);
             pontos.push_back(p1);
             pontos.push_back(p2);
             pontos.push_back(p3);

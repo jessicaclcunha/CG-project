@@ -83,7 +83,7 @@ float get_near(WORLD w);
 
 float get_far(WORLD w);
 
-std::vector<Model> get_models(WORLD w);
+std::vector<Model> get_models(WORLD &w);
 
 void parse_config_file(const char* filename, WORLD& world) ;
 

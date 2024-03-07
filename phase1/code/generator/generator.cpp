@@ -2,9 +2,9 @@
 #include <fstream>
 #include <cmath>
 #include "plane.hpp"
-//#include "../generator/box.hpp"
+#include "../generator/box.hpp"
 #include "../generator/cone.hpp"
-//#include "../generator/sphere.hpp"
+#include "../generator/sphere.hpp"
 #include "../utils/figure.hpp"
 #include "../utils/point.hpp"
 #include "../utils/triangle.hpp"
@@ -30,19 +30,19 @@ int main(int argc, char* argv[]) {
         int divisions = std::stoi(argv[3]);
         figure = generate_plane_XZ(length, divisions, 0.0, 0);
         //print_figura(figure);
-    }/* else if (primitive_type == "box" && argc == 5) {
+    } else if (primitive_type == "box" && argc == 5) {
         float length = std::stof(argv[2]);
         int divisions = std::stoi(argv[3]);
-        figure = generate_box(length, divisions);*/
-   /* } else if (primitive_type == "sphere" && argc == 6) {
+        figure = generate_box(length, divisions);
+    }else if (primitive_type == "sphere" && argc == 6) {
         float radius = std::stof(argv[2]);
         int slices = std::stoi(argv[3]);
         int stacks = std::stoi(argv[4]);
-        figure = generate_sphere(radius, slices, stacks);*/
+        figure = generate_sphere(radius, slices, stacks);
 
         //print_figura(figure);
 
-    else if (primitive_type == "cone" && argc == 7) {
+    }else if (primitive_type == "cone" && argc == 7) {
         float bottom_radius = std::stof(argv[2]);
         float height = std::stof(argv[3]);
         int slices = std::stoi(argv[4]);

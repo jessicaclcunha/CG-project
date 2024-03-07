@@ -120,7 +120,7 @@ float get_far(WORLD w) {
     return w.camera.projection.far;
 }
 
-std::vector<Model> get_models(WORLD w) {
+std::vector<Model> get_models(WORLD &w) {
     return w.group.models;
 }
 
