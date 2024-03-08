@@ -3,7 +3,7 @@
 
 
 typedef struct triangle {
-    int num_points; // teria de ser sempre 3
+    int num_points; // número de pontos
     std::vector<POINT>* vertices;
 }*TRIANGLE;
 

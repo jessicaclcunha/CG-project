@@ -48,17 +48,17 @@ void changeSize(int w, int h) {
 void draw_axis() {
     glBegin(GL_LINES);
     // X Axis
-    glColor3f(RED);
-    glVertex3f(0.0f, 0.0f, 0.0f);
+    glColor3f(PINK);
     glVertex3f(100.0f, 0.0f, 0.0f);
+    glVertex3f(-100.0f, 0.0f, 0.0f);
     // Y Axis
-    glColor3f(GREEN);
-    glVertex3f(0.0f, 0.0f, 0.0f);
+    glColor3f(PURPLE);
     glVertex3f(0.0f, 100.0f, 0.0f);
+    glVertex3f(0.0f, -100.0f, 0.0f);
     // Z Axis
     glColor3f(BLUE);
-    glVertex3f(0.0f, 0.0f, 0.0f);
     glVertex3f(0.0f, 0.0f, 100.0f);
+    glVertex3f(0.0f, 0.0f, -100.0f);
     glEnd();
 }
 
@@ -81,10 +81,11 @@ void draw_figures(std::list<FIGURE> figs_list) {
 void renderScene(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(camX, camY, camZ, LAX, LAY, LAZ, upX, upY, upZ);
+    //gluLookAt(radius*cos(beta)*sin(alpha), radius*sin(beta), radius*cos(beta)*cos(alpha), LAX,LAY,LAZ,upX,upY,upZ);
+    gluLookAt(radius*camX, radius*camY, radius*camZ, LAX, LAY, LAZ, upX, upY, upZ);
 
     draw_axis();
-    glColor3f(PURPLE);
+    glColor3f(WHITE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     draw_figures(figures_list);
     glutSwapBuffers();
@@ -93,40 +94,46 @@ void renderScene(void) {
 void keyboardFunc(unsigned char key, int x, int y) {
     switch (key) {
     case 'a':
-        camX -= 0.1;
+        camX -= 0.5;
         break;
     case 'd':
-        camX += 0.1;
+        camX += 0.5;
         break;
     case 's':
-        camZ += 0.1;
+        camZ += 0.5;
         break;
     case 'w':
-        camZ -= 0.1;
+        camZ -= 0.5;
         break;
-    case 'q':
-        alpha -= 15;
+    /*case 'q':
+        alpha -= 0.1;
         break;
     case 'e':
-        alpha += 15;
-        break;
+        alpha += 0.1;
+        break;*/
     case 'i':
-        camY += 0.1;
+        camY += 0.5;
         break;
     case 'k':
-        camY -= 0.1;
+        camY -= 0.5;
         break;
-    case 'j':
-        LAX -= 0.1;
+    /*case 'j':
+        LAX -= 0.5;
         break;
     case 'l':
-        LAX += 0.1;
-        break;
+        LAX += 0.5;
+        break;*/
     case 'u':
-        LAY -= 0.1;
+        LAY -= 0.5;
         break;
     case 'o':
-        LAY += 0.1;
+        LAY += 0.5;
+        break;
+    case '+':
+        radius += 0.1;
+        break;
+    case '-':
+        radius -= 0.1;
         break;
     }
     glutPostRedisplay();

@@ -98,29 +98,6 @@ void add_triangles (FIGURE f, std::vector<TRIANGLE> t) {
     }
 }
 
-/*
-void add_face(FIGURE f, POINT p1, POINT p2, POINT p3, POINT p4, int divisions) {
-    // Adicionar vértices para o rosto
-    add_vertex(f, p1);
-    add_vertex(f, p2);
-    add_vertex(f, p3);
-    add_vertex(f, p4);
-
-    // Adicionar índices para dois triângulos (formando um retângulo) para cada subdivisão
-    for (i
-nt i = 0; i < divisions; ++i) {
-        add_index(f, 4 * i);             // Inferior esquerdo
-        add_index(f, 4 * i + 1);         // Superior esquerdo
-        add_index(f, 4 * i + 2);         // Superior direito
-
-        add_index(f, 4 * i);             // Inferior esquerdo
-        add_index(f, 4 * i + 2);         // Superior direito
-        add_index(f, 4 * i + 3);         // Inferior direito
-    }
-}
-*/
-
-
 int number_triangles(FIGURE f){
     if (f != NULL){
         return f->triangles->size();
@@ -143,29 +120,21 @@ void save_file(FIGURE f, std::string filename) {
     switch (f->type) {
        case BOX:
             fprintf(file, "BOX\nLength: %d\nDivisions: %d\nNº de Triângulos: %d\n", f->box.length, f->box.divisions, number_triangles(f));
-
-            fprintf(file, "TRIANGULOS:\n");
-            fprintf(file, "%s", print_triangulos(f).c_str());
+            fprintf(file, "\n%s", print_triangulos(f).c_str());
             break;
         case CONE:
             fprintf(file, "CONE\nHeight: %.2f\nRadius: %.2f\nSlices: %d\nStacks: %d\nNº de Triângulos: %d\n",
                     f->cone.height, f->cone.radius, f->cone.slices, f->cone.stacks, number_triangles(f));
-
-            fprintf(file, "TRIANGULOS:\n");
-            fprintf(file, "%s", print_triangulos(f).c_str());
+            fprintf(file, "\n%s", print_triangulos(f).c_str());
             break;
         case PLANE:
             fprintf(file, "PLANE\nLength: %d\nDivisions: %d\nNº de Triângulos: %d\n", f->plane.length, f->plane.divisions, number_triangles(f));
-
-            fprintf(file, "\nTRIANGULOS:\n");
-            fprintf(file, "%s", print_triangulos(f).c_str()); 
+            fprintf(file, "\n%s", print_triangulos(f).c_str()); 
             break;
         case SPHERE:
             fprintf(file, "SPHERE\nRadius: %.2f\nSlices: %d\nStacks: %d\nNº de Triângulos: %d\n",
                     f->sphere.radius, f->sphere.slices, f->sphere.stacks, number_triangles(f));
-
-            fprintf(file, "TRIANGULOS:\n");
-            fprintf(file, "%s", print_triangulos(f).c_str());
+            fprintf(file, "\n%s", print_triangulos(f).c_str());
             break;
         default:
             fprintf(stderr, "Erro: Tipo desconhecido\n");
@@ -185,18 +154,24 @@ FIGURE fileToFigure(const std::string& filepath) {
         return nullptr;
     }
 
-    FIGURE figure = create_figure_empty(); // Assumindo a existência dessa função que cria uma FIGURE vazia.
+    std::string triangles = "TRIANGULOS:";
+    FIGURE figure = create_figure_empty(); 
     std::string line;
     while (getline(file, line)) {
         std::istringstream iss(line);
         std::string type;
-        std::string triangles = "TRIANGULOS:";
         iss >> type;
+
         if (type == "CONE") {
             float height, radius;
             int slices, stacks;
             iss >> height >> radius >> slices >> stacks >> triangles;
-            figure = create_figure_cone(height, radius, slices, stacks); // Criando a figura com as especificações lidas.
+            figure = create_figure_cone(height, radius, slices, stacks);
+
+            while (getline(file, line) && !line.empty() && line.find(triangles) == std::string::npos) {
+                //ignorar o inicio
+            }
+
             while (getline(file, line) && !line.empty()) {
                 float x1, y1, z1, x2, y2, z2, x3, y3, z3;
                 sscanf(line.c_str(), "[(%f, %f, %f),(%f, %f, %f),(%f, %f, %f)]",
@@ -210,18 +185,22 @@ FIGURE fileToFigure(const std::string& filepath) {
                 add_vertex(triangle, p1);
                 add_vertex(triangle, p2);
                 add_vertex(triangle, p3);
-                add_triangle(figure, triangle); 
-            }// Adicionando o triângulo à figura.
+                add_triangle(figure, triangle);
+            }
         } else if (type == "SPHERE") {
             float radius;
             int slices, stacks;
             iss >> radius >> slices >> stacks >> triangles;
-            figure = create_figure_sphere(radius, slices, stacks); 
+            figure = create_figure_sphere(radius, slices, stacks);
+
+            while (getline(file, line) && !line.empty() && line.find(triangles) == std::string::npos) {
+                //ignorar o inicio
+            }
+
             while (getline(file, line) && !line.empty()) {
                 float x1, y1, z1, x2, y2, z2, x3, y3, z3;
                 sscanf(line.c_str(), "[(%f, %f, %f),(%f, %f, %f),(%f, %f, %f)]",
                        &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
-
                 POINT p1 = new_point(x1, y1, z1);
                 POINT p2 = new_point(x2, y2, z2);
                 POINT p3 = new_point(x3, y3, z3);
@@ -230,13 +209,23 @@ FIGURE fileToFigure(const std::string& filepath) {
                 add_vertex(triangle, p1);
                 add_vertex(triangle, p2);
                 add_vertex(triangle, p3);
-                add_triangle(figure, triangle); // Adicionando o triângulo à figura. 
-            }    
-        } else if (type == "PLANE") {
+                add_triangle(figure, triangle);
+            }
+        } else if (type == "PLANE" || type == "BOX") {
             int length, divisions;
-            iss >> length >> divisions >> triangles;
-            figure = create_figure_plane_box(PLANE, length, divisions);
+            iss >> length;
+            if (type == "PLANE") {
+                figure = create_figure_plane_box(PLANE, length, divisions);
+            } else if (type == "BOX") {
+                figure = create_figure_plane_box(BOX, length, divisions);
+            }
+
+            while (getline(file, line) && !line.empty() && line.find(triangles) == std::string::npos) {
+                //ignorar o inicio
+            }
+
             while (getline(file, line) && !line.empty()) {
+
                 float x1, y1, z1, x2, y2, z2, x3, y3, z3;
                 sscanf(line.c_str(), "[(%f, %f, %f),(%f, %f, %f),(%f, %f, %f)]",
                        &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
@@ -249,29 +238,11 @@ FIGURE fileToFigure(const std::string& filepath) {
                 add_vertex(triangle, p1);
                 add_vertex(triangle, p2);
                 add_vertex(triangle, p3);
-                add_triangle(figure, triangle); // Adicionando o triângulo à figura. 
-            }    
-        } else if (type == "BOX") {
-            int length, divisions;
-            iss >> length >> divisions >> triangles;
-            figure = create_figure_plane_box(BOX, length, divisions);
-            while (getline(file, line) && !line.empty()) {
-                float x1, y1, z1, x2, y2, z2, x3, y3, z3;
-                sscanf(line.c_str(), "[(%f, %f, %f),(%f, %f, %f),(%f, %f, %f)]",
-                       &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
-
-                POINT p1 = new_point(x1, y1, z1);
-                POINT p2 = new_point(x2, y2, z2);
-                POINT p3 = new_point(x3, y3, z3);
-
-                TRIANGLE triangle = create_triangle();
-                add_vertex(triangle, p1);
-                add_vertex(triangle, p2);
-                add_vertex(triangle, p3);
-                add_triangle(figure, triangle); // Adicionando o triângulo à figura. 
-            }    
+                add_triangle(figure, triangle);
+            }
         }
     }
+    //print_figura(figure);
     file.close();
     return figure;
 }
@@ -348,7 +319,7 @@ std::string print_triangulos(FIGURE f) {
         output += "[";
         for (size_t j = 0; j < vertices->size(); ++j) {
             const POINT& point = (*vertices)[j];
-            char buffer[100]; // Buffer to store point coordinates
+            char buffer[100]; 
             snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)", get_X(point), get_Y(point), get_Z(point));
             output += buffer;
             if (j < vertices->size() - 1) output += ",";
