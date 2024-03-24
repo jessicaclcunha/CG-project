@@ -1,0 +1,224 @@
+#define GL_SILENCE_DEPRECATION
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
+
+#include <iostream>
+#include <list>
+#include <cmath>
+#include "xml_parser.hpp"
+#include "../utils/figure.hpp"
+#include "../utils/triangle.hpp"
+
+#define RED 1.0f, 0.0f, 0.0f
+#define GREEN 0.0f, 1.0f, 0.0f
+#define BLUE 0.0f, 0.0f, 1.0f
+#define WHITE 1.0f, 1.0f, 1.0f
+#define PINK 1.0f, 0.75f, 0.8f
+#define PURPLE 0.5f, 0.0f, 0.5f
+
+WORLD world = create_world();
+std::list<FIGURE> figures_list;
+TRANSFORM transform;
+
+float camX, camY, camZ; //camera
+float LAX, LAY, LAZ; //look at
+float upX, upY, upZ; //up
+float fov, near, far;
+float alpha = M_PI / 4, beta = M_PI / 4;
+float radius;
+
+void changeSize(int w, int h) {
+    if (h == 0)
+        h = 1;
+
+    float ratio = w * 1.0 / h;
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    glViewport(0, 0, w, h);
+
+    gluPerspective(get_fov(world), ratio, get_near(world), get_far(world));
+
+    glMatrixMode(GL_MODELVIEW);
+}
+
+void draw_axis() {
+    glBegin(GL_LINES);
+    // X Axis
+    glColor3f(PINK);
+    glVertex3f(100.0f, 0.0f, 0.0f);
+    glVertex3f(-100.0f, 0.0f, 0.0f);
+    // Y Axis
+    glColor3f(PURPLE);
+    glVertex3f(0.0f, 100.0f, 0.0f);
+    glVertex3f(0.0f, -100.0f, 0.0f);
+    // Z Axis
+    glColor3f(BLUE);
+    glVertex3f(0.0f, 0.0f, 100.0f);
+    glVertex3f(0.0f, 0.0f, -100.0f);
+    glEnd();
+}
+
+void draw_figures(std::list<FIGURE> figs_list) {
+    glBegin(GL_TRIANGLES);
+    for (std::list<FIGURE>::iterator it = figs_list.begin(); it != figs_list.end(); ++it) {
+        // Check if figure is not NULL
+        if (*it != nullptr) {
+            std::vector<TRIANGLE>* triangles = get_triangles(*it);
+            for (TRIANGLE t : *triangles) {
+                for (POINT p : *get_points(t)) {
+                    glVertex3f(get_X(p), get_Y(p), get_Z(p));
+                }
+            }
+        }
+    }
+    glEnd();
+}
+
+void render_child_groups(const std::vector<GROUP>& children) {
+    for (const auto& childGroup : children) {
+        apply_transforms(childGroup);
+    }
+}
+
+// Atualizar a função apply_transforms para renderizar grupos filhos
+void apply_transforms(const GROUP& group) {
+    glPushMatrix();
+
+    // Aplicar transformações geométricas
+    for (const auto& transform : group.transforms) {
+        switch (transform.type) {
+            case TRANSLATE:
+                glTranslatef(transform.translate.x, transform.translate.y, transform.translate.z);
+                break;
+            case ROTATE:
+                glRotatef(transform.rotate.angle, transform.rotate.x, transform.rotate.y, transform.rotate.z);
+                break;
+            case SCALE:
+                glScalef(transform.scale.x, transform.scale.y, transform.scale.z);
+                break;
+        }
+    }
+
+    std::list<FIGURE> figures;
+    for (const auto& model : group.models) {
+        FIGURE figure = fileToFigure(model.file);
+        figures.push_back(figure);
+    }
+
+    draw_figures(figures);
+
+    // Desenhar grupos filhos
+    render_child_groups(group.children);
+
+    glPopMatrix();
+}
+
+
+void renderScene(void) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+    gluLookAt(camX, camY, camZ, LAX, LAY, LAZ, upX, upY, upZ);
+
+    draw_axis();
+    glColor3f(PURPLE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //draw_figures(figures_list);
+    for (const auto& group : world.groups) {
+        apply_transforms(group);
+    }
+    glutSwapBuffers();
+}
+
+void keyboardFunc(unsigned char key, int x, int y) {
+    switch (key) {
+    case 'a':
+        camX -= 0.1;
+        break;
+    case 'd':
+        camX += 0.1;
+        break;
+    case 's':
+        camZ += 0.1;
+        break;
+    case 'w':
+        camZ -= 0.1;
+        break;
+    case 'q':
+        alpha -= 15;
+        break;
+    case 'e':
+        alpha += 15;
+        break;
+    case 'i':
+        camY += 0.1;
+        break;
+    case 'k':
+        camY -= 0.1;
+        break;
+    case 'j':
+        LAX -= 0.1;
+        break;
+    case 'l':
+        LAX += 0.1;
+        break;
+    case 'u':
+        LAY -= 0.1;
+        break;
+    case 'o':
+        LAY += 0.1;
+        break;
+    case '+':
+        radius += 0.1;
+    case '-':
+        radius -= 0.1;    
+    }
+    glutPostRedisplay();
+}
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
+    glutInitWindowPosition(100, 100);
+    glutInitWindowSize(800, 800);
+    glutCreateWindow("Phase1");
+
+    parse_config_file(argv[1], world);
+    camX = get_position_camX(world);
+    camY = get_position_camY(world);
+    camZ = get_position_camZ(world);
+    LAX = get_lookAt_camX(world);
+    LAY = get_lookAt_camY(world);
+    LAZ = get_lookAt_camZ(world);
+    upX = get_up_camX(world);
+    upY = get_up_camY(world);
+    upZ = get_up_camZ(world);
+    fov = get_fov(world);
+    near = get_near(world);
+    far = get_far(world);
+	radius = sqrt(camX * camX + camY * camY + camZ * camZ);
+    alpha = acos(camZ / radius);
+    beta = asin(camY / radius);
+
+    std::vector<MODEL> models = get_models(world);
+	int num_models = models.size();
+
+	for (int i = 0; i < num_models; i++) 
+    	figures_list.push_back(fileToFigure(models[i].file));
+
+    transform = get_transforms(world);
+    glutDisplayFunc(renderScene);
+    glutReshapeFunc(changeSize);
+    glutKeyboardFunc(keyboardFunc);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
+    glutMainLoop();
+
+    return 1;
+}

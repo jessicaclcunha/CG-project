@@ -1,0 +1,127 @@
+// xml_parser.hpp
+#ifndef XML_PARSER_H
+#define XML_PARSER_H
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include "../tinyxml/tinyxml.h"
+
+enum TRANSFORM_TYPE {
+    UNKNOWN,
+    TRANSLATE,
+    ROTATE,
+    SCALE
+};
+
+typedef struct Camera {
+    float position[3];
+    float lookAt[3];
+    float up[3];
+    struct Projection {
+        float fov;
+        float near;
+        float far;
+    } projection;
+}CAMERA;
+
+typedef struct Model {
+    std::string file;
+} MODEL;
+
+typedef struct Transform {
+    TRANSFORM_TYPE type;
+    union {
+        struct {
+            float x;
+            float y;
+            float z;
+        } translate;
+        struct {
+            float angle;
+            float x;
+            float y;
+            float z;
+        } rotate;
+        struct {
+            float x;
+            float y;
+            float z;
+        } scale;
+    };
+} TRANSFORM;
+
+typedef struct Group {
+    std::vector<MODEL> models;
+    std::vector<TRANSFORM> transforms;
+    std::vector<GROUP> children;
+} GROUP;
+
+typedef struct world {
+    int windowWidth;
+    int windowHeight;
+    Camera camera;
+    std::vector<GROUP> groups;
+} WORLD;
+
+WORLD create_world ();
+
+CAMERA create_new_camera();
+
+MODEL create_new_model();
+
+GROUP create_new_group();
+
+float get_position_camX(WORLD w);
+
+void set_position_camX(WORLD w, float x);
+
+float get_position_camY(WORLD w);
+
+void set_position_camY(WORLD w, float y);
+
+float get_position_camZ(WORLD w);
+
+void set_position_camZ(WORLD w, float z);
+
+float get_lookAt_camX(WORLD w);
+
+void set_lookAt_camX(WORLD w, float x);
+
+float get_lookAt_camY(WORLD w);
+
+void set_lookAt_camY(WORLD w, float y);
+
+float get_lookAt_camZ(WORLD w);
+
+void set_lookAt_camZ(WORLD w, float z);
+
+float get_up_camX(WORLD w);
+
+void set_up_camX(WORLD w, float x);
+
+float get_up_camY(WORLD w);
+
+void set_up_camY(WORLD w, float y);
+
+float get_up_camZ(WORLD w);
+
+void set_up_camZ(WORLD w, float z);
+
+float get_fov(WORLD w);
+
+float get_near(WORLD w);
+
+float get_far(WORLD w);
+
+std::vector<MODEL> get_models(WORLD &w);
+
+TRANSFORM get_transforms(WORLD &w);
+
+void parse_group_element(TiXmlElement* groupElement, GROUP& group);
+
+void parse_config_file(char* filename, WORLD& world) ;
+
+void delete_world(WORLD &w);
+
+#endif // XML_PARSER_H
