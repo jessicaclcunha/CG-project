@@ -174,6 +174,14 @@ void delete_world(WORLD &w) {
     w.groups.clear();
 }
 
+int get_windowWidth(WORLD w) {
+    return w.windowWidth;
+}
+
+int get_windowHeight(WORLD w) {
+    return w.windowHeight;
+}
+
 float get_position_camX(WORLD w) {
     return w.camera.position[0];
 }
@@ -264,4 +272,12 @@ std::vector<MODEL> get_models(WORLD &w) {
         for (const auto &model : group.models)
             models.push_back(model);
     return  models;
+}
+
+std::vector<TRANSFORM> get_transforms(WORLD &w) {
+    std::vector<TRANSFORM> transforms;
+    for (const auto &group: w.groups)
+        for (const auto &transform : group.transforms)
+            transforms.push_back(transform);
+    return transforms;
 }

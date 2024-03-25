@@ -8,7 +8,6 @@
 #include "../tinyxml/tinyxml.h"
 
 enum TRANSFORM_TYPE {
-    UNKNOWN,
     TRANSLATE,
     ROTATE,
     SCALE
@@ -51,6 +50,8 @@ typedef struct Transform {
     };
 } TRANSFORM;
 
+typedef struct Group GROUP;
+
 typedef struct Group {
     std::vector<MODEL> models;
     std::vector<TRANSFORM> transforms;
@@ -71,6 +72,10 @@ CAMERA create_new_camera();
 MODEL create_new_model();
 
 GROUP create_new_group();
+
+int get_windowWidth(WORLD w);
+
+int get_windowHeight(WORLD w);
 
 float get_position_camX(WORLD w);
 
@@ -116,7 +121,7 @@ float get_far(WORLD w);
 
 std::vector<MODEL> get_models(WORLD &w);
 
-TRANSFORM get_transforms(WORLD &w);
+std::vector<TRANSFORM> get_transforms(WORLD &w);
 
 void parse_group_element(TiXmlElement* groupElement, GROUP& group);
 

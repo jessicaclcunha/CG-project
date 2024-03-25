@@ -79,12 +79,6 @@ void draw_figures(std::list<FIGURE> figs_list) {
     glEnd();
 }
 
-void render_child_groups(const std::vector<GROUP>& children) {
-    for (const auto& childGroup : children) {
-        apply_transforms(childGroup);
-    }
-}
-
 // Atualizar a função apply_transforms para renderizar grupos filhos
 void apply_transforms(const GROUP& group) {
     glPushMatrix();
@@ -113,7 +107,9 @@ void apply_transforms(const GROUP& group) {
     draw_figures(figures);
 
     // Desenhar grupos filhos
-    render_child_groups(group.children);
+    for (const auto& childGroup : group.children) {
+        apply_transforms(childGroup);
+    }
 
     glPopMatrix();
 }
@@ -184,10 +180,10 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);
-    glutInitWindowSize(800, 800);
-    glutCreateWindow("Phase1");
+    glutCreateWindow("Phase2");
 
     parse_config_file(argv[1], world);
+    glutInitWindowSize(get_windowWidth(world), get_windowHeight(world));
     camX = get_position_camX(world);
     camY = get_position_camY(world);
     camZ = get_position_camZ(world);
@@ -210,7 +206,10 @@ int main(int argc, char** argv) {
 	for (int i = 0; i < num_models; i++) 
     	figures_list.push_back(fileToFigure(models[i].file));
 
-    transform = get_transforms(world);
+    std::vector<TRANSFORM> transforms = get_transforms(world);
+    for (int i = 0; i < transforms.size(); i++) {
+        transform = transforms[i];
+    }
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
     glutKeyboardFunc(keyboardFunc);
