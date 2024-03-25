@@ -21,8 +21,6 @@
 
 WORLD world = create_world();
 std::list<FIGURE> figures_list;
-TRANSFORM transform;
-
 float camX, camY, camZ; //camera
 float LAX, LAY, LAZ; //look at
 float upX, upY, upZ; //up
@@ -84,7 +82,7 @@ void apply_transforms(const GROUP& group) {
     glPushMatrix();
 
     // Aplicar transformações geométricas
-    for (const auto& transform : group.transforms) {
+    for (const auto& transform : get_group_transforms(group)) {
         switch (transform.type) {
             case TRANSLATE:
                 glTranslatef(transform.translate.x, transform.translate.y, transform.translate.z);
@@ -123,7 +121,6 @@ void renderScene(void) {
     draw_axis();
     glColor3f(PURPLE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    //draw_figures(figures_list);
     for (const auto& group : world.groups) {
         apply_transforms(group);
     }
@@ -206,10 +203,6 @@ int main(int argc, char** argv) {
 	for (int i = 0; i < num_models; i++) 
     	figures_list.push_back(fileToFigure(models[i].file));
 
-    std::vector<TRANSFORM> transforms = get_transforms(world);
-    for (int i = 0; i < transforms.size(); i++) {
-        transform = transforms[i];
-    }
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
     glutKeyboardFunc(keyboardFunc);

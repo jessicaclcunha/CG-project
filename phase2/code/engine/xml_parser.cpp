@@ -54,32 +54,34 @@ void parse_group_element(TiXmlElement* groupElement, GROUP& group) {
     // Parse transforms
     for (TiXmlElement* transformElement = groupElement->FirstChildElement("transform"); transformElement; transformElement = transformElement->NextSiblingElement("transform")) {
         Transform transform;
-        const char* type = transformElement->Attribute("type");
-        if (type) {
-            if (strcmp(type, "translate") == 0) {
-                transform.type = TRANSLATE;
-                transformElement->QueryFloatAttribute("x", &transform.translate.x);
-                transformElement->QueryFloatAttribute("y", &transform.translate.y);
-                transformElement->QueryFloatAttribute("z", &transform.translate.z);
-            } else if (strcmp(type, "rotate") == 0) {
-                transform.type = ROTATE;
-                transformElement->QueryFloatAttribute("angle", &transform.rotate.angle);
-                transformElement->QueryFloatAttribute("x", &transform.rotate.x);
-                transformElement->QueryFloatAttribute("y", &transform.rotate.y);
-                transformElement->QueryFloatAttribute("z", &transform.rotate.z);
-            } else if (strcmp(type, "scale") == 0) {
-                transform.type = SCALE;
-                transformElement->QueryFloatAttribute("x", &transform.scale.x);
-                transformElement->QueryFloatAttribute("y", &transform.scale.y);
-                transformElement->QueryFloatAttribute("z", &transform.scale.z);
-            } else {
-                std::cerr << "Error: Unknown transform type." << std::endl;
-                continue;
-            }
-        } else {
-            std::cerr << "Error: Transform element is missing 'type' attribute." << std::endl;
+       if (transformElement->Attribute("translate")) 
+       {
+            transform.type = TRANSLATE;
+            transformElement->QueryFloatAttribute("x", &transform.translate.x);
+            transformElement->QueryFloatAttribute("y", &transform.translate.y);
+            transformElement->QueryFloatAttribute("z", &transform.translate.z);
+        } 
+        else if (transformElement->Attribute("rotate"))
+        {
+            transform.type = ROTATE;
+            transformElement->QueryFloatAttribute("angle", &transform.rotate.angle);
+            transformElement->QueryFloatAttribute("x", &transform.rotate.x);
+            transformElement->QueryFloatAttribute("y", &transform.rotate.y);
+            transformElement->QueryFloatAttribute("z", &transform.rotate.z);
+        } 
+        else if (transformElement->Attribute("scale")) 
+        {
+            transform.type = SCALE;
+            transformElement->QueryFloatAttribute("x", &transform.scale.x);
+            transformElement->QueryFloatAttribute("y", &transform.scale.y);
+            transformElement->QueryFloatAttribute("z", &transform.scale.z);
+        } 
+        else 
+        {
+            std::cerr << "Error: Unknown transform type." << std::endl;
             continue;
         }
+
         group.transforms.push_back(transform);
     }
 
@@ -274,10 +276,9 @@ std::vector<MODEL> get_models(WORLD &w) {
     return  models;
 }
 
-std::vector<TRANSFORM> get_transforms(WORLD &w) {
+std::vector<TRANSFORM> get_group_transforms(GROUP g) {
     std::vector<TRANSFORM> transforms;
-    for (const auto &group: w.groups)
-        for (const auto &transform : group.transforms)
-            transforms.push_back(transform);
+    for (const auto &transform : g.transforms)
+        transforms.push_back(transform);
     return transforms;
 }

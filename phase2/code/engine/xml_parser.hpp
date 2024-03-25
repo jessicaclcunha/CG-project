@@ -121,7 +121,7 @@ float get_far(WORLD w);
 
 std::vector<MODEL> get_models(WORLD &w);
 
-std::vector<TRANSFORM> get_transforms(WORLD &w);
+std::vector<TRANSFORM> get_group_transforms(GROUP g);
 
 void parse_group_element(TiXmlElement* groupElement, GROUP& group);
 
