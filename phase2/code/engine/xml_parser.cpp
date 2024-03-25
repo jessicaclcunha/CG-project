@@ -54,32 +54,33 @@ void parse_group_element(TiXmlElement* groupElement, GROUP& group) {
     // Parse transforms
     for (TiXmlElement* transformElement = groupElement->FirstChildElement("transform"); transformElement; transformElement = transformElement->NextSiblingElement("transform")) {
         Transform transform;
-       if (transformElement->Attribute("translate")) 
-       {
+
+        // Check if there is a translate element
+        TiXmlElement* translateElement = transformElement->FirstChildElement("translate");
+        if (translateElement) {
             transform.type = TRANSLATE;
-            transformElement->QueryFloatAttribute("x", &transform.translate.x);
-            transformElement->QueryFloatAttribute("y", &transform.translate.y);
-            transformElement->QueryFloatAttribute("z", &transform.translate.z);
-        } 
-        else if (transformElement->Attribute("rotate"))
-        {
+            translateElement->QueryFloatAttribute("x", &transform.translate.x);
+            translateElement->QueryFloatAttribute("y", &transform.translate.y);
+            translateElement->QueryFloatAttribute("z", &transform.translate.z);
+        }
+
+        // Check if there is a rotate element
+        TiXmlElement* rotateElement = transformElement->FirstChildElement("rotate");
+        if (rotateElement) {
             transform.type = ROTATE;
-            transformElement->QueryFloatAttribute("angle", &transform.rotate.angle);
-            transformElement->QueryFloatAttribute("x", &transform.rotate.x);
-            transformElement->QueryFloatAttribute("y", &transform.rotate.y);
-            transformElement->QueryFloatAttribute("z", &transform.rotate.z);
-        } 
-        else if (transformElement->Attribute("scale")) 
-        {
+            rotateElement->QueryFloatAttribute("angle", &transform.rotate.angle);
+            rotateElement->QueryFloatAttribute("x", &transform.rotate.x);
+            rotateElement->QueryFloatAttribute("y", &transform.rotate.y);
+            rotateElement->QueryFloatAttribute("z", &transform.rotate.z);
+        }
+
+        // Check if there is a scale element
+        TiXmlElement* scaleElement = transformElement->FirstChildElement("scale");
+        if (scaleElement) {
             transform.type = SCALE;
-            transformElement->QueryFloatAttribute("x", &transform.scale.x);
-            transformElement->QueryFloatAttribute("y", &transform.scale.y);
-            transformElement->QueryFloatAttribute("z", &transform.scale.z);
-        } 
-        else 
-        {
-            std::cerr << "Error: Unknown transform type." << std::endl;
-            continue;
+            scaleElement->QueryFloatAttribute("x", &transform.scale.x);
+            scaleElement->QueryFloatAttribute("y", &transform.scale.y);
+            scaleElement->QueryFloatAttribute("z", &transform.scale.z);
         }
 
         group.transforms.push_back(transform);
@@ -92,6 +93,8 @@ void parse_group_element(TiXmlElement* groupElement, GROUP& group) {
         group.children.push_back(childGroup);
     }
 }
+
+
 
 void parse_config_file(char* filename, WORLD& world) {
     TiXmlDocument doc(filename);

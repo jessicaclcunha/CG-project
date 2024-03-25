@@ -119,7 +119,7 @@ void renderScene(void) {
     gluLookAt(camX, camY, camZ, LAX, LAY, LAZ, upX, upY, upZ);
 
     draw_axis();
-    glColor3f(PURPLE);
+    glColor3f(WHITE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     for (const auto& group : world.groups) {
         apply_transforms(group);
