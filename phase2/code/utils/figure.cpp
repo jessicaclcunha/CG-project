@@ -27,6 +27,11 @@ typedef struct figure {
             int length;
             int divisions;
         } box;
+        struct {
+            float inner_radius;
+            float outer_radius;
+            int slices;
+        } ring;
     };
 } *FIGURE;
 
@@ -83,6 +88,15 @@ FIGURE create_figure_cone (float height, float radius, int slices, int stacks) {
     f->cone.radius = radius;
     f->cone.slices = slices;
     f->cone.stacks = stacks;
+    return f;
+}
+
+FIGURE create_figure_ring(float inner_radius, float outer_radius, int slices) {
+    FIGURE f = create_figure_empty();
+    f->type = RING;
+    f->ring.inner_radius = inner_radius;
+    f->ring.outer_radius = outer_radius;
+    f->ring.slices = slices;
     return f;
 }
 
@@ -167,6 +181,13 @@ void save_file(FIGURE f, std::string filename) {
             fprintf(file, "TRIANGULOS:\n");
             fprintf(file, "%s", print_triangulos(f).c_str());
             break;
+        case RING: 
+            fprintf(file, "RING\nInner Radius: %.2f\nOuter Radius: %.2f\nSlices: %d\nNº de Triângulos: %d\n",
+                    f->ring.inner_radius, f->ring.outer_radius, f->ring.slices, number_triangles(f));
+
+            fprintf(file, "TRIANGULOS:\n");
+            fprintf(file, "%s", print_triangulos(f).c_str());
+            break;    
         default:
             fprintf(stderr, "Erro: Tipo desconhecido\n");
             break;
@@ -270,6 +291,28 @@ FIGURE fileToFigure(const std::string& filepath) {
                 add_triangle(figure, triangle); // Adicionando o triângulo à figura. 
             }    
         }
+        else if (type == "RING") {
+            float inner_radius, outer_radius;
+            int slices;
+            iss >> inner_radius >> outer_radius >> slices;
+            figure = create_figure_ring(inner_radius, outer_radius, slices);
+            while (getline(file, line) && !line.empty()) {
+                float x1, y1, z1, x2, y2, z2, x3, y3, z3;
+                sscanf(line.c_str(), "[(%f, %f, %f),(%f, %f, %f),(%f, %f, %f)]",
+                       &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
+
+                POINT p1 = new_point(x1, y1, z1);
+                POINT p2 = new_point(x2, y2, z2);
+                POINT p3 = new_point(x3, y3, z3);
+
+                TRIANGLE triangle = create_triangle();
+                add_vertex(triangle, p1);
+                add_vertex(triangle, p2);
+                add_vertex(triangle, p3);
+                add_triangle(figure, triangle); // Adicionando o triângulo à figura. 
+            }    
+        
+        }
     }
     file.close();
     return figure;
@@ -312,6 +355,15 @@ void print_figura(FIGURE f) {
             }
         }
         if (f->type == CONE){
+            printf("Vertices:\n");
+            for (const TRIANGLE &triangulo : *(f->triangles)) {
+                std::vector<POINT>* vertexBegin = get_points(triangulo);
+                for (const POINT &vertex : *vertexBegin) {
+                    printf("(%.2f, %.2f, %.2f)\n", get_X(vertex), get_Y(vertex), get_Z(vertex));
+                }
+            }
+        }
+        if (f->type == RING){
             printf("Vertices:\n");
             for (const TRIANGLE &triangulo : *(f->triangles)) {
                 std::vector<POINT>* vertexBegin = get_points(triangulo);

@@ -20,7 +20,8 @@ enum FIGURE_TYPE {
     SPHERE,
     CONE,
     PLANE,
-    BOX
+    BOX,
+    RING
 };
 
 typedef struct figure *FIGURE;
@@ -31,6 +32,7 @@ FIGURE create_figure_empty();
 FIGURE create_figure_plane_box (FIGURE_TYPE type, int length, int divisions);
 FIGURE create_figure_sphere (float radius, int slices, int stacks);
 FIGURE create_figure_cone (float height, float radius, int slices, int stacks);
+FIGURE create_figure_ring(float inner_radius, float outer_radius, int slices);
 void add_triangle(FIGURE f, TRIANGLE t);
 void save_file(FIGURE f, std::string filename);
 FIGURE fileToFigure(const std::string& filename);

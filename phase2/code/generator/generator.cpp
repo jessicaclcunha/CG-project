@@ -5,10 +5,10 @@
 #include "../generator/box.hpp"
 #include "../generator/cone.hpp"
 #include "../generator/sphere.hpp"
+#include "../generator/ring.hpp"
 #include "../utils/figure.hpp"
 #include "../utils/point.hpp"
 #include "../utils/triangle.hpp"
-//#include "../utils/utils.hpp"
 
 int main(int argc, char* argv[]) {
     // Check the number of command-line arguments
@@ -48,7 +48,16 @@ int main(int argc, char* argv[]) {
         int slices = std::stoi(argv[4]);
         int stacks = std::stoi(argv[5]);
         figure = generate_cone(bottom_radius, height, slices, stacks);
-    } else {
+
+    }else if (primitive_type == "ring" && argc == 6){
+        float inner_radius = std::stof(argv[2]);
+        float outer_radius = std::stof(argv[3]);
+        int slices = std::stoi(argv[4]);
+        figure = generate_ring(inner_radius, outer_radius, slices);
+        
+        //print_figura(figure);
+    }
+    else {
         std::cerr << "Invalid arguments or primitive type." << std::endl;
         return 1;
    } 

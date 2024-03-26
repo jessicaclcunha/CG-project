@@ -180,7 +180,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("Phase2");
 
     parse_config_file(argv[1], world);
-    glutInitWindowSize(get_windowWidth(world), get_windowHeight(world));
+    glutInitWindowSize(world.windowWidth, world.windowHeight);
     camX = get_position_camX(world);
     camY = get_position_camY(world);
     camZ = get_position_camZ(world);
