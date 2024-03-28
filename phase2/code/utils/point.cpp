@@ -1,5 +1,3 @@
-//não acho que haja nada a acrescentar
-#define GL_SILENCE_DEPRECATION
 #include "point.hpp"
 
 

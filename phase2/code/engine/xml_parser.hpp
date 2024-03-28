@@ -119,6 +119,26 @@ float get_near(WORLD w);
 
 float get_far(WORLD w);
 
+float get_translate_X (TRANSFORM t);
+
+float  get_translate_Y (TRANSFORM t);
+
+float get_translate_Z (TRANSFORM t);
+
+float get_rotate_angle(TRANSFORM t);
+
+float get_rotate_X (TRANSFORM t);
+
+float get_rotate_Y (TRANSFORM t);
+
+float get_rotate_Z (TRANSFORM t);
+
+float get_scale_X (TRANSFORM t);
+
+float get_scale_Y (TRANSFORM t);
+
+float get_scale_Z (TRANSFORM t);
+
 std::vector<MODEL> get_models(WORLD &w);
 
 std::vector<TRANSFORM> get_group_transforms(GROUP g);

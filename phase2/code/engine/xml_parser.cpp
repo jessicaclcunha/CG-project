@@ -271,6 +271,46 @@ float get_far(WORLD w) {
     return w.camera.projection.far;
 }
 
+float get_translate_X (TRANSFORM t) {
+    return  t.translate.x;
+}
+
+float  get_translate_Y (TRANSFORM t) {
+    return  t.translate.y;
+}
+
+float get_translate_Z (TRANSFORM t) {
+    return t.translate.z;
+}
+
+float get_rotate_angle(TRANSFORM t) {
+    return t.rotate.angle;
+}
+
+float get_rotate_X (TRANSFORM t) {
+    return t.rotate.x;
+}
+
+float get_rotate_Y (TRANSFORM t) {
+    return t.rotate.y;
+}
+
+float get_rotate_Z (TRANSFORM t){
+    return t.rotate.z;
+}
+
+float get_scale_X (TRANSFORM t) {
+    return t.scale.x;
+}
+
+float get_scale_Y (TRANSFORM t) {
+    return t.scale.y;
+}
+
+float get_scale_Z (TRANSFORM t) {
+    return t.scale.z;
+}
+
 std::vector<MODEL> get_models(WORLD &w) {
     std::vector<MODEL> models;
     for (const auto &group: w.groups)

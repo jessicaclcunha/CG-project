@@ -157,35 +157,25 @@ void save_file(FIGURE f, std::string filename) {
     switch (f->type) {
        case BOX:
             fprintf(file, "BOX\nLength: %d\nDivisions: %d\nNº de Triângulos: %d\n", f->box.length, f->box.divisions, number_triangles(f));
-
-            fprintf(file, "TRIANGULOS:\n");
             fprintf(file, "%s", print_triangulos(f).c_str());
             break;
         case CONE:
             fprintf(file, "CONE\nHeight: %.2f\nRadius: %.2f\nSlices: %d\nStacks: %d\nNº de Triângulos: %d\n",
                     f->cone.height, f->cone.radius, f->cone.slices, f->cone.stacks, number_triangles(f));
-
-            fprintf(file, "TRIANGULOS:\n");
             fprintf(file, "%s", print_triangulos(f).c_str());
             break;
         case PLANE:
             fprintf(file, "PLANE\nLength: %d\nDivisions: %d\nNº de Triângulos: %d\n", f->plane.length, f->plane.divisions, number_triangles(f));
-
-            fprintf(file, "\nTRIANGULOS:\n");
             fprintf(file, "%s", print_triangulos(f).c_str()); 
             break;
         case SPHERE:
             fprintf(file, "SPHERE\nRadius: %.2f\nSlices: %d\nStacks: %d\nNº de Triângulos: %d\n",
                     f->sphere.radius, f->sphere.slices, f->sphere.stacks, number_triangles(f));
-
-            fprintf(file, "TRIANGULOS:\n");
             fprintf(file, "%s", print_triangulos(f).c_str());
             break;
         case RING: 
             fprintf(file, "RING\nInner Radius: %.2f\nOuter Radius: %.2f\nSlices: %d\nNº de Triângulos: %d\n",
                     f->ring.inner_radius, f->ring.outer_radius, f->ring.slices, number_triangles(f));
-
-            fprintf(file, "TRIANGULOS:\n");
             fprintf(file, "%s", print_triangulos(f).c_str());
             break;    
         default:

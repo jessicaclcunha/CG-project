@@ -28,6 +28,8 @@ float fov, near, far;
 float alpha = M_PI / 4, beta = M_PI / 4;
 float radius;
 
+bool axis_on = false;
+
 void changeSize(int w, int h) {
     if (h == 0)
         h = 1;
@@ -85,13 +87,13 @@ void apply_transforms(const GROUP& group) {
     for (const auto& transform : get_group_transforms(group)) {
         switch (transform.type) {
             case TRANSLATE:
-                glTranslatef(transform.translate.x, transform.translate.y, transform.translate.z);
+                glTranslatef(get_translate_X(transform), get_translate_Y(transform), get_translate_Z(transform));
                 break;
             case ROTATE:
-                glRotatef(transform.rotate.angle, transform.rotate.x, transform.rotate.y, transform.rotate.z);
+                glRotatef(get_rotate_angle(transform), get_rotate_X(transform), get_rotate_Y(transform), get_rotate_Z(transform));
                 break;
             case SCALE:
-                glScalef(transform.scale.x, transform.scale.y, transform.scale.z);
+                glScalef(get_scale_X(transform), get_scale_Y(transform), get_scale_Z(transform));
                 break;
         }
     }
@@ -118,7 +120,8 @@ void renderScene(void) {
     glLoadIdentity();
     gluLookAt(camX, camY, camZ, LAX, LAY, LAZ, upX, upY, upZ);
 
-    draw_axis();
+    if (axis_on)
+        draw_axis();
     glColor3f(WHITE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     for (const auto& group : world.groups) {
@@ -167,8 +170,13 @@ void keyboardFunc(unsigned char key, int x, int y) {
         break;
     case '+':
         radius += 0.1;
+        break;
     case '-':
-        radius -= 0.1;    
+        radius -= 0.1;  
+        break;  
+    case ' ':
+        axis_on = !axis_on;  
+        break;  
     }
     glutPostRedisplay();
 }
@@ -180,7 +188,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("Phase2");
 
     parse_config_file(argv[1], world);
-    glutInitWindowSize(world.windowWidth, world.windowHeight);
+    glutInitWindowSize(1280, get_windowHeight(world));
     camX = get_position_camX(world);
     camY = get_position_camY(world);
     camZ = get_position_camZ(world);
