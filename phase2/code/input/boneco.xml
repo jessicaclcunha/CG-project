@@ -33,9 +33,9 @@
 			</group>
 			<group>
 				<transform> 
-					<translate x="0" y="0" z="10" />
+					<translate x="0" y="1" z="10" />
 					<rotate angle="90" x="1" y="0" z="0" />
-					<scale x="0.1" y="0.2" z="0.1" />
+					<scale x="0.1" y="0.1" z="0.1" />
 				</transform>
 				<models> 
 					<model file="/Users/jessicacunha/Desktop/CG-project/phase2/code/outputs/cone.3d" /> <!-- generator cone 1 2 4 3 cone_1_2_4_3.3d -->

@@ -35,7 +35,7 @@ WORLD create_world() {
     return w;
 }
 
-void parse_group_element(TiXmlElement* groupElement, GROUP& group) {
+void parse_group_element(TiXmlElement* groupElement, Group& group) {
     // Parse models
     TiXmlElement* modelsElement = groupElement->FirstChildElement("models");
     if (modelsElement) {
@@ -62,6 +62,7 @@ void parse_group_element(TiXmlElement* groupElement, GROUP& group) {
             translateElement->QueryFloatAttribute("x", &transform.translate.x);
             translateElement->QueryFloatAttribute("y", &transform.translate.y);
             translateElement->QueryFloatAttribute("z", &transform.translate.z);
+            group.transforms.push_back(transform);
         }
 
         // Check if there is a rotate element
@@ -72,6 +73,7 @@ void parse_group_element(TiXmlElement* groupElement, GROUP& group) {
             rotateElement->QueryFloatAttribute("x", &transform.rotate.x);
             rotateElement->QueryFloatAttribute("y", &transform.rotate.y);
             rotateElement->QueryFloatAttribute("z", &transform.rotate.z);
+            group.transforms.push_back(transform);
         }
 
         // Check if there is a scale element
@@ -81,9 +83,8 @@ void parse_group_element(TiXmlElement* groupElement, GROUP& group) {
             scaleElement->QueryFloatAttribute("x", &transform.scale.x);
             scaleElement->QueryFloatAttribute("y", &transform.scale.y);
             scaleElement->QueryFloatAttribute("z", &transform.scale.z);
+            group.transforms.push_back(transform);
         }
-
-        group.transforms.push_back(transform);
     }
 
     // Parse child groups
@@ -93,6 +94,7 @@ void parse_group_element(TiXmlElement* groupElement, GROUP& group) {
         group.children.push_back(childGroup);
     }
 }
+
 
 
 
@@ -112,8 +114,8 @@ void parse_config_file(char* filename, WORLD& world) {
     // Parse window settings
     TiXmlElement* windowElement = worldElement->FirstChildElement("window");
     if (windowElement) {
-        windowElement->QueryIntAttribute("width", &world.windowWidth);
-        windowElement->QueryIntAttribute("height", &world.windowHeight);
+        windowElement->Attribute("width", &world.windowWidth);
+        windowElement->Attribute("height", &world.windowHeight);
     }
 
     // Parse camera settings

@@ -151,28 +151,34 @@ void keyboardFunc(unsigned char key, int x, int y) {
         alpha += 15;
         break;
     case 'i':
-        camY += 0.1;
+        camY += 1;
         break;
     case 'k':
-        camY -= 0.1;
+        camY -= 1;
         break;
     case 'j':
-        LAX -= 0.1;
+        LAX -= 1;
         break;
     case 'l':
-        LAX += 0.1;
+        LAX += 1;
         break;
     case 'u':
-        LAY -= 0.1;
+        LAY -= 1;
         break;
     case 'o':
-        LAY += 0.1;
+        LAY += 1;
         break;
     case '+':
-        radius += 0.1;
+        radius += 5;
+        camX = radius * sin(alpha) * cos(beta);
+        camY = radius * sin(beta);
+        camZ = radius * cos(alpha) * cos(beta);
         break;
     case '-':
-        radius -= 0.1;  
+        radius -= 5;  
+        camX = radius * sin(alpha) * cos(beta);
+        camY = radius * sin(beta);
+        camZ = radius * cos(alpha) * cos(beta);
         break;  
     case ' ':
         axis_on = !axis_on;  
@@ -188,7 +194,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("Phase2");
 
     parse_config_file(argv[1], world);
-    glutInitWindowSize(1280, get_windowHeight(world));
+    glutInitWindowSize(get_windowWidth(world), get_windowHeight(world));
     camX = get_position_camX(world);
     camY = get_position_camY(world);
     camZ = get_position_camZ(world);
