@@ -13,15 +13,15 @@ POINT calcula_pontos(float radius, float height, int slices, int stacks, int sli
 }
 
 //pontos adjacentes trianguláveis
-std::vector<TRIANGLE> PAT (float radius, float height, int slices, int stacks, int slice_atual, int stack_atual){
+std::vector<TRIANGLE> PAT(float radius, float height, int slices, int stacks, int slice_atual, int stack_atual){
     std::vector<POINT> pontos = std::vector<POINT>();
     if (slice_atual == 0 && stack_atual == 0)
     {   
-        POINT p1 = new_point (0,0,0);
-        POINT p2 = calcula_pontos(radius, height,slices, stacks , 1, 1);
-        POINT p3 = calcula_pontos(radius, height,slices, stacks , 2, 1);
-        POINT p4 = calcula_pontos(radius, height,slices, stacks , 3, 1);
-        POINT p5 = calcula_pontos(radius, height,slices, stacks , 4, 1);
+        POINT p1 = new_point(0, 0, 0);
+        POINT p2 = calcula_pontos(radius, height, slices, stacks, 1, 1);
+        POINT p3 = calcula_pontos(radius, height, slices, stacks, 2, 1);
+        POINT p4 = calcula_pontos(radius, height, slices, stacks, 3, 1);
+        POINT p5 = calcula_pontos(radius, height, slices, stacks, 4, 1);
         pontos.push_back(p1);
         pontos.push_back(p2);
         pontos.push_back(p3);
@@ -30,50 +30,25 @@ std::vector<TRIANGLE> PAT (float radius, float height, int slices, int stacks, i
     }
     else if (stack_atual == stacks)
     {
-        if (slice_atual == slices) 
-        {   
-            POINT p1 = calcula_pontos(radius, height, slices, stacks, stack_atual, slice_atual);
-            POINT p2 = calcula_pontos(radius, height, slices, stacks, stack_atual, 1);
-            POINT p3 = new_point(0, height, 0);
-            pontos.push_back(p1);
-            pontos.push_back(p2);
-            pontos.push_back(p3);
-        }
-        else 
-        {   
-            POINT p1 = calcula_pontos(radius, height, slices, stacks , stack_atual, slice_atual);
-            POINT p2 = calcula_pontos(radius, height, slices, stacks , stack_atual, slice_atual + 1);
-            POINT p3 = new_point(0, height, 0);
-            pontos.push_back(p1);
-            pontos.push_back(p2);
-            pontos.push_back(p3);
-        }
-        
+        POINT p1 = calcula_pontos(radius, height, slices, stacks, slice_atual, stack_atual);
+        POINT p2 = calcula_pontos(radius, height, slices, stacks, slice_atual, stack_atual + 1);
+        POINT p3 = calcula_pontos(radius, height, slices, stacks, slice_atual + 1, stack_atual + 1);
+        POINT p4 = calcula_pontos(radius, height, slices, stacks, slice_atual + 1, stack_atual);
+        pontos.push_back(p1);
+        pontos.push_back(p2);
+        pontos.push_back(p3);
+        pontos.push_back(p4);
     }
     else
-    {   
-        if (slice_atual == slices) 
-        {   
-            POINT p1 = calcula_pontos(radius, height, slices, stacks , slice_atual, stack_atual);
-            POINT p2 = calcula_pontos(radius, height, slices, stacks , slice_atual, stack_atual + 1);
-            POINT p3 = calcula_pontos(radius, height,slices, stacks , 1, stack_atual + 1);
-            POINT p4 = calcula_pontos(radius, height,slices, stacks , 1, stack_atual);
-            pontos.push_back(p1);
-            pontos.push_back(p2);
-            pontos.push_back(p3);
-            pontos.push_back(p4);
-        }
-        else 
-        {   
-            POINT p1 = calcula_pontos(radius, height,slices, stacks , slice_atual, stack_atual);
-            POINT p2 = calcula_pontos(radius, height,slices, stacks , slice_atual, stack_atual + 1);
-            POINT p3 = calcula_pontos(radius, height,slices, stacks , slice_atual + 1, stack_atual + 1);
-            POINT p4 = calcula_pontos(radius, height,slices, stacks , slice_atual + 1, stack_atual);
-            pontos.push_back(p1);
-            pontos.push_back(p2);
-            pontos.push_back(p3);
-            pontos.push_back(p4);
-        }
+    {
+        POINT p1 = calcula_pontos(radius, height, slices, stacks, slice_atual, stack_atual);
+        POINT p2 = calcula_pontos(radius, height, slices, stacks, slice_atual, stack_atual + 1);
+        POINT p3 = calcula_pontos(radius, height, slices, stacks, slice_atual + 1, stack_atual + 1);
+        POINT p4 = calcula_pontos(radius, height, slices, stacks, slice_atual + 1, stack_atual);
+        pontos.push_back(p1);
+        pontos.push_back(p2);
+        pontos.push_back(p3);
+        pontos.push_back(p4);
     }
     std::vector<TRIANGLE> triangles = triangles_sort(pontos);
     return triangles;

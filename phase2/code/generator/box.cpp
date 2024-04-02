@@ -11,7 +11,6 @@ FIGURE generate_box(float length, int divisions) {
     FIGURE faceLateral3 = generate_plane_YZ(length, divisions, -dimension2, 0);
     FIGURE faceLateral4 = generate_plane_YZ(length, divisions, dimension2, 1);
 
-    //modificar esta merda
     concat_FIGURES(box, faceCima);
     concat_FIGURES(box, faceBaixo);
     concat_FIGURES(box, faceLateral1);

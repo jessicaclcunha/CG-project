@@ -1,5 +1,5 @@
 <world>
-    <window width="1024" height="800" />
+    <window width="800" height="1024" />
     <camera>
         <position x="600" y="100" z="500" />
         <lookAt x="0" y="-100" z="0" />
