@@ -19,8 +19,15 @@
 #define PINK 1.0f, 0.75f, 0.8f
 #define PURPLE 0.5f, 0.0f, 0.5f
 
+#define CURRENT_TIME ((double)glutGet(GLUT_ELAPSED_TIME) / 1000.0) // Current time in seconds
+#define START_TIME 0.0 // Start time in seconds
+
+
 WORLD world = create_world();
+
 std::list<FIGURE> figures_list;
+GLuint vbo = NULL;
+
 float camX, camY, camZ; //camera
 float LAX, LAY, LAZ; //look at
 float upX, upY, upZ; //up
@@ -29,6 +36,7 @@ float alpha = M_PI / 4, beta = M_PI / 4;
 float radius;
 
 bool axis_on = false;
+bool spherical_on = false;
 
 void changeSize(int w, int h) {
     if (h == 0)
@@ -63,6 +71,12 @@ void draw_axis() {
     glEnd();
 }
 
+void to_spherical() {
+    camX = radius * sin(alpha) * cos(beta);
+    camY = radius * sin(beta);
+    camZ = radius * cos(alpha) * cos(beta);
+}
+
 void draw_figures(std::list<FIGURE> figs_list) {
     glBegin(GL_TRIANGLES);
     for (std::list<FIGURE>::iterator it = figs_list.begin(); it != figs_list.end(); ++it) {
@@ -81,61 +95,44 @@ void draw_figures(std::list<FIGURE> figs_list) {
 
 // Atualizar a função apply_transforms para renderizar grupos filhos
 void apply_transforms(const GROUP& group) {
+    glPushMatrix();
+
+    // Aplicar transformações geométricas
     for (const auto& transform : get_group_transforms(group)) {
-        glPushMatrix();
-        // Apply transformations
-        for (const auto& transform : get_group_transforms(group)) {
         switch (transform.type) {
             case TRANSLATE:
                 glTranslatef(get_translate_X(transform), get_translate_Y(transform), get_translate_Z(transform));
                 break;
             case ROTATE:
-                glRotatef(get_rotate_angle(transform), get_rotate_X(transform), get_rotate_Y(transform), get_rotate_Z(transform));
+            {
+                float angle = get_rotate_angle(transform);
+                int time = get_time(transform);
+                if (time > 0)
+                    angle = (CURRENT_TIME - START_TIME ) * 360 / time;
+                    glRotatef(get_rotate_angle(transform), get_rotate_X(transform), get_rotate_Y(transform), get_rotate_Z(transform));    
                 break;
+            }    
             case SCALE:
                 glScalef(get_scale_X(transform), get_scale_Y(transform), get_scale_Z(transform));
                 break;
         }
     }
-        
-        // Draw models
-        for (const auto& model : group.models) {
-            FIGURE figure = fileToFigure(model.file);
-            std::vector<TRIANGLE>* triangles = get_triangles(figure);
-            for (const TRIANGLE& triangle : *triangles) {
-                // Assuming vertices are stored in a flat array
-                const std::vector<POINT>& vertices = *get_points(triangle);
-                
-                // Generate and bind VBO
-                GLuint vbo;
-                glGenBuffers(1, &vbo);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo);
-                
-                // Upload vertex data to VBO
-                glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(POINT), vertices.data(), GL_STATIC_DRAW);
-                
-                // Specify vertex attribute pointers
-                glEnableClientState(GL_VERTEX_ARRAY);
-                glVertexPointer(3, GL_FLOAT, sizeof(POINT), 0); // Assuming POINT is a struct with x, y, z coordinates
-                
-                // Draw geometry
-                glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-                
-                // Cleanup
-                glDisableClientState(GL_VERTEX_ARRAY);
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-                glDeleteBuffers(1, &vbo);
-            }
-        }
 
-        // Draw child groups
-        for (const auto& childGroup : group.children) {
-            apply_transforms(childGroup);
-        }
-        glPopMatrix();
+    std::list<FIGURE> figures;
+    for (const auto& model : group.models) {
+        FIGURE figure = fileToFigure(model.file);
+        figures.push_back(figure);
     }
-}
 
+    draw_figures(figures);
+
+    // Desenhar grupos filhos
+    for (const auto& childGroup : group.children) {
+        apply_transforms(childGroup);
+    }
+
+    glPopMatrix();
+}
 
 
 void renderScene(void) {
@@ -145,6 +142,8 @@ void renderScene(void) {
 
     if (axis_on)
         draw_axis();
+    if (spherical_on)
+        to_spherical();   
     glColor3f(WHITE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     for (const auto& group : world.groups) {
@@ -193,19 +192,15 @@ void keyboardFunc(unsigned char key, int x, int y) {
         break;
     case '+':
         radius += 5;
-        camX = radius * sin(alpha) * cos(beta);
-        camY = radius * sin(beta);
-        camZ = radius * cos(alpha) * cos(beta);
         break;
     case '-':
-        radius -= 5;  
-        camX = radius * sin(alpha) * cos(beta);
-        camY = radius * sin(beta);
-        camZ = radius * cos(alpha) * cos(beta);
         break;  
     case ' ':
         axis_on = !axis_on;  
         break;  
+    case '0':
+        spherical_on = !spherical_on;
+        break;    
     }
     glutPostRedisplay();
 }
@@ -214,7 +209,7 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("Phase2");
+    glutCreateWindow("Phase3");
 
     parse_config_file(argv[1], world);
     glutInitWindowSize(get_windowWidth(world), get_windowHeight(world));
@@ -230,8 +225,8 @@ int main(int argc, char** argv) {
     fov = get_fov(world);
     near = get_near(world);
     far = get_far(world);
-	radius = sqrt(camX * camX + camY * camY + camZ * camZ);
-    alpha = acos(camZ / radius);
+	radius = sqrt(camX * camX + camZ * camZ);
+    alpha = acos(camZ / sqrt(camX * camX + camZ * camZ));
     beta = asin(camY / radius);
 
     std::vector<MODEL> models = get_models(world);

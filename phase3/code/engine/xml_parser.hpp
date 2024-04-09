@@ -32,7 +32,6 @@ typedef struct Model {
 
 typedef struct Transform {
     TRANSFORM_TYPE type;
-    float angle;
     float time;
     bool align;
     std::vector<POINT> points;
@@ -144,6 +143,10 @@ float get_scale_X (TRANSFORM t);
 float get_scale_Y (TRANSFORM t);
 
 float get_scale_Z (TRANSFORM t);
+
+int get_time (TRANSFORM t);
+
+bool get_align (TRANSFORM t);
 
 std::vector<MODEL> get_models(WORLD &w);
 

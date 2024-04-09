@@ -333,6 +333,14 @@ float get_scale_Z (TRANSFORM t) {
     return t.scale.z;
 }
 
+int get_time (TRANSFORM t) {
+    return t.time;
+}
+
+bool get_align (TRANSFORM t) {
+    return t.align;
+}
+
 std::vector<MODEL> get_models(WORLD &w) {
     std::vector<MODEL> models;
     for (const auto &group: w.groups)
