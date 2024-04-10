@@ -5,6 +5,8 @@
 #include "../utils/figure.hpp"
 #include "../utils/point.hpp"
 
+std::vector<TRIANGLE> generate_bezier_surfaces(std::vector<POINT> patch_control_points, float tessellation);
+
 FIGURE generate_patch(float tessellation, const char* patches_file);
 
-#endif // BOX_H
+#endif // BEZIER_H

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <list>
 #include <cmath>
+#include <vector>
 #include "xml_parser.hpp"
 #include "../utils/figure.hpp"
 #include "../utils/triangle.hpp"
@@ -22,15 +23,16 @@
 #define CURRENT_TIME ((double)glutGet(GLUT_ELAPSED_TIME) / 1000.0) // Current time in seconds
 #define START_TIME 0.0 // Start time in seconds
 
+WORLD world;
 
-WORLD world = create_world();
+std::vector<float> vertices; // Define vertices como vetor global
+std::vector<float> normals;  // Define normals como vetor global
 
-std::list<FIGURE> figures_list;
-GLuint vbo = NULL;
+GLuint vbo_vertices, vbo_normals;
 
-float camX, camY, camZ; //camera
-float LAX, LAY, LAZ; //look at
-float upX, upY, upZ; //up
+float camX, camY, camZ; // Camera
+float LAX, LAY, LAZ;    // Look at
+float upX, upY, upZ;    // Up
 float fov, near, far;
 float alpha = M_PI / 4, beta = M_PI / 4;
 float radius;
@@ -103,28 +105,26 @@ void apply_transforms(const GROUP& group) {
             case TRANSLATE:
                 glTranslatef(get_translate_X(transform), get_translate_Y(transform), get_translate_Z(transform));
                 break;
-            case ROTATE:
-            {
+            case ROTATE: {
                 float angle = get_rotate_angle(transform);
                 int time = get_time(transform);
                 if (time > 0)
                     angle = (CURRENT_TIME - START_TIME ) * 360 / time;
-                    glRotatef(get_rotate_angle(transform), get_rotate_X(transform), get_rotate_Y(transform), get_rotate_Z(transform));    
+                glRotatef(angle, get_rotate_X(transform), get_rotate_Y(transform), get_rotate_Z(transform));
                 break;
-            }    
+            }
             case SCALE:
                 glScalef(get_scale_X(transform), get_scale_Y(transform), get_scale_Z(transform));
                 break;
         }
     }
 
-    std::list<FIGURE> figures;
-    for (const auto& model : group.models) {
-        FIGURE figure = fileToFigure(model.file);
-        figures.push_back(figure);
-    }
-
-    draw_figures(figures);
+    // Renderizar modelo usando VBOs
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
+    glVertexPointer(3, GL_FLOAT, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_normals);
+    glNormalPointer(GL_FLOAT, 0, 0);
+    glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
 
     // Desenhar grupos filhos
     for (const auto& childGroup : group.children) {
@@ -133,7 +133,6 @@ void apply_transforms(const GROUP& group) {
 
     glPopMatrix();
 }
-
 
 void renderScene(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -225,15 +224,60 @@ int main(int argc, char** argv) {
     fov = get_fov(world);
     near = get_near(world);
     far = get_far(world);
-	radius = sqrt(camX * camX + camZ * camZ);
+    radius = sqrt(camX * camX + camZ * camZ);
     alpha = acos(camZ / sqrt(camX * camX + camZ * camZ));
     beta = asin(camY / radius);
 
     std::vector<MODEL> models = get_models(world);
-	int num_models = models.size();
+    int num_models = models.size();
 
-	for (int i = 0; i < num_models; i++) 
-    	figures_list.push_back(fileToFigure(models[i].file));
+    for (int i = 0; i < num_models; i++) {
+        FIGURE figure = fileToFigure(models[i].file);
+        std::vector<TRIANGLE> *triangles = get_triangles(figure);
+        for (const auto& triangle : *triangles) {
+            std::vector<POINT> *points = get_points(triangle);
+            for (const auto& point : *points) {
+                vertices.push_back(get_X(point));
+                vertices.push_back(get_Y(point));
+                vertices.push_back(get_Z(point));
+            }
+        }
+    }
+
+    // Calcular normais e adicioná-las ao vetor normals
+    for (size_t i = 0; i < vertices.size(); i += 9) {
+        float x1 = vertices[i];
+        float y1 = vertices[i + 1];
+        float z1 = vertices[i + 2];
+        float x2 = vertices[i + 3];
+        float y2 = vertices[i + 4];
+        float z2 = vertices[i + 5];
+        float x3 = vertices[i + 6];
+        float y3 = vertices[i + 7];
+        float z3 = vertices[i + 8];
+
+        float nx = (y2 - y1) * (z3 - z1) - (z2 - z1) * (y3 - y1);
+        float ny = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
+        float nz = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
+
+        normals.push_back(nx);
+        normals.push_back(ny);
+        normals.push_back(nz);
+        normals.push_back(nx);
+        normals.push_back(ny);
+        normals.push_back(nz);
+        normals.push_back(nx);
+        normals.push_back(ny);
+        normals.push_back(nz);
+    }
+
+    glGenBuffers(1, &vbo_vertices);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
+
+    glGenBuffers(1, &vbo_normals);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_normals);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), &normals[0], GL_STATIC_DRAW);
 
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
@@ -244,5 +288,5 @@ int main(int argc, char** argv) {
 
     glutMainLoop();
 
-    return 1;
+    return 0;
 }

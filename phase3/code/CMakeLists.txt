@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
 
 # Project Name
-PROJECT(phase2)
+PROJECT(phase3)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Define os executáveis a serem construídos neste projecto
 add_executable(engine.exe ./engine/engine.cpp)
-add_executable(generator.exe ./generator/generator.cpp  ./generator/plane.cpp ./generator/box.cpp ./generator/cone.cpp ./generator/sphere.cpp ./generator/ring.cpp)
+add_executable(generator.exe ./generator/generator.cpp  ./generator/plane.cpp ./generator/box.cpp ./generator/cone.cpp ./generator/sphere.cpp ./generator/ring.cpp ./generator/bezier.cpp)
 
 # Biblioteca das figuras e dos pontoss
 add_library(
