@@ -1,29 +1,31 @@
 #include "bezier.hpp"
+/*
 
 std::vector<TRIANGLE> generate_bezier_surfaces(std::vector<POINT> patch_control_points, float tessellation) {
     std::vector<TRIANGLE> surface_triangles;
 
     // Calculate vertices for the patch using tessellation
-    std::vector<POINT> patch_vertices;
+    std::vector<std::vector<POINT>> patch_vertices;
     for (float u = 0; u <= 1; u += tessellation) {
+        std::vector<POINT> row_vertices;
         for (float v = 0; v <= 1; v += tessellation) {
             POINT p = calculate_bezier_point(patch_control_points, u, v);
-            patch_vertices.push_back(p);
+            row_vertices.push_back(p);
         }
+        patch_vertices.push_back(row_vertices);
     }
 
     // Create triangles for the patch
     for (size_t i = 0; i < patch_vertices.size() - 1; ++i) {
-        if ((i + 1) % (int)(1 / tessellation) != 0) {
-            TRIANGLE t1 = create_triangle_with_vertices({patch_vertices[i], patch_vertices[i + 1], patch_vertices[i + 1 + (int)(1 / tessellation)]});
-            TRIANGLE t2 = create_triangle_with_vertices({patch_vertices[i], patch_vertices[i + 1 + (int)(1 / tessellation)], patch_vertices[i + (int)(1 / tessellation)]});
+        for (size_t j = 0; j < patch_vertices[i].size() - 1; ++j) {
+            TRIANGLE t1 = create_triangle_with_vertices({patch_vertices[i][j], patch_vertices[i][j + 1], patch_vertices[i + 1][j]});
+            TRIANGLE t2 = create_triangle_with_vertices({patch_vertices[i][j + 1], patch_vertices[i + 1][j + 1], patch_vertices[i + 1][j]});
             surface_triangles.push_back(t1);
             surface_triangles.push_back(t2);
         }
     }
     return surface_triangles;
 }
-
 
 FIGURE generate_patch(float tessellation, const char* patches_file) {
     std::ifstream file(patches_file);
@@ -67,6 +69,7 @@ FIGURE generate_patch(float tessellation, const char* patches_file) {
     for (const auto& patch_control_points : control_points) {
         std::vector<TRIANGLE> surface_triangles = generate_bezier_surfaces(patch_control_points, tessellation);
         add_triangles(figure, surface_triangles);
-    }    
+    }
     return figure;
 }
+*/

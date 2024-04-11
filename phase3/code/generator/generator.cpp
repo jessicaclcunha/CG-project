@@ -58,11 +58,13 @@ int main(int argc, char* argv[]) {
         
         //print_figura(figure);
     }
+    /*
     else if(primitive_type== "patch" && argc == 5){
             float tessellation = atoi(argv[2]);
             const char* patches_file = argv[3];
             figure = generate_patch(tessellation, patches_file);
     }
+    */
     else {
         std::cerr << "Invalid arguments or primitive type." << std::endl;
         return 1;

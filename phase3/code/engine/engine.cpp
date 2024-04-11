@@ -25,10 +25,10 @@
 
 WORLD world;
 
-std::vector<float> vertices; // Define vertices como vetor global
-std::vector<float> normals;  // Define normals como vetor global
-
-GLuint vbo_vertices, vbo_normals;
+GLuint *buffers = NULL; // Array of buffer IDs for each figure
+GLuint *buffer_indices = NULL; // Array of index buffer IDs for each figure
+unsigned int figs_count = 0; // Number of figures
+std::vector<unsigned int> buffers_sizes; // Size (in vertices) of each figure
 
 float camX, camY, camZ; // Camera
 float LAX, LAY, LAZ;    // Look at
@@ -79,27 +79,42 @@ void to_spherical() {
     camZ = radius * cos(alpha) * cos(beta);
 }
 
-void draw_figures(std::list<FIGURE> figs_list) {
-    glBegin(GL_TRIANGLES);
-    for (std::list<FIGURE>::iterator it = figs_list.begin(); it != figs_list.end(); ++it) {
-        // Check if figure is not NULL
-        if (*it != nullptr) {
-            std::vector<TRIANGLE>* triangles = get_triangles(*it);
-            for (TRIANGLE t : *triangles) {
-                for (POINT p : *get_points(t)) {
-                    glVertex3f(get_X(p), get_Y(p), get_Z(p));
-                }
-            }
-        }
+void init_vbo(const std::vector<MODEL>& models) {
+    // Allocate memory for buffers array
+    buffers = new GLuint[models.size()];
+    buffer_indices = new GLuint[models.size()];
+
+    for (size_t i = 0; i < models.size(); ++i) {
+        FIGURE figure = fileToFigure(models[i].file);
+        std::vector<float> fig_vectores = figure_to_vectores(figure);
+
+        size_t total_size = fig_vectores.size();
+
+        // Generate and bind vertex buffer
+        glGenBuffers(1, &buffers[i]);
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
+        glBufferData(GL_ARRAY_BUFFER, total_size * sizeof(float), fig_vectores.data(), GL_STATIC_DRAW);
+
+        // Generate and bind index buffer
+        glGenBuffers(1, &buffer_indices[i]);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer_indices[i]);  // Assuming each figure uses an index buffer
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, total_size / 3 * sizeof(unsigned int), nullptr, GL_STATIC_DRAW);
+
+        // Populate index buffer with sequential indices (modify if needed)
+        std::vector<unsigned int> indices(total_size / 3);
+        for (size_t j = 0; j < total_size / 3; ++j)
+            indices[j] = j;
+
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, total_size / 3 * sizeof(unsigned int), indices.data());
+
+        buffers_sizes.push_back(total_size / 3);
     }
-    glEnd();
 }
 
-// Atualizar a função apply_transforms para renderizar grupos filhos
-void apply_transforms(const GROUP& group) {
+
+void apply_transforms(const GROUP& group, unsigned int &index) {
     glPushMatrix();
 
-    // Aplicar transformações geométricas
     for (const auto& transform : get_group_transforms(group)) {
         switch (transform.type) {
             case TRANSLATE:
@@ -109,7 +124,7 @@ void apply_transforms(const GROUP& group) {
                 float angle = get_rotate_angle(transform);
                 int time = get_time(transform);
                 if (time > 0)
-                    angle = (CURRENT_TIME - START_TIME ) * 360 / time;
+                    angle = (CURRENT_TIME - START_TIME) * 360 / time;
                 glRotatef(angle, get_rotate_X(transform), get_rotate_Y(transform), get_rotate_Z(transform));
                 break;
             }
@@ -119,16 +134,21 @@ void apply_transforms(const GROUP& group) {
         }
     }
 
-    // Renderizar modelo usando VBOs
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
-    glVertexPointer(3, GL_FLOAT, 0, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_normals);
-    glNormalPointer(GL_FLOAT, 0, 0);
-    glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
+    glEnableClientState(GL_VERTEX_ARRAY);
 
-    // Desenhar grupos filhos
+    unsigned int localIndex = 0;
+    for (const auto& model : group.models) {
+        size_t buffer_index = index + localIndex;
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[buffer_index]);  // Use buffer for this figure
+        glVertexPointer(3, GL_FLOAT, 0, 0);
+        glDrawArrays(GL_TRIANGLES, 0, buffers_sizes[buffer_index]);
+
+        localIndex++;
+    }
+    glDisableClientState(GL_VERTEX_ARRAY);
+
     for (const auto& childGroup : group.children) {
-        apply_transforms(childGroup);
+        apply_transforms(childGroup, index);
     }
 
     glPopMatrix();
@@ -142,12 +162,16 @@ void renderScene(void) {
     if (axis_on)
         draw_axis();
     if (spherical_on)
-        to_spherical();   
+        to_spherical();
+
     glColor3f(WHITE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    unsigned int index = 0;
     for (const auto& group : world.groups) {
-        apply_transforms(group);
+        apply_transforms(group, index);
     }
+
     glutSwapBuffers();
 }
 
@@ -193,13 +217,13 @@ void keyboardFunc(unsigned char key, int x, int y) {
         radius += 5;
         break;
     case '-':
-        break;  
+        break;
     case ' ':
-        axis_on = !axis_on;  
-        break;  
+        axis_on = !axis_on;
+        break;
     case '0':
         spherical_on = !spherical_on;
-        break;    
+        break;
     }
     glutPostRedisplay();
 }
@@ -229,55 +253,8 @@ int main(int argc, char** argv) {
     beta = asin(camY / radius);
 
     std::vector<MODEL> models = get_models(world);
-    int num_models = models.size();
 
-    for (int i = 0; i < num_models; i++) {
-        FIGURE figure = fileToFigure(models[i].file);
-        std::vector<TRIANGLE> *triangles = get_triangles(figure);
-        for (const auto& triangle : *triangles) {
-            std::vector<POINT> *points = get_points(triangle);
-            for (const auto& point : *points) {
-                vertices.push_back(get_X(point));
-                vertices.push_back(get_Y(point));
-                vertices.push_back(get_Z(point));
-            }
-        }
-    }
-
-    // Calcular normais e adicioná-las ao vetor normals
-    for (size_t i = 0; i < vertices.size(); i += 9) {
-        float x1 = vertices[i];
-        float y1 = vertices[i + 1];
-        float z1 = vertices[i + 2];
-        float x2 = vertices[i + 3];
-        float y2 = vertices[i + 4];
-        float z2 = vertices[i + 5];
-        float x3 = vertices[i + 6];
-        float y3 = vertices[i + 7];
-        float z3 = vertices[i + 8];
-
-        float nx = (y2 - y1) * (z3 - z1) - (z2 - z1) * (y3 - y1);
-        float ny = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
-        float nz = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
-
-        normals.push_back(nx);
-        normals.push_back(ny);
-        normals.push_back(nz);
-        normals.push_back(nx);
-        normals.push_back(ny);
-        normals.push_back(nz);
-        normals.push_back(nx);
-        normals.push_back(ny);
-        normals.push_back(nz);
-    }
-
-    glGenBuffers(1, &vbo_vertices);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_vertices);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
-
-    glGenBuffers(1, &vbo_normals);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_normals);
-    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), &normals[0], GL_STATIC_DRAW);
+    init_vbo(models);
 
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
@@ -288,5 +265,10 @@ int main(int argc, char** argv) {
 
     glutMainLoop();
 
+    delete[] buffers;  // Deallocate memory for buffers array
+    delete[] buffer_indices;  // Deallocate memory for index buffers array
+
     return 0;
 }
+
+

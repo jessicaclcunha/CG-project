@@ -424,3 +424,16 @@ void free_figure(FIGURE f) {
         free(f);
     }
 }
+
+std::vector<float> figure_to_vectores(FIGURE figure) {
+    std::vector<float> vectores;
+    for (const TRIANGLE &triangulo : *(figure->triangles)) {
+        std::vector<POINT>* vertexBegin = get_points(triangulo);
+        for (const POINT &vertex : *vertexBegin) {
+            vectores.push_back(get_X(vertex));
+            vectores.push_back(get_Y(vertex));
+            vectores.push_back(get_Z(vertex));
+        }
+    }
+    return vectores;
+}
