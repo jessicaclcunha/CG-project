@@ -355,3 +355,15 @@ std::vector<TRANSFORM> get_group_transforms(GROUP g) {
         transforms.push_back(transform);
     return transforms;
 }
+
+std::vector<GROUP> get_model_children(GROUP g) {
+    return g.children;
+}
+
+std::vector<GROUP> get_groups(WORLD w) {
+    return w.groups;
+}
+
+unsigned int get_figs_count (GROUP g) {
+    return g.models.size();
+}

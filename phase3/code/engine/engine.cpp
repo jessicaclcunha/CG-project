@@ -10,8 +10,6 @@
 #include <cmath>
 #include <vector>
 #include "xml_parser.hpp"
-#include "../utils/figure.hpp"
-#include "../utils/triangle.hpp"
 
 #define RED 1.0f, 0.0f, 0.0f
 #define GREEN 0.0f, 1.0f, 0.0f
@@ -25,17 +23,16 @@
 
 WORLD world;
 
-GLuint *buffers = NULL; // Array of buffer IDs for each figure
-GLuint *buffer_indices = NULL; // Array of index buffer IDs for each figure
+GLuint *buffers; // Array of buffer IDs for each figure
 unsigned int figs_count = 0; // Number of figures
 std::vector<unsigned int> buffers_sizes; // Size (in vertices) of each figure
 
-float camX, camY, camZ; // Camera
-float LAX, LAY, LAZ;    // Look at
-float upX, upY, upZ;    // Up
-float fov, near, far;
+float camX = 0, camY = 0, camZ = 0; // Camera
+float LAX = 0, LAY = 0, LAZ = 0;    // Look at
+float upX = 0, upY = 1, upZ = 0;    // Up (defaulting to y-axis)
+float fov = 60, near = 0.1, far = 1000; // Field of view, near and far clipping planes
 float alpha = M_PI / 4, beta = M_PI / 4;
-float radius;
+float radius = 10; // Default radius
 
 bool axis_on = false;
 bool spherical_on = false;
@@ -51,7 +48,7 @@ void changeSize(int w, int h) {
 
     glViewport(0, 0, w, h);
 
-    gluPerspective(get_fov(world), ratio, get_near(world), get_far(world));
+    gluPerspective(fov, ratio, near, far);
 
     glMatrixMode(GL_MODELVIEW);
 }
@@ -79,40 +76,22 @@ void to_spherical() {
     camZ = radius * cos(alpha) * cos(beta);
 }
 
-void init_vbo(const std::vector<MODEL>& models) {
-    // Allocate memory for buffers array
-    buffers = new GLuint[models.size()];
-    buffer_indices = new GLuint[models.size()];
-
-    for (size_t i = 0; i < models.size(); ++i) {
-        FIGURE figure = fileToFigure(models[i].file);
-        std::vector<float> fig_vectores = figure_to_vectores(figure);
-
-        size_t total_size = fig_vectores.size();
-
-        // Generate and bind vertex buffer
-        glGenBuffers(1, &buffers[i]);
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
-        glBufferData(GL_ARRAY_BUFFER, total_size * sizeof(float), fig_vectores.data(), GL_STATIC_DRAW);
-
-        // Generate and bind index buffer
-        glGenBuffers(1, &buffer_indices[i]);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer_indices[i]);  // Assuming each figure uses an index buffer
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, total_size / 3 * sizeof(unsigned int), nullptr, GL_STATIC_DRAW);
-
-        // Populate index buffer with sequential indices (modify if needed)
-        std::vector<unsigned int> indices(total_size / 3);
-        for (size_t j = 0; j < total_size / 3; ++j)
-            indices[j] = j;
-
-        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, total_size / 3 * sizeof(unsigned int), indices.data());
-
-        buffers_sizes.push_back(total_size / 3);
+void init_vbo(std::vector<GROUP>& groups, int *ind) {
+    buffers = new GLuint[figs_count];
+    glGenBuffers(figs_count, buffers);
+    for (size_t i = 0; i < groups.size(); ++i) {
+        for (const auto& model : groups[i].models) {
+            FIGURE figure = fileToFigure(model.file);
+            std::vector<float> fig_vectors = figure_to_vectores(figure);
+            glBindBuffer(GL_ARRAY_BUFFER, buffers[(*ind)++]);
+            glBufferData(GL_ARRAY_BUFFER, fig_vectors.size() * sizeof(float), fig_vectors.data(), GL_STATIC_DRAW);
+            buffers_sizes.push_back(fig_vectors.size()/3);
+        }
+        init_vbo(groups[i].children, ind);
     }
 }
 
-
-void apply_transforms(const GROUP& group, unsigned int &index) {
+void apply_transforms(const GROUP& group, int *index) {
     glPushMatrix();
 
     for (const auto& transform : get_group_transforms(group)) {
@@ -124,7 +103,7 @@ void apply_transforms(const GROUP& group, unsigned int &index) {
                 float angle = get_rotate_angle(transform);
                 int time = get_time(transform);
                 if (time > 0)
-                    angle = (CURRENT_TIME - START_TIME) * 360 / time;
+                    angle = fmod((CURRENT_TIME - START_TIME) * 360 / time, 360);
                 glRotatef(angle, get_rotate_X(transform), get_rotate_Y(transform), get_rotate_Z(transform));
                 break;
             }
@@ -134,18 +113,11 @@ void apply_transforms(const GROUP& group, unsigned int &index) {
         }
     }
 
-    glEnableClientState(GL_VERTEX_ARRAY);
-
-    unsigned int localIndex = 0;
     for (const auto& model : group.models) {
-        size_t buffer_index = index + localIndex;
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[buffer_index]);  // Use buffer for this figure
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);
         glVertexPointer(3, GL_FLOAT, 0, 0);
-        glDrawArrays(GL_TRIANGLES, 0, buffers_sizes[buffer_index]);
-
-        localIndex++;
+        glDrawArrays(GL_TRIANGLES, 0, buffers_sizes[*index]);
     }
-    glDisableClientState(GL_VERTEX_ARRAY);
 
     for (const auto& childGroup : group.children) {
         apply_transforms(childGroup, index);
@@ -155,6 +127,9 @@ void apply_transforms(const GROUP& group, unsigned int &index) {
 }
 
 void renderScene(void) {
+    // Clear any previous errors
+    while (glGetError() != GL_NO_ERROR);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     gluLookAt(camX, camY, camZ, LAX, LAY, LAZ, upX, upY, upZ);
@@ -166,10 +141,21 @@ void renderScene(void) {
 
     glColor3f(WHITE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    unsigned int index = 0;
+    int index = 0;
     for (const auto& group : world.groups) {
-        apply_transforms(group, index);
+        apply_transforms(group, &index);
+
+        // Check for OpenGL errors after each group rendering
+        GLenum error = glGetError();
+        if (error != GL_NO_ERROR) {
+            std::cerr << "Error rendering group: " << gluErrorString(error) << std::endl;
+        }
+    }
+
+    // Check for OpenGL errors at the end of rendering
+    GLenum finalError = glGetError();
+    if (finalError != GL_NO_ERROR) {
+        std::cerr << "Final rendering error: " << gluErrorString(finalError) << std::endl;
     }
 
     glutSwapBuffers();
@@ -229,6 +215,11 @@ void keyboardFunc(unsigned char key, int x, int y) {
 }
 
 int main(int argc, char** argv) {
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <config_file.xml>" << std::endl;
+        return 1;
+    }
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);
@@ -252,9 +243,14 @@ int main(int argc, char** argv) {
     alpha = acos(camZ / sqrt(camX * camX + camZ * camZ));
     beta = asin(camY / radius);
 
-    std::vector<MODEL> models = get_models(world);
+    std::vector<GROUP> groups = get_groups(world);
+    
+    for (const auto& group : groups) {
+        figs_count += get_figs_count(group);
+    }
 
-    init_vbo(models);
+    int index = 0;
+    init_vbo(groups, &index);
 
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
@@ -265,10 +261,7 @@ int main(int argc, char** argv) {
 
     glutMainLoop();
 
-    delete[] buffers;  // Deallocate memory for buffers array
-    delete[] buffer_indices;  // Deallocate memory for index buffers array
+    delete[] buffers;
 
     return 0;
 }
-
-

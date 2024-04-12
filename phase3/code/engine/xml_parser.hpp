@@ -7,6 +7,8 @@
 #include <string>
 #include "../tinyxml/tinyxml.h"
 #include "../utils/point.hpp"
+#include "../utils/figure.hpp"
+#include "../utils/triangle.hpp"
 
 
 enum TRANSFORM_TYPE {
@@ -157,5 +159,11 @@ void parse_group_element(TiXmlElement* groupElement, GROUP& group);
 void parse_config_file(char* filename, WORLD& world) ;
 
 void delete_world(WORLD &w);
+
+std::vector<GROUP> get_model_children(GROUP g);
+
+std::vector<GROUP> get_groups(WORLD w);
+
+unsigned int get_figs_count (GROUP g);
 
 #endif // XML_PARSER_H
