@@ -12,6 +12,7 @@
 <!--			<model file="/Users/martimr/Desktop/CG/CG-project/phase3/code/outputs/sphere.3d" /> -->
 <!--			<model file="/Users/martimr/Desktop/CG/CG-project/phase3/code/outputs/box2.3d" />  -->
 <!--			<model file="/Users/martimr/Desktop/CG/CG-project/phase3/code/outputs/box3.3d" />  -->
+			<model file="/Users/jessicacunha/Desktop/CG-project/phase2/code/outputs/cone.3d" />
  		</models>
  	</group>
 </world>

@@ -425,7 +425,7 @@ void free_figure(FIGURE f) {
     }
 }
 
-std::vector<float> figure_to_vectores(FIGURE figure) {
+std::vector<float> figure_to_vectors(FIGURE figure) {
     std::vector<float> vectores;
     for (const TRIANGLE &triangulo : *(figure->triangles)) {
         std::vector<POINT>* vertexBegin = get_points(triangulo);
