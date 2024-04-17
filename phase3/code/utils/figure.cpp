@@ -126,28 +126,6 @@ void add_triangles (FIGURE f, std::vector<TRIANGLE> t) {
     }
 }
 
-/*
-void add_face(FIGURE f, POINT p1, POINT p2, POINT p3, POINT p4, int divisions) {
-    // Adicionar vértices para o rosto
-    add_vertex(f, p1);
-    add_vertex(f, p2);
-    add_vertex(f, p3);
-    add_vertex(f, p4);
-
-    // Adicionar índices para dois triângulos (formando um retângulo) para cada subdivisão
-    for (i
-nt i = 0; i < divisions; ++i) {
-        add_index(f, 4 * i);             // Inferior esquerdo
-        add_index(f, 4 * i + 1);         // Superior esquerdo
-        add_index(f, 4 * i + 2);         // Superior direito
-
-        add_index(f, 4 * i);             // Inferior esquerdo
-        add_index(f, 4 * i + 2);         // Superior direito
-        add_index(f, 4 * i + 3);         // Inferior direito
-    }
-}
-*/
-
 
 int number_triangles(FIGURE f){
     if (f != NULL){
@@ -155,8 +133,6 @@ int number_triangles(FIGURE f){
     }
     return 0;
 }
-
-
 
 void save_file(FIGURE f, std::string filename) {
     
@@ -192,9 +168,13 @@ void save_file(FIGURE f, std::string filename) {
                     f->ring.inner_radius, f->ring.outer_radius, f->ring.slices, number_triangles(f));
             fprintf(file, "%s", print_triangulos(f).c_str());
             break;   
-        //TODO: implementar para BEZIER     
+        case BEZIER:
+            fprintf(file, "BEZIER\nTessellation: %.2f\nPatches File: %s\nNº de Triângulos: %d\n",
+                    f->tessellation, f->patches_file, number_triangles(f));
+            fprintf(file, "%s", print_triangulos(f).c_str());
+            break;   
         default:
-            fprintf(stderr, "Erro: Tipo desconhecido\n");
+            fprintf(stderr, "Erro: Impossível guardar figura no ficheiro\n");
             break;
     }
 
@@ -318,7 +298,28 @@ FIGURE fileToFigure(const std::string& filepath) {
             }    
         
         }
-        //TODO: Implementar a leitura de figuras do tipo BEZIER
+        else if (type == "BEZIER") {
+            float tessellation;
+            char *patches_file;
+            iss >> tessellation >> patches_file;
+            figure = create_figure_bezier(tessellation, patches_file);
+            while(getline(file, line) && !line.empty()) {
+                float x1, y1, z1, x2, y2, z2, x3, y3, z3;
+                sscanf(line.c_str(), "[(%f, %f, %f),(%f, %f, %f),(%f, %f, %f)]",
+                       &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
+
+                POINT p1 = new_point(x1, y1, z1);
+                POINT p2 = new_point(x2, y2, z2);
+                POINT p3 = new_point(x3, y3, z3);
+
+                TRIANGLE triangle = create_triangle();
+                add_vertex(triangle, p1);
+                add_vertex(triangle, p2);
+                add_vertex(triangle, p3);
+                add_triangle(figure, triangle); // Adicionando o triângulo à figura. 
+            
+            }
+        }
     }
     file.close();
     return figure;
@@ -370,6 +371,15 @@ void print_figura(FIGURE f) {
             }
         }
         if (f->type == RING){
+            printf("Vertices:\n");
+            for (const TRIANGLE &triangulo : *(f->triangles)) {
+                std::vector<POINT>* vertexBegin = get_points(triangulo);
+                for (const POINT &vertex : *vertexBegin) {
+                    printf("(%.2f, %.2f, %.2f)\n", get_X(vertex), get_Y(vertex), get_Z(vertex));
+                }
+            }
+        }
+        if(f->type == BEZIER){
             printf("Vertices:\n");
             for (const TRIANGLE &triangulo : *(f->triangles)) {
                 std::vector<POINT>* vertexBegin = get_points(triangulo);

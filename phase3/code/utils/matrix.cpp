@@ -1,20 +1,19 @@
 #include "matrix.hpp"
 #include <stdlib.h>
 
+using namespace std;
+
 typedef struct matrix {
     int rows;
     int cols;
     float **values;
 } *MATRIX;
 
-MATRIX create_matrix(int rows, int cols) {
+MATRIX create_matrix(int rows, int cols, float **values) {
     MATRIX m = (MATRIX)malloc(sizeof(MATRIX));
     m->rows = rows;
     m->cols = cols;
-    m->values = (float **)malloc(rows * sizeof(float *));
-    for (int i = 0; i < rows; i++) {
-        m->values[i] = (float *)malloc(cols * sizeof(float));
-    }
+    m->values = values;
     return m;
 }
 
@@ -30,13 +29,23 @@ MATRIX matrix_multiplication(MATRIX a, MATRIX b) {
     if (a->cols != b->rows) {
         return NULL;
     }
-    MATRIX result = create_matrix(a->rows, b->cols);
+    MATRIX result = create_matrix(a->rows, b->cols, NULL);
     for (int i = 0; i < a->rows; i++) {
         for (int j = 0; j < b->cols; j++) {
             result->values[i][j] = 0;
             for (int k = 0; k < a->cols; k++) {
                 result->values[i][j] += a->values[i][k] * b->values[k][j];
             }
+        }
+    }
+    return result;
+}
+
+float dot_product(MATRIX a, MATRIX b) {
+    float result = 0.0f;
+    for (int i = 0; i < a->rows; ++i) {
+        for (int j = 0; j < a->cols; ++j) {
+            result += a->values[i][j] * b->values[i][j];
         }
     }
     return result;

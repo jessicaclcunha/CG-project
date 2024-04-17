@@ -39,8 +39,6 @@ void add_triangle(FIGURE f, TRIANGLE t);
 void save_file(FIGURE f, std::string filename);
 FIGURE fileToFigure(const std::string& filename);
 void add_triangles(FIGURE f, std::vector<TRIANGLE> t);
-//void concatenateAndRemoveDuplicates(FIGURE f, FIGURE f2);
-//bool comparePoints(POINT a, POINT b);
 void print_figura(FIGURE f);
 int number_triangles(FIGURE f);
 std::string print_triangulos(FIGURE f);
