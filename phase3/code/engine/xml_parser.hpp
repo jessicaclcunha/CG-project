@@ -154,16 +154,26 @@ std::vector<MODEL> get_models(WORLD &w);
 
 std::vector<TRANSFORM> get_group_transforms(GROUP g);
 
+void parse_translate_transform(TiXmlElement* translateElement, Transform& transform);
+
+void parse_rotate_transform(TiXmlElement* rotateElement, Transform& transform);
+
+void parse_scale_transform(TiXmlElement* scaleElement, Transform& transform);
+
+void parse_scale_transform(TiXmlElement* scaleElement, Transform& transform);
+
 void parse_group_element(TiXmlElement* groupElement, GROUP& group);
 
 void parse_config_file(char* filename, WORLD& world) ;
 
 void delete_world(WORLD &w);
 
-std::vector<GROUP> get_model_children(GROUP g);
+std::vector<GROUP> get_group_children(GROUP g);
 
 std::vector<GROUP> get_groups(WORLD w);
 
 unsigned int get_figs_count (GROUP g);
+
+int count_models (WORLD w);
 
 #endif // XML_PARSER_H

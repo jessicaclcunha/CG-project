@@ -79,28 +79,28 @@ void to_spherical() {
     camZ = radius * cos(alpha) * cos(beta);
 }
 
-void init_vbo(const std::vector<MODEL>& models) {
-    // Limpa quaisquer buffers previamente alocados
-    if (buffers != nullptr) {
-        delete[] buffers;
-        buffers = nullptr;
-    }
-    buffers_sizes.clear();
-
-    // Aloca memória para os buffers array
+void init_vbo(const std::vector<MODEL>& models, int *index) {
     buffers = new GLuint[models.size()];
-
+    glGenBuffers(models.size(), buffers);
     for (size_t i = 0; i < models.size(); ++i) {
         FIGURE figure = fileToFigure(models[i].file);
         std::vector<float> fig_vectors = figure_to_vectors(figure);
 
         size_t total_size = fig_vectors.size();
 
+        // Debug messages
+        std::cout << "Model " << i << " file: " << models[i].file << std::endl;
+        std::cout << "Figure vertices size: " << fig_vectors.size() << std::endl;
+
         // Gera e vincula o buffer de vértices
-        glGenBuffers(1, &buffers[i]);
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);
         glBufferData(GL_ARRAY_BUFFER, total_size * sizeof(float), fig_vectors.data(), GL_STATIC_DRAW);
-        buffers_sizes.push_back(total_size);
+        buffers_sizes.push_back(total_size/3);
+
+        //std::cout << "Buffer " << *index << " size: " << total_size << std::endl;
+        //std::cout << "Buffers_sizes size: " << buffers_sizes.size() << std::endl;
+
+        (*index)++;
     }
 }
 
@@ -136,8 +136,11 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
             glVertexPointer(3, GL_FLOAT, 0, 0);
             glDrawArrays(GL_TRIANGLES, 0, buffers_sizes[*index]);
             (*index)++;
+            printf("Index: %d\n", *index);
         } else {
-            std::cerr << "Index out of range for buffers_sizes!" << std::endl;
+            //printf("Index: %d\n", *index);
+            //printf("Buffers_sizes size: %lu\n", buffers_sizes.size());
+            //std::cerr << "Index out of range for buffers_sizes!" << std::endl;
         }
         
     }
@@ -245,12 +248,17 @@ int main(int argc, char** argv) {
     fov = get_fov(world);
     near = get_near(world);
     far = get_far(world);
-    radius = sqrt(camX * camX + camZ * camZ);
-    alpha = acos(camZ / sqrt(camX * camX + camZ * camZ));
+	radius = sqrt(camX * camX + camY * camY + camZ * camZ);
+    alpha = acos(camZ / radius);
     beta = asin(camY / radius);
 
     std::vector<MODEL> models = get_models(world);
-    init_vbo(models);
+	int num_models = count_models(world);
+
+    printf("Models size: %d\n", num_models);
+    int index = 0;
+    init_vbo(models, &index);
+    std::cout << "Index after init_vbo: " << index << std::endl;
 
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
@@ -268,4 +276,3 @@ int main(int argc, char** argv) {
     delete[] buffers;  // Deallocate memory for buffers array
     return 0;
 }
-

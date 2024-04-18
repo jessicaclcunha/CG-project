@@ -55,55 +55,22 @@ void parse_group_element(TiXmlElement* groupElement, Group& group) {
     for (TiXmlElement* transformElement = groupElement->FirstChildElement("transform"); transformElement; transformElement = transformElement->NextSiblingElement("transform")) {
         Transform transform;
 
-        const char* transformType = transformElement->Value();
-        if (strcmp(transformType, "translate") == 0) {
-            transform.type = TRANSLATE;
-            const char* timeAttribute = transformElement->Attribute("time");
-            if (timeAttribute) {
-                transform.time = std::atoi(timeAttribute);
+        for (TiXmlElement* childElement = transformElement->FirstChildElement(); childElement; childElement = childElement->NextSiblingElement()) {
+            const char* transformType = childElement->Value();
+            if (strcmp(transformType, "translate") == 0) {
+                parse_translate_transform(childElement, transform);
+                group.transforms.push_back(transform);
+            } else if (strcmp(transformType, "rotate") == 0) {
+                parse_rotate_transform(childElement, transform);
+                group.transforms.push_back(transform);
+            } else if (strcmp(transformType, "scale") == 0) {
+                parse_scale_transform(childElement, transform);
+                group.transforms.push_back(transform);
+                
             } else {
-                transform.time = 0; // Valor padrão se o atributo 'time' estiver ausente
+                std::cerr << "Error: Unknown transform type '" << transformType << "'." << std::endl;
             }
-            const char* alignAttribute = transformElement->Attribute("align");
-            if (alignAttribute && strcmp(alignAttribute, "True") == 0) {
-                transform.align = true;
-            } else {
-                transform.align = false; // Valor padrão se o atributo 'align' estiver ausente ou não for "True"
-            }
-            // Parse points
-            for (TiXmlElement* pointElement = transformElement->FirstChildElement("point"); pointElement; pointElement = pointElement->NextSiblingElement("point")) {
-                float x = std::atof(pointElement->Attribute("x"));
-                float y = std::atof(pointElement->Attribute("y"));
-                float z = std::atof(pointElement->Attribute("z"));
-                POINT point = new_point(x, y, z);
-                transform.points.push_back(point);
-            }
-        } else if (strcmp(transformType, "rotate") == 0) {
-            transform.type = ROTATE;
-            const char* timeAttribute = transformElement->Attribute("time");
-            if (timeAttribute) {
-                transform.time = std::atoi(timeAttribute);
-            } else {
-                transform.time = 0; // Valor padrão se o atributo 'time' estiver ausente
-                transform.rotate.angle = std::atof(transformElement->Attribute("angle"));
-            }
-            transform.rotate.x = std::atof(transformElement->Attribute("x"));
-            transform.rotate.y = std::atof(transformElement->Attribute("y"));
-            transform.rotate.z = std::atof(transformElement->Attribute("z"));
-        } else if (strcmp(transformType, "scale") == 0) {
-            transform.type = SCALE;
-            const char* timeAttribute = transformElement->Attribute("time");
-            if (timeAttribute) {
-                transform.time = std::atoi(timeAttribute);
-            } else {
-                transform.time = 0; // Valor padrão se o atributo 'time' estiver ausente
-            }
-            transform.scale.x = std::atof(transformElement->Attribute("x"));
-            transform.scale.y = std::atof(transformElement->Attribute("y"));
-            transform.scale.z = std::atof(transformElement->Attribute("z"));
         }
-
-        group.transforms.push_back(transform);
     }
 
     // Parse child groups
@@ -114,8 +81,48 @@ void parse_group_element(TiXmlElement* groupElement, Group& group) {
     }
 }
 
+void parse_translate_transform(TiXmlElement* translateElement, Transform& transform) {
+    transform.type = TRANSLATE;
+    translateElement->QueryFloatAttribute("x", &transform.translate.x);
+    translateElement->QueryFloatAttribute("y", &transform.translate.y);
+    translateElement->QueryFloatAttribute("z", &transform.translate.z);
+    const char* timeAttribute = translateElement->Attribute("time");
+    transform.time = (timeAttribute) ? std::atof(timeAttribute) : 0.0f;
+    transform.align = false;
 
+    const char* alignAttribute = translateElement->Attribute("align");
+    if (alignAttribute && strcmp(alignAttribute, "True") == 0) {
+        transform.align = true;
+        for (TiXmlElement* pointElement = translateElement->FirstChildElement("point"); pointElement; pointElement = pointElement->NextSiblingElement("point")) {
+            float x, y, z;
+            if (pointElement->QueryFloatAttribute("x", &x) == TIXML_SUCCESS &&
+                pointElement->QueryFloatAttribute("y", &y) == TIXML_SUCCESS &&
+                pointElement->QueryFloatAttribute("z", &z) == TIXML_SUCCESS) {
+                POINT point = new_point(x, y, z);
+                transform.points.push_back(point);
+            } else {
+                std::cerr << "Error: Invalid point element in translate transform." << std::endl;
+            }
+        }
+    }
+}
 
+void parse_rotate_transform(TiXmlElement* rotateElement, Transform& transform) {
+    transform.type = ROTATE;
+    const char* timeAttribute = rotateElement->Attribute("time");
+    transform.time = (timeAttribute) ? std::atof(timeAttribute) : 0.0f;
+    rotateElement->QueryFloatAttribute("angle", &transform.rotate.angle);
+    rotateElement->QueryFloatAttribute("x", &transform.rotate.x);
+    rotateElement->QueryFloatAttribute("y", &transform.rotate.y);
+    rotateElement->QueryFloatAttribute("z", &transform.rotate.z);
+}
+
+void parse_scale_transform(TiXmlElement* scaleElement, Transform& transform) {
+    transform.type = SCALE;
+    scaleElement->QueryFloatAttribute("x", &transform.scale.x);
+    scaleElement->QueryFloatAttribute("y", &transform.scale.y);
+    scaleElement->QueryFloatAttribute("z", &transform.scale.z);
+}
 
 
 void parse_config_file(char* filename, WORLD& world) {
@@ -172,13 +179,11 @@ void parse_config_file(char* filename, WORLD& world) {
 
     // Clear existing groups
     world.groups.clear();
-
     // Parse groups and their transformations
     for (TiXmlElement* groupElement = worldElement->FirstChildElement("group"); groupElement; groupElement = groupElement->NextSiblingElement("group")) {
         Group group = create_new_group();
-
+    
         parse_group_element(groupElement, group);
-
         world.groups.push_back(group);
     }
 }
@@ -343,10 +348,17 @@ bool get_align (TRANSFORM t) {
 
 std::vector<MODEL> get_models(WORLD &w) {
     std::vector<MODEL> models;
-    for (const auto &group: w.groups)
-        for (const auto &model : group.models)
+    for (const auto &group : w.groups) {
+        for (const auto &model : group.models) {
             models.push_back(model);
-    return  models;
+        }
+        for (const auto &childGroup : group.children) {
+            for (const auto &model : childGroup.models) {
+                models.push_back(model);
+            }
+        }
+    }
+    return models;
 }
 
 std::vector<TRANSFORM> get_group_transforms(GROUP g) {
@@ -356,7 +368,7 @@ std::vector<TRANSFORM> get_group_transforms(GROUP g) {
     return transforms;
 }
 
-std::vector<GROUP> get_model_children(GROUP g) {
+std::vector<GROUP> get_group_children(GROUP g) {
     return g.children;
 }
 
@@ -366,4 +378,15 @@ std::vector<GROUP> get_groups(WORLD w) {
 
 unsigned int get_figs_count (GROUP g) {
     return g.models.size();
+}
+
+int count_models(WORLD w) {
+    int count = 0;
+    for (const auto& group : w.groups) {
+        count += group.models.size();
+        for (const auto& childGroup : group.children) {
+            count += childGroup.models.size();
+        }
+    }
+    return count;
 }
