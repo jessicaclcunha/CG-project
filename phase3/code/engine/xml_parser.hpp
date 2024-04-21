@@ -9,6 +9,7 @@
 #include "../utils/point.hpp"
 #include "../utils/figure.hpp"
 #include "../utils/triangle.hpp"
+#include "../utils/matrix.hpp"
 
 
 enum TRANSFORM_TYPE {
@@ -172,8 +173,6 @@ std::vector<GROUP> get_group_children(GROUP g);
 
 std::vector<GROUP> get_groups(WORLD w);
 
-unsigned int get_figs_count (GROUP g);
-
-int count_models (WORLD w);
+std::vector<POINT> get_transform_points(TRANSFORM t);
 
 #endif // XML_PARSER_H

@@ -11,8 +11,6 @@
 #include <cmath>
 #include <vector>
 #include "xml_parser.hpp"
-#include "../utils/figure.hpp"
-#include "../utils/triangle.hpp"
 
 #define RED 1.0f, 0.0f, 0.0f
 #define GREEN 0.0f, 1.0f, 0.0f
@@ -90,16 +88,11 @@ void init_vbo(const std::vector<MODEL>& models, int *index) {
 
         // Debug messages
         std::cout << "Model " << i << " file: " << models[i].file << std::endl;
-        std::cout << "Figure vertices size: " << fig_vectors.size() << std::endl;
 
         // Gera e vincula o buffer de vértices
         glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);
         glBufferData(GL_ARRAY_BUFFER, total_size * sizeof(float), fig_vectors.data(), GL_STATIC_DRAW);
         buffers_sizes.push_back(total_size/3);
-
-        //std::cout << "Buffer " << *index << " size: " << total_size << std::endl;
-        //std::cout << "Buffers_sizes size: " << buffers_sizes.size() << std::endl;
-
         (*index)++;
     }
 }
@@ -109,12 +102,71 @@ void init_vbo(const std::vector<MODEL>& models, int *index) {
 void apply_transforms(const GROUP& group, unsigned int *index) {
     glPushMatrix();
 
-    for (const auto& transform : get_group_transforms(group)) {
-        switch (transform.type) {
+    for (const auto& transform : get_group_transforms(group)) 
+    {
+        switch (transform.type) 
+        {
             case TRANSLATE:
-                glTranslatef(get_translate_X(transform), get_translate_Y(transform), get_translate_Z(transform));
+            {    
+                int time = get_time(transform);
+                if(time > 0) {
+                    float t = CURRENT_TIME / time; // Calculate the interpolation parameter
+                    std::vector<POINT> points = get_transform_points(transform);
+
+                    std::cout << "Before catmullRom_curve function call" << std::endl;
+                    POINT interpolatedPoint = catmullRom_curve(points, t);
+                    std::cout << "After catmullRom_curve function call" << std::endl;
+                    
+                    glTranslatef(get_X(interpolatedPoint), get_Y(interpolatedPoint), get_Z(interpolatedPoint));  
+
+                    if(get_align(transform)) 
+                    {
+                        POINT directionVector = new_point(0.0f, 0.0f, 0.0f);
+                        if (t < 1.0f) {
+                            printf("before");
+                            POINT nextPoint = catmullRom_curve(get_transform_points(transform), t + 0.01f); // Get next point slightly ahead
+                            printf("after");
+                            set_X(directionVector, get_X(nextPoint) - get_X(interpolatedPoint));
+                            set_Y(directionVector, get_Y(nextPoint) - get_Y(interpolatedPoint));
+                            set_Z(directionVector, get_Z(nextPoint) - get_Z(interpolatedPoint));
+                        } else {
+                            printf("else before");
+                            // If at the end of the curve, use the previous point
+                            POINT prevPoint = catmullRom_curve(transform.points, t - 0.01f); // Get previous point slightly behind
+                            printf("else after");
+                            set_X(directionVector, get_X(interpolatedPoint) - get_X(prevPoint));
+                            set_Y(directionVector, get_Y(interpolatedPoint) - get_Y(prevPoint));
+                            set_Z(directionVector, get_Z(interpolatedPoint) - get_Z(prevPoint));
+                        }
+
+                        // Normalize the direction vector
+                        normalize_vector(directionVector);
+
+                        // Calculate the new Y axis (transform Y axis)
+                        POINT transformYAxis = new_point(0.0f, 1.0f, 0.0f);
+
+                        POINT z;
+                        cross_product(directionVector, transformYAxis, z); // Calculate the X axis (z)
+                        normalize_vector(z);
+
+                        POINT y;
+                        cross_product(z, directionVector, y); // Calculate the Y axis (y)
+                        normalize_vector(y);
+                        
+                        // Build the rotation matrix
+                        float rot[16];
+                        buildRotMatrix(directionVector, y, z, rot);
+
+                        // Multiply the current modelview matrix by the rotation matrix
+                        glMultMatrixf(rot);
+                    }    
+                } else {
+                    glTranslatef(get_translate_X(transform), get_translate_Y(transform), get_translate_Z(transform));
+                }
                 break;
-            case ROTATE: {
+            }
+            case ROTATE: 
+            {
                 float angle = get_rotate_angle(transform);
                 int time = get_time(transform);
                 if (time > 0)
@@ -123,21 +175,26 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
                 break;
             }
             case SCALE:
+            {    
                 glScalef(get_scale_X(transform), get_scale_Y(transform), get_scale_Z(transform));
                 break;
+            }
         }
     }
 
     glEnableClientState(GL_VERTEX_ARRAY);
 
-    for (const auto& model : group.models) {
-        if (*index < buffers_sizes.size()) {
+    for (const auto& model : group.models) 
+    {
+        if (*index < buffers_sizes.size()) 
+        {
             glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);  // Use buffer for this figure
             glVertexPointer(3, GL_FLOAT, 0, 0);
             glDrawArrays(GL_TRIANGLES, 0, buffers_sizes[*index]);
             (*index)++;
             printf("Index: %d\n", *index);
-        } else {
+        } 
+        else {
             //printf("Index: %d\n", *index);
             //printf("Buffers_sizes size: %lu\n", buffers_sizes.size());
             //std::cerr << "Index out of range for buffers_sizes!" << std::endl;
@@ -253,12 +310,9 @@ int main(int argc, char** argv) {
     beta = asin(camY / radius);
 
     std::vector<MODEL> models = get_models(world);
-	int num_models = count_models(world);
 
-    printf("Models size: %d\n", num_models);
     int index = 0;
     init_vbo(models, &index);
-    std::cout << "Index after init_vbo: " << index << std::endl;
 
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);

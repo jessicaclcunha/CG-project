@@ -91,7 +91,7 @@ void parse_translate_transform(TiXmlElement* translateElement, Transform& transf
     transform.align = false;
 
     const char* alignAttribute = translateElement->Attribute("align");
-    if (alignAttribute && strcmp(alignAttribute, "True") == 0) {
+    if (alignAttribute && strcmp(alignAttribute, "true") == 0) {
         transform.align = true;
         for (TiXmlElement* pointElement = translateElement->FirstChildElement("point"); pointElement; pointElement = pointElement->NextSiblingElement("point")) {
             float x, y, z;
@@ -352,7 +352,7 @@ std::vector<MODEL> get_models(WORLD &w) {
         for (const auto &model : group.models) {
             models.push_back(model);
         }
-        for (const auto &childGroup : group.children) {
+        for (const auto &childGroup : get_group_children(group)) {
             for (const auto &model : childGroup.models) {
                 models.push_back(model);
             }
@@ -376,17 +376,8 @@ std::vector<GROUP> get_groups(WORLD w) {
     return w.groups;
 }
 
-unsigned int get_figs_count (GROUP g) {
-    return g.models.size();
-}
-
-int count_models(WORLD w) {
-    int count = 0;
-    for (const auto& group : w.groups) {
-        count += group.models.size();
-        for (const auto& childGroup : group.children) {
-            count += childGroup.models.size();
-        }
-    }
-    return count;
+std::vector<POINT> get_transform_points(TRANSFORM t) {
+    if (t.points.size() == 0)
+        return std::vector<POINT>();
+    return t.points;
 }

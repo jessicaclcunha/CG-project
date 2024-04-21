@@ -18,6 +18,8 @@ add_library(
     ./utils/figure.hpp
 	./utils/triangle.cpp
 	./utils/triangle.hpp
+	./utils/matrix.cpp
+	./utils/matrix.hpp
 )
 
 # Biblioteca de parsing de xml

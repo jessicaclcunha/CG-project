@@ -101,3 +101,16 @@ POINT calculate_bezier_point(const std::vector<POINT>& control_points, float u, 
 
     return new_point(px, py, pz);
 }
+
+void cross_product(const POINT& a, const POINT& b, POINT& result) {
+    set_X(result, get_Y(a) * get_Z(b) - get_Z(a) * get_Y(b));
+    set_Y(result, get_Z(a) * get_X(b) - get_X(a) * get_Z(b));
+    set_Z(result, get_X(a) * get_Y(b) - get_Y(a) * get_X(b));
+}
+
+void normalize_vector(POINT z) {
+    float norm = sqrt(z->x * z->x + z->y * z->y + z->z * z->z);
+    z->x /= norm;
+    z->y /= norm;
+    z->z /= norm;
+}
