@@ -21,8 +21,6 @@ float dot_product(MATRIX a, MATRIX b);
 
 float** copy_values(float **matrix, int rows, int cols);
 
-POINT catmullRom_curve(std::vector<POINT> points, float t);
-
 void buildRotMatrix(POINT x, POINT y, POINT z, float* result);
 
 #endif // MATRIX_H

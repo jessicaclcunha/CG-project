@@ -38,6 +38,8 @@ add_library(
     config_lib
     ./engine/xml_parser.cpp
     ./engine/xml_parser.hpp
+	./engine/catmull.cpp
+	./engine/catmull.hpp
 )
 
 # Link tinyxml_lib com config_lib

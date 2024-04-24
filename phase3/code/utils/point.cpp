@@ -43,17 +43,14 @@ float get_Z (POINT p) {
 }
 
 void set_X (POINT p, float x) {
-    if (p != NULL)
         p->x = x;
 }
 
 void set_Y (POINT p, float y) {
-    if (p != NULL)
         p->y = y;
 }
 
 void set_Z (POINT p, float z) {
-    if (p != NULL)
         p->z = z;
 }
 
@@ -81,7 +78,7 @@ bool equals_point(POINT p1, POINT p2){
     return (get_X(p1) == get_X(p2) && get_Y(p1) == get_Y(p2) && get_Z(p1) == get_Z(p2));
 }
 
-POINT calculate_bezier_point(const std::vector<POINT>& control_points, float u, float v) {
+POINT calculate_bezier_point(const std::vector<POINT>& control_points, float u) {
     int n = control_points.size() - 1; // Grau do polinômio de Bernstein
     float px = 0.0f;
     float py = 0.0f;
@@ -102,15 +99,18 @@ POINT calculate_bezier_point(const std::vector<POINT>& control_points, float u, 
     return new_point(px, py, pz);
 }
 
-void cross_product(const POINT& a, const POINT& b, POINT& result) {
-    set_X(result, get_Y(a) * get_Z(b) - get_Z(a) * get_Y(b));
-    set_Y(result, get_Z(a) * get_X(b) - get_X(a) * get_Z(b));
-    set_Z(result, get_X(a) * get_Y(b) - get_Y(a) * get_X(b));
+void cross(POINT a, POINT b, POINT &result) {
+    result = new_point(get_Y(a) * get_Z(b) - get_Z(a) * get_Y(b),
+                       get_Z(a) * get_X(b) - get_X(a) * get_Z(b),
+                       get_X(a) * get_Y(b) - get_Y(a) * get_X(b));
 }
 
-void normalize_vector(POINT z) {
+void normalize(POINT z) {
     float norm = sqrt(z->x * z->x + z->y * z->y + z->z * z->z);
-    z->x /= norm;
-    z->y /= norm;
-    z->z /= norm;
+    if (norm > 0.0f)
+    {
+        z->x /= norm;
+        z->y /= norm;
+        z->z /= norm;
+    }
 }

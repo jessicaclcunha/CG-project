@@ -60,27 +60,22 @@ std::vector<std::vector<POINT> > parse_patch_file(const char* filePath) {
 }
 
 POINT bezier_interpolate_row(std::vector<POINT> controlPoints, float t) {
-    if (controlPoints.size() < 2) {
-        // Não há pontos suficientes para interpolação
-        // Você pode querer lidar com isso de forma diferente
-        return POINT(); // Ponto vazio
+    std::vector<float> basis(4);
+basis[0] = -1.0f * t * t * t + 3.0f * t * t - 3.0f * t + 1.0f;
+basis[1] = 3.0f * t * t * t - 6.0f * t * t + 3.0f * t;
+basis[2] = -3.0f * t * t * t + 3.0f * t * t;
+basis[3] = 1.0f * t * t * t;
+
+
+    float x = 0.0f, y = 0.0f, z = 0.0f;
+    for (size_t i = 0; i < controlPoints.size(); ++i) {
+        x += basis[i] * get_X(controlPoints[i]);
+        y += basis[i] * get_Y(controlPoints[i]);
+        z += basis[i] * get_Z(controlPoints[i]);
     }
 
-    std::vector<POINT> points;
-    for (int i = 0; i < controlPoints.size() - 1; i++) {
-        float x = (1 - t) * get_X(controlPoints[i]) + t * get_X(controlPoints[i + 1]);
-        float y = (1 - t) * get_Y(controlPoints[i]) + t * get_Y(controlPoints[i + 1]);
-        float z = (1 - t) * get_Z(controlPoints[i]) + t * get_Z(controlPoints[i + 1]);
-        POINT p = new_point(x, y, z);
-        points.push_back(p);
-    }
-    if (points.size() == 1) {
-        return points[0]; // Se só houver um ponto, retornar esse ponto
-    }
-    // Se houver mais de um ponto, continuar interpolação
-    return bezier_interpolate_row(points, t);
+    return new_point(x, y, z);
 }
-
 
 
 POINT bezier_interpolate(std::vector<POINT> patch, float u, float v) {

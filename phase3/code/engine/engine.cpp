@@ -11,6 +11,7 @@
 #include <cmath>
 #include <vector>
 #include "xml_parser.hpp"
+#include "catmull.hpp"
 
 #define RED 1.0f, 0.0f, 0.0f
 #define GREEN 0.0f, 1.0f, 0.0f
@@ -34,9 +35,24 @@ float upX, upY, upZ;    // Up
 float fov, near, far;
 float alpha = M_PI / 4, beta = M_PI / 4;
 float radius;
+float frames = 0;
 
 bool axis_on = false;
 bool spherical_on = false;
+bool trajectory_on = false;
+
+void framerate() {
+    frames++;
+    char title[50];
+    int time = glutGet(GLUT_ELAPSED_TIME);
+    if (time - elapsed_time > 1000) {
+        sprintf(title, "PHASE3 - Engine | FPS: %4.2f", frames * 1000.0 / (time - elapsed_time));
+        glutSetWindowTitle(title);
+        elapsed_time = time;
+        frames = 0;
+    }
+
+}
 
 void changeSize(int w, int h) {
     if (h == 0)
@@ -92,9 +108,22 @@ void init_vbo(const std::vector<MODEL>& models, int *index) {
         // Gera e vincula o buffer de vértices
         glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);
         glBufferData(GL_ARRAY_BUFFER, total_size * sizeof(float), fig_vectors.data(), GL_STATIC_DRAW);
-        buffers_sizes.push_back(total_size/3);
+        buffers_sizes.push_back(total_size * 3);
         (*index)++;
     }
+}
+
+void renderCatmullRomCurve(std::vector<POINT> points) {
+    POINT pos = new_point(0.0f, 0.0f, 0.0f);
+    POINT deriv = new_point(0.0f, 0.0f, 0.0f);
+    glBegin(GL_LINE_LOOP);
+    float gt = 0;
+    for (int i = 0; i <= 1000; i++) {
+        getGlobalCatmullRomPoint(gt, points, pos, deriv);
+        glVertex3f(get_X(pos), get_Y(pos), get_Z(pos));
+        gt += 0.001f;
+    }
+    glEnd();
 }
 
 
@@ -113,53 +142,46 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
                     float t = CURRENT_TIME / time; // Calculate the interpolation parameter
                     std::vector<POINT> points = get_transform_points(transform);
 
-                    std::cout << "Before catmullRom_curve function call" << std::endl;
-                    POINT interpolatedPoint = catmullRom_curve(points, t);
-                    std::cout << "After catmullRom_curve function call" << std::endl;
-                    
-                    glTranslatef(get_X(interpolatedPoint), get_Y(interpolatedPoint), get_Z(interpolatedPoint));  
+                    POINT pos = new_point(0.0f, 0.0f, 0.0f);
+                    POINT deriv = new_point(0.0f, 0.0f,0.0f); //x
+
+                    printf("t: %f\n", t);
+
+                    getGlobalCatmullRomPoint(t, points, pos, deriv); // Get interpolated point
+
+                    printf("X: %f, Y: %f, Z: %f\n", get_X(pos), get_Y(pos), get_Z(pos));
+
+                    if(trajectory_on)
+                        renderCatmullRomCurve(points); // Render the curve
+
+                    glTranslatef(get_X(pos), get_Y(pos), get_Z(pos));  
+
+                    printf("X: %f, Y: %f, Z: %f\n", get_X(pos), get_Y(pos), get_Z(pos));    
 
                     if(get_align(transform)) 
-                    {
-                        POINT directionVector = new_point(0.0f, 0.0f, 0.0f);
-                        if (t < 1.0f) {
-                            printf("before");
-                            POINT nextPoint = catmullRom_curve(get_transform_points(transform), t + 0.01f); // Get next point slightly ahead
-                            printf("after");
-                            set_X(directionVector, get_X(nextPoint) - get_X(interpolatedPoint));
-                            set_Y(directionVector, get_Y(nextPoint) - get_Y(interpolatedPoint));
-                            set_Z(directionVector, get_Z(nextPoint) - get_Z(interpolatedPoint));
-                        } else {
-                            printf("else before");
-                            // If at the end of the curve, use the previous point
-                            POINT prevPoint = catmullRom_curve(transform.points, t - 0.01f); // Get previous point slightly behind
-                            printf("else after");
-                            set_X(directionVector, get_X(interpolatedPoint) - get_X(prevPoint));
-                            set_Y(directionVector, get_Y(interpolatedPoint) - get_Y(prevPoint));
-                            set_Z(directionVector, get_Z(interpolatedPoint) - get_Z(prevPoint));
-                        }
+                    {   
+                        normalize(deriv); // x
+                        
+                        POINT z = NULL;
+                        POINT aux = new_point(0.0f, 1.0f, 0.0f);
+                        cross(deriv, aux, z); // z
+                        normalize(z); // z
 
-                        // Normalize the direction vector
-                        normalize_vector(directionVector);
+                        POINT y = NULL;
+                        cross(z, deriv, y); // y
+                        normalize(y); // y
 
-                        // Calculate the new Y axis (transform Y axis)
-                        POINT transformYAxis = new_point(0.0f, 1.0f, 0.0f);
-
-                        POINT z;
-                        cross_product(directionVector, transformYAxis, z); // Calculate the X axis (z)
-                        normalize_vector(z);
-
-                        POINT y;
-                        cross_product(z, directionVector, y); // Calculate the Y axis (y)
-                        normalize_vector(y);
+                        memcpy(aux, y, sizeof(float) * 3);
                         
                         // Build the rotation matrix
-                        float rot[16];
-                        buildRotMatrix(directionVector, y, z, rot);
+                        float m[16];
+
+                        buildRotMatrix(deriv, y, z, m); // x, y, z
 
                         // Multiply the current modelview matrix by the rotation matrix
-                        glMultMatrixf(rot);
-                    }    
+                        glMultMatrixf(m);
+                    }  
+
                 } else {
                     glTranslatef(get_translate_X(transform), get_translate_Y(transform), get_translate_Z(transform));
                 }
@@ -192,21 +214,15 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
             glVertexPointer(3, GL_FLOAT, 0, 0);
             glDrawArrays(GL_TRIANGLES, 0, buffers_sizes[*index]);
             (*index)++;
-            printf("Index: %d\n", *index);
         } 
-        else {
-            //printf("Index: %d\n", *index);
-            //printf("Buffers_sizes size: %lu\n", buffers_sizes.size());
-            //std::cerr << "Index out of range for buffers_sizes!" << std::endl;
-        }
-        
+        else
+            std::cerr << "Index out of range for buffers_sizes!" << std::endl;
     }
     
     glDisableClientState(GL_VERTEX_ARRAY);
 
-    for (const auto& childGroup : group.children) {
+    for (const auto& childGroup : group.children)
         apply_transforms(childGroup, index);
-    }
 
     glPopMatrix();
 }
@@ -228,6 +244,8 @@ void renderScene(void) {
     for (const auto& group : world.groups) {
         apply_transforms(group, &index);
     }
+
+    framerate();
 
     glutSwapBuffers();
 }
@@ -281,6 +299,10 @@ void keyboardFunc(unsigned char key, int x, int y) {
     case '0':
         spherical_on = !spherical_on;
         break;
+    case 't':
+        trajectory_on = !trajectory_on;
+        break;
+    
     }
     glutPostRedisplay();
 }

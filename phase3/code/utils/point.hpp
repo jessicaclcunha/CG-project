@@ -41,10 +41,10 @@ void free_point(POINT p);
 
 bool equals_point(POINT p1, POINT p2);
 
-POINT calculate_bezier_point(const std::vector<POINT>& control_points, float u, float v);
+POINT calculate_bezier_point(const std::vector<POINT>& control_points, float u);
 
-void cross_product(const POINT& a, const POINT& b, POINT& result);
+void cross(POINT a, POINT b, POINT &result);
 
-void normalize_vector(POINT z);
+void normalize(POINT z);
 
 #endif // POINT_H

@@ -35,8 +35,7 @@ typedef struct figure {
         struct {
             float tessellation;
             const char* patches_file;
-        };
-        
+        };   
     };
 } *FIGURE;
 
