@@ -109,6 +109,7 @@ void init_vbo(const std::vector<MODEL>& models, int *index) {
         glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);
         glBufferData(GL_ARRAY_BUFFER, total_size * sizeof(float), fig_vectors.data(), GL_STATIC_DRAW);
         buffers_sizes.push_back(total_size / 3);
+        (*index)++;
     }
 }
 
@@ -210,12 +211,12 @@ void draw_figures(const GROUP &g, unsigned int *index) {
 
     apply_transforms(g, index);
 
+    glEnableClientState(GL_VERTEX_ARRAY);
+
     for (const auto& model : g.models) 
     {
-        glEnableClientState(GL_VERTEX_ARRAY);
         if (*index < buffers_sizes.size()) 
         {
-            glEnableClientState(GL_VERTEX_ARRAY);
             glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);  // Use buffer for this figure
             printf("Drawing model %d\n", *index);
             glVertexPointer(3, GL_FLOAT, 0, 0);
@@ -226,8 +227,9 @@ void draw_figures(const GROUP &g, unsigned int *index) {
         } 
         else
             std::cerr << "Index out of range for buffers_sizes!" << std::endl;
-        glDisableClientState(GL_VERTEX_ARRAY);
     }
+
+    glDisableClientState(GL_VERTEX_ARRAY);
 
 
     for (const auto& childGroup : get_group_children(g))
