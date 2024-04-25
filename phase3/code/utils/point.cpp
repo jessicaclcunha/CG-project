@@ -106,11 +106,8 @@ void cross(POINT a, POINT b, POINT &result) {
 }
 
 void normalize(POINT z) {
-    float norm = sqrt(z->x * z->x + z->y * z->y + z->z * z->z);
-    if (norm > 0.0f)
-    {
-        z->x /= norm;
-        z->y /= norm;
-        z->z /= norm;
-    }
+    float norm = sqrt(get_X(z) * get_X(z) + get_Y(z) * get_Y(z) + get_Z(z) * get_Z(z));
+    set_X(z, get_X(z) / norm);
+    set_Y(z, get_Y(z) / norm);
+    set_Z(z, get_Z(z) / norm);
 }

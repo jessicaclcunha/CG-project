@@ -52,7 +52,7 @@ void getCatmullRomPoint(float t, POINT p0, POINT p1, POINT p2, POINT p3, float *
 
 void getGlobalCatmullRomPoint(float gt, std::vector<POINT> control_points, float *pos, float *deriv) {
     size_t POINT_COUNT = control_points.size();
-    float t = gt * (POINT_COUNT - 1); // T verdadeiro global
+    float t = gt * POINT_COUNT; // T verdadeiro global
     int index = floor(t);             // Qual segmento
     t = t - index;                    // Onde dentro do segmento
 

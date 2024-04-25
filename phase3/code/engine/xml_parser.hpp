@@ -38,6 +38,7 @@ typedef struct Transform {
     float time;
     bool align;
     std::vector<POINT> points;
+    POINT y_aux = new_point(0.0f, 1.0f, 0.0f);
     union {
         struct {
             float x;
@@ -151,6 +152,8 @@ int get_time (TRANSFORM t);
 
 bool get_align (TRANSFORM t);
 
+std::vector<MODEL> get_models_group(GROUP g);
+
 std::vector<MODEL> get_models(WORLD &w);
 
 std::vector<TRANSFORM> get_group_transforms(GROUP g);
@@ -174,5 +177,9 @@ std::vector<GROUP> get_group_children(GROUP g);
 std::vector<GROUP> get_groups(WORLD w);
 
 std::vector<POINT> get_transform_points(TRANSFORM t);
+
+POINT get_y_aux(TRANSFORM t);
+
+void set_y_aux (TRANSFORM t, POINT y);
 
 #endif // XML_PARSER_H

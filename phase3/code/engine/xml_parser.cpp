@@ -99,6 +99,7 @@ void parse_translate_transform(TiXmlElement* translateElement, Transform& transf
                 pointElement->QueryFloatAttribute("y", &y) == TIXML_SUCCESS &&
                 pointElement->QueryFloatAttribute("z", &z) == TIXML_SUCCESS) {
                 POINT point = new_point(x, y, z);
+                print_point(point);
                 transform.points.push_back(point);
             } else {
                 std::cerr << "Error: Invalid point element in translate transform." << std::endl;
@@ -346,17 +347,26 @@ bool get_align (TRANSFORM t) {
     return t.align;
 }
 
+std::vector<MODEL> get_models_group(GROUP g) {
+    std::vector<MODEL> models;
+    for(const auto &model : g.models)
+        models.push_back(model);
+    
+    for(const auto &childGroup : g.children)
+    {    
+        std::vector<MODEL> childModels = get_models_group(childGroup);
+        models.insert(models.end(), childModels.begin(), childModels.end());
+    }
+    
+    return models;
+}
+
 std::vector<MODEL> get_models(WORLD &w) {
     std::vector<MODEL> models;
-    for (const auto &group : w.groups) {
-        for (const auto &model : group.models) {
-            models.push_back(model);
-        }
-        for (const auto &childGroup : get_group_children(group)) {
-            for (const auto &model : childGroup.models) {
-                models.push_back(model);
-            }
-        }
+    for (const auto &group : w.groups) 
+    {
+        std::vector<MODEL> groupModels = get_models_group(group);
+        models.insert(models.end(), groupModels.begin(), groupModels.end());
     }
     return models;
 }
@@ -378,4 +388,14 @@ std::vector<GROUP> get_groups(WORLD w) {
 
 std::vector<POINT> get_transform_points(TRANSFORM t) {
     return t.points;
+}
+
+POINT get_y_aux(TRANSFORM t){
+    return t.y_aux;
+}
+
+void set_y_aux (TRANSFORM t, POINT y){
+    set_X(t.y_aux, get_X(y));
+    set_Y(t.y_aux, get_Y(y));
+    set_Z(t.y_aux, get_Z(y));
 }

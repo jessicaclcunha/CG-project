@@ -108,8 +108,7 @@ void init_vbo(const std::vector<MODEL>& models, int *index) {
         // Gera e vincula o buffer de vértices
         glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);
         glBufferData(GL_ARRAY_BUFFER, total_size * sizeof(float), fig_vectors.data(), GL_STATIC_DRAW);
-        buffers_sizes.push_back(total_size * 3);
-        (*index)++;
+        buffers_sizes.push_back(total_size / 3);
     }
 }
 
@@ -120,7 +119,6 @@ void renderCatmullRomCurve(std::vector<POINT> points, int numSamples) {
     for (int i = 0; i < numSamples; i++) {
         gt += 1.0 / numSamples;
         getGlobalCatmullRomPoint(gt, points, pos, NULL);
-        printf("X: %f, Y: %f, Z: %f\n", pos[0], pos[1], pos[2]);
         glVertex3f(pos[0], pos[1], pos[2]);
     }
     glEnd();
@@ -129,8 +127,6 @@ void renderCatmullRomCurve(std::vector<POINT> points, int numSamples) {
 
 
 void apply_transforms(const GROUP& group, unsigned int *index) {
-    glPushMatrix();
-
     for (const auto& transform : get_group_transforms(group)) 
     {
         switch (transform.type) 
@@ -153,7 +149,9 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
             }
             case TRANSLATE:
             {    
+                printf("Translate\n");
                 int time = get_time(transform);
+                printf("Time: %d\n", time);
                 if(time > 0) {
                     float t = (glutGet(GLUT_ELAPSED_TIME) / 1000.0) / time; // Calculate the interpolation parameter
                     std::vector<POINT> points = get_transform_points(transform);
@@ -167,28 +165,25 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
                     if(trajectory_on)
                         renderCatmullRomCurve(points, 100); // Render the curve
 
-                    glTranslatef(pos[0], pos[1], pos[2]);  
-
-                    printf("After translation - X: %f, Y: %f, Z: %f\n", pos[0], pos[1], pos[2]);   
-
-                    printf("Derivative - X: %f, Y: %f, Z: %f\n", deriv[0], deriv[1], deriv[2]);
+                    glTranslatef(pos[0], pos[1], pos[2]);
 
                     POINT derivx = new_point(deriv[0], deriv[1], deriv[2]); 
 
                     if(get_align(transform)) 
                     {   
+                        print_point(derivx); // x
                         normalize(derivx); // x
+
+                        print_point(derivx); // x
                         
                         POINT z = NULL;
-                        POINT aux = new_point(0.0f, 1.0f, 0.0f);
-                        cross(derivx, aux, z); // z
+                        cross(derivx, get_y_aux(transform), z); // z
                         normalize(z); // z
 
                         POINT y = NULL;
                         cross(z, derivx, y); // y
+                        set_y_aux(transform, y); // y
                         normalize(y); // y
-
-                        memcpy(aux, y, sizeof(float) * 3);
                         
                         // Build the rotation matrix
                         float m[16];
@@ -199,33 +194,44 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
                         glMultMatrixf(m);
                     }  
                 } 
-                else {
+                else 
+                {
+                    printf("\nTrajectory finished.\n");
                     glTranslatef(get_translate_X(transform), get_translate_Y(transform), get_translate_Z(transform));
                 }
                 break;
             }
         }
     }
+}
 
-    glEnableClientState(GL_VERTEX_ARRAY);
+void draw_figures(const GROUP &g, unsigned int *index) {
+    glPushMatrix();
 
-    for (const auto& model : group.models) 
+    apply_transforms(g, index);
+
+    for (const auto& model : g.models) 
     {
+        glEnableClientState(GL_VERTEX_ARRAY);
         if (*index < buffers_sizes.size()) 
         {
+            glEnableClientState(GL_VERTEX_ARRAY);
             glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);  // Use buffer for this figure
+            printf("Drawing model %d\n", *index);
             glVertexPointer(3, GL_FLOAT, 0, 0);
+            printf("Model %d bound\n", *index);
             glDrawArrays(GL_TRIANGLES, 0, buffers_sizes[*index]);
+            printf("Model %d drawn\n", *index);
             (*index)++;
         } 
         else
             std::cerr << "Index out of range for buffers_sizes!" << std::endl;
+        glDisableClientState(GL_VERTEX_ARRAY);
     }
-    
-    glDisableClientState(GL_VERTEX_ARRAY);
 
-    for (const auto& childGroup : group.children)
-        apply_transforms(childGroup, index);
+
+    for (const auto& childGroup : get_group_children(g))
+        draw_figures(childGroup, index);
 
     glPopMatrix();
 }
@@ -245,7 +251,7 @@ void renderScene(void) {
 
     unsigned int index = 0;
     for (const auto& group : world.groups) {
-        apply_transforms(group, &index);
+        draw_figures(group, &index);
     }
 
     framerate();
