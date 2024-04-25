@@ -43,7 +43,7 @@ void print_figura(FIGURE f);
 int number_triangles(FIGURE f);
 std::string print_triangulos(FIGURE f);
 void free_figure (FIGURE f);
-std::vector<float> figure_to_vectors(FIGURE figure) ;
+std::vector<float> figure_to_vectors(const FIGURE& figure);
 
 void concat_FIGURES (FIGURE f1, FIGURE f2);
 

@@ -434,15 +434,21 @@ void free_figure(FIGURE f) {
     }
 }
 
-std::vector<float> figure_to_vectors(FIGURE figure) {
-    std::vector<float> vectores;
-    for (const TRIANGLE &triangulo : *(figure->triangles)) {
-        std::vector<POINT>* vertexBegin = get_points(triangulo);
-        for (const POINT &vertex : *vertexBegin) {
-            vectores.push_back(get_X(vertex));
-            vectores.push_back(get_Y(vertex));
-            vectores.push_back(get_Z(vertex));
+std::vector<float> figure_to_vectors(const FIGURE& figure) {
+    std::vector<float> vectors;
+    if (figure->triangles) {
+        vectors.reserve(figure->triangles->size() * 3 * 3); // Cada triângulo tem 3 vértices, cada vértice tem 3 coordenadas
+
+        for (const TRIANGLE& triangle : *(figure->triangles)) 
+        {
+            const std::vector<POINT>& vertices = *get_points(triangle);
+            for (const POINT& vertex : vertices) 
+            {
+                vectors.push_back(get_X(vertex));
+                vectors.push_back(get_Y(vertex));
+                vectors.push_back(get_Z(vertex));
+            }
         }
     }
-    return vectores;
+    return vectors;
 }

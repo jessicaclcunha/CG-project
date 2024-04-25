@@ -377,7 +377,5 @@ std::vector<GROUP> get_groups(WORLD w) {
 }
 
 std::vector<POINT> get_transform_points(TRANSFORM t) {
-    if (t.points.size() == 0)
-        return std::vector<POINT>();
     return t.points;
 }

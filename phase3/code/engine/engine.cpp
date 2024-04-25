@@ -4,6 +4,7 @@
 #else
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include <IL/il.h>
 #endif
 
 #include <iostream>
@@ -20,7 +21,6 @@
 #define PINK 1.0f, 0.75f, 0.8f
 #define PURPLE 0.5f, 0.0f, 0.5f
 
-#define CURRENT_TIME ((double)glutGet(GLUT_ELAPSED_TIME) / 1000.0) // Current time in seconds
 int init_time;
 int elapsed_time = 0;
 
@@ -113,15 +113,15 @@ void init_vbo(const std::vector<MODEL>& models, int *index) {
     }
 }
 
-void renderCatmullRomCurve(std::vector<POINT> points) {
-    POINT pos = new_point(0.0f, 0.0f, 0.0f);
-    POINT deriv = new_point(0.0f, 0.0f, 0.0f);
+void renderCatmullRomCurve(std::vector<POINT> points, int numSamples) {
+    float pos[3];
     glBegin(GL_LINE_LOOP);
     float gt = 0;
-    for (int i = 0; i <= 1000; i++) {
-        getGlobalCatmullRomPoint(gt, points, pos, deriv);
-        glVertex3f(get_X(pos), get_Y(pos), get_Z(pos));
-        gt += 0.001f;
+    for (int i = 0; i < numSamples; i++) {
+        gt += 1.0 / numSamples;
+        getGlobalCatmullRomPoint(gt, points, pos, NULL);
+        printf("X: %f, Y: %f, Z: %f\n", pos[0], pos[1], pos[2]);
+        glVertex3f(pos[0], pos[1], pos[2]);
     }
     glEnd();
 }
@@ -135,56 +135,9 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
     {
         switch (transform.type) 
         {
-            case TRANSLATE:
+            case SCALE:
             {    
-                int time = get_time(transform);
-                if(time > 0) {
-                    float t = CURRENT_TIME / time; // Calculate the interpolation parameter
-                    std::vector<POINT> points = get_transform_points(transform);
-
-                    POINT pos = new_point(0.0f, 0.0f, 0.0f);
-                    POINT deriv = new_point(0.0f, 0.0f,0.0f); //x
-
-                    printf("t: %f\n", t);
-
-                    getGlobalCatmullRomPoint(t, points, pos, deriv); // Get interpolated point
-
-                    printf("X: %f, Y: %f, Z: %f\n", get_X(pos), get_Y(pos), get_Z(pos));
-
-                    if(trajectory_on)
-                        renderCatmullRomCurve(points); // Render the curve
-
-                    glTranslatef(get_X(pos), get_Y(pos), get_Z(pos));  
-
-                    printf("X: %f, Y: %f, Z: %f\n", get_X(pos), get_Y(pos), get_Z(pos));    
-
-                    if(get_align(transform)) 
-                    {   
-                        normalize(deriv); // x
-                        
-                        POINT z = NULL;
-                        POINT aux = new_point(0.0f, 1.0f, 0.0f);
-                        cross(deriv, aux, z); // z
-                        normalize(z); // z
-
-                        POINT y = NULL;
-                        cross(z, deriv, y); // y
-                        normalize(y); // y
-
-                        memcpy(aux, y, sizeof(float) * 3);
-                        
-                        // Build the rotation matrix
-                        float m[16];
-
-                        buildRotMatrix(deriv, y, z, m); // x, y, z
-
-                        // Multiply the current modelview matrix by the rotation matrix
-                        glMultMatrixf(m);
-                    }  
-
-                } else {
-                    glTranslatef(get_translate_X(transform), get_translate_Y(transform), get_translate_Z(transform));
-                }
+                glScalef(get_scale_X(transform), get_scale_Y(transform), get_scale_Z(transform));
                 break;
             }
             case ROTATE: 
@@ -192,13 +145,63 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
                 float angle = get_rotate_angle(transform);
                 int time = get_time(transform);
                 if (time > 0)
-                    angle = (CURRENT_TIME - init_time) * 360 / time;
+                    angle = (((glutGet(GLUT_ELAPSED_TIME) / 1000.0) - elapsed_time) * 360) / time;
+                    while (angle > 360)
+                        angle -= 360;
                 glRotatef(angle, get_rotate_X(transform), get_rotate_Y(transform), get_rotate_Z(transform));
                 break;
             }
-            case SCALE:
+            case TRANSLATE:
             {    
-                glScalef(get_scale_X(transform), get_scale_Y(transform), get_scale_Z(transform));
+                int time = get_time(transform);
+                if(time > 0) {
+                    float t = (glutGet(GLUT_ELAPSED_TIME) / 1000.0) / time; // Calculate the interpolation parameter
+                    std::vector<POINT> points = get_transform_points(transform);
+
+                    float pos[3], deriv[3]; //x
+
+                    getGlobalCatmullRomPoint(t, points, pos, deriv); // Get interpolated point
+
+                    printf("Before translation - X: %f, Y: %f, Z: %f\n", pos[0], pos[1], pos[2]);
+
+                    if(trajectory_on)
+                        renderCatmullRomCurve(points, 100); // Render the curve
+
+                    glTranslatef(pos[0], pos[1], pos[2]);  
+
+                    printf("After translation - X: %f, Y: %f, Z: %f\n", pos[0], pos[1], pos[2]);   
+
+                    printf("Derivative - X: %f, Y: %f, Z: %f\n", deriv[0], deriv[1], deriv[2]);
+
+                    POINT derivx = new_point(deriv[0], deriv[1], deriv[2]); 
+
+                    if(get_align(transform)) 
+                    {   
+                        normalize(derivx); // x
+                        
+                        POINT z = NULL;
+                        POINT aux = new_point(0.0f, 1.0f, 0.0f);
+                        cross(derivx, aux, z); // z
+                        normalize(z); // z
+
+                        POINT y = NULL;
+                        cross(z, derivx, y); // y
+                        normalize(y); // y
+
+                        memcpy(aux, y, sizeof(float) * 3);
+                        
+                        // Build the rotation matrix
+                        float m[16];
+
+                        buildRotMatrix(derivx, y, z, m); // x, y, z
+
+                        // Multiply the current modelview matrix by the rotation matrix
+                        glMultMatrixf(m);
+                    }  
+                } 
+                else {
+                    glTranslatef(get_translate_X(transform), get_translate_Y(transform), get_translate_Z(transform));
+                }
                 break;
             }
         }
@@ -344,8 +347,6 @@ int main(int argc, char** argv) {
     glEnable(GL_CULL_FACE);
 
     elapsed_time = glutGet(GLUT_ELAPSED_TIME);
-    init_time = CURRENT_TIME;
-
 
     glutMainLoop();
 
