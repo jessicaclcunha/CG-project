@@ -139,13 +139,29 @@
         <!-- Cometa -->
         <group>
             <transform>
-                <rotate angle="-75" x=" 1" y="0" z="0"/>
-                <translate time="10" align="True" > <!-- Posição aleatória -->
-                    <point x="50" y="0" z="0"/>
-                    <point x="0" y="50" z="0"/>
-                    <point x="0" y="0" z="50"/>
-                    <point x="50" y="0" z="0"/>
-                </translate>
+                <translate time = "10" align="true"> <!-- O campo align diz se o objecto deve ser orientado na curva -->
+					<point x="285" y="0" z="85"/>
+                    <point x="243" y="-5" z="170"/>
+                    <point x="176" y="-10" z="235"/>
+                    <point x="93" y="-5" z="275"/>
+                    <point x="0" y="0" z="290"/>
+                    <point x="-93" y="5" z="275"/>
+                    <point x="-176" y="10" z="235"/>
+                    <point x="-243" y="5" z="170"/>
+                    <point x="-285" y="0" z="85"/>
+                    <point x="-300" y="0" z="0"/>
+                    <point x="-285" y="0" z="-85"/>
+                    <point x="-243" y="5" z="-170"/>
+                    <point x="-176" y="10" z="-235"/>
+                    <point x="-93" y="5" z="-275"/>
+                    <point x="0" y="0" z="-290"/>
+                    <point x="93" y="-5" z="-275"/>
+                    <point x="176" y="-10" z="-235"/>
+                    <point x="243" y="-5" z="-170"/>
+                    <point x="285" y="0" z="-85"/>
+                    <point x="300" y="0" z="0"/>
+				</translate>
+                <rotate angle="-90" x="1" y="0" z="0"/>
                 <scale x="5" y="5" z="5"/> <!-- Tamanho do cometa -->
             </transform>
             <models>
