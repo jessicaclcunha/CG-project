@@ -21,7 +21,7 @@
 #define PINK 1.0f, 0.75f, 0.8f
 #define PURPLE 0.5f, 0.0f, 0.5f
 
-int init_time;
+int init_time = 0;
 int elapsed_time = 0;
 
 WORLD world;
@@ -74,16 +74,16 @@ void draw_axis() {
     glBegin(GL_LINES);
     // X Axis
     glColor3f(PINK);
-    glVertex3f(100.0f, 0.0f, 0.0f);
-    glVertex3f(-100.0f, 0.0f, 0.0f);
+    glVertex3f(1000.0f, 0.0f, 0.0f);
+    glVertex3f(-1000.0f, 0.0f, 0.0f);
     // Y Axis
     glColor3f(PURPLE);
-    glVertex3f(0.0f, 100.0f, 0.0f);
-    glVertex3f(0.0f, -100.0f, 0.0f);
+    glVertex3f(0.0f, 1000.0f, 0.0f);
+    glVertex3f(0.0f, -1000.0f, 0.0f);
     // Z Axis
     glColor3f(BLUE);
-    glVertex3f(0.0f, 0.0f, 100.0f);
-    glVertex3f(0.0f, 0.0f, -100.0f);
+    glVertex3f(0.0f, 0.0f, 1000.0f);
+    glVertex3f(0.0f, 0.0f, -1000.0f);
     glEnd();
 }
 
@@ -101,9 +101,6 @@ void init_vbo(const std::vector<MODEL>& models, int *index) {
         std::vector<float> fig_vectors = figure_to_vectors(figure);
 
         size_t total_size = fig_vectors.size();
-
-        // Debug messages
-        std::cout << "Model " << i << " file: " << models[i].file << std::endl;
 
         // Gera e vincula o buffer de vértices
         glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);
@@ -142,26 +139,22 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
                 float angle = get_rotate_angle(transform);
                 int time = get_time(transform);
                 if (time > 0)
-                    angle = (((glutGet(GLUT_ELAPSED_TIME) / 1000.0) - elapsed_time) * 360) / time;
-                    while (angle > 360)
-                        angle -= 360;
+                    angle = (((glutGet(GLUT_ELAPSED_TIME) / 1000.0f) - init_time) * 360) / time;
+                while (angle > 360)
+                    angle -= 360;
                 glRotatef(angle, get_rotate_X(transform), get_rotate_Y(transform), get_rotate_Z(transform));
                 break;
             }
             case TRANSLATE:
             {    
-                printf("Translate\n");
                 int time = get_time(transform);
-                printf("Time: %d\n", time);
                 if(time > 0) {
                     float t = (glutGet(GLUT_ELAPSED_TIME) / 1000.0) / time; // Calculate the interpolation parameter
                     std::vector<POINT> points = get_transform_points(transform);
 
                     float pos[3], deriv[3]; //x
 
-                    getGlobalCatmullRomPoint(t, points, pos, deriv); // Get interpolated point
-
-                    printf("Before translation - X: %f, Y: %f, Z: %f\n", pos[0], pos[1], pos[2]);
+                    getGlobalCatmullRomPoint(t, points, pos, deriv);
 
                     if(trajectory_on)
                         renderCatmullRomCurve(points, 100); // Render the curve
@@ -172,10 +165,7 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
 
                     if(get_align(transform)) 
                     {   
-                        print_point(derivx); // x
                         normalize(derivx); // x
-
-                        print_point(derivx); // x
                         
                         POINT z = NULL;
                         cross(derivx, get_y_aux(transform), z); // z
@@ -197,7 +187,6 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
                 } 
                 else 
                 {
-                    printf("\nTrajectory finished.\n");
                     glTranslatef(get_translate_X(transform), get_translate_Y(transform), get_translate_Z(transform));
                 }
                 break;
@@ -218,11 +207,8 @@ void draw_figures(const GROUP &g, unsigned int *index) {
         if (*index < buffers_sizes.size()) 
         {
             glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);  // Use buffer for this figure
-            printf("Drawing model %d\n", *index);
             glVertexPointer(3, GL_FLOAT, 0, 0);
-            printf("Model %d bound\n", *index);
             glDrawArrays(GL_TRIANGLES, 0, buffers_sizes[*index]);
-            printf("Model %d drawn\n", *index);
             (*index)++;
         } 
         else
@@ -355,6 +341,7 @@ int main(int argc, char** argv) {
     glEnable(GL_CULL_FACE);
 
     elapsed_time = glutGet(GLUT_ELAPSED_TIME);
+    init_time = (1.0f * glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
 
     glutMainLoop();
 

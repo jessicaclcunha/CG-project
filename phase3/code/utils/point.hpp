@@ -43,8 +43,8 @@ bool equals_point(POINT p1, POINT p2);
 
 POINT calculate_bezier_point(const std::vector<POINT>& control_points, float u);
 
-void cross(POINT a, POINT b, POINT &result);
+void cross(const POINT a, const POINT b, POINT &result);
 
-void normalize(POINT z);
+void normalize(POINT &z);
 
 #endif // POINT_H

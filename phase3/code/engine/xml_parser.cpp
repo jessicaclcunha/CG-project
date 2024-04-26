@@ -99,13 +99,14 @@ void parse_translate_transform(TiXmlElement* translateElement, Transform& transf
                 pointElement->QueryFloatAttribute("y", &y) == TIXML_SUCCESS &&
                 pointElement->QueryFloatAttribute("z", &z) == TIXML_SUCCESS) {
                 POINT point = new_point(x, y, z);
-                print_point(point);
                 transform.points.push_back(point);
             } else {
                 std::cerr << "Error: Invalid point element in translate transform." << std::endl;
             }
         }
     }
+
+    transform.y_aux = new_point(0.0f, 1.0f, 0.0f);
 }
 
 void parse_rotate_transform(TiXmlElement* rotateElement, Transform& transform) {

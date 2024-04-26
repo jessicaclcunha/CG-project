@@ -38,7 +38,7 @@ typedef struct Transform {
     float time;
     bool align;
     std::vector<POINT> points;
-    POINT y_aux = new_point(0.0f, 1.0f, 0.0f);
+    POINT y_aux;
     union {
         struct {
             float x;

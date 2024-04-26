@@ -20,6 +20,7 @@
         <!-- Mercúrio -->
         <group>
             <transform>
+                <rotate time="0,48" x="0" y="1" z="0"/>
                 <translate x="0" y="105" z="105"/> <!-- Posição aleatória -->
                 <scale x="0.35" y="0.35" z="0.35"/> <!-- Tamanho de Mercúrio -->
             </transform>
@@ -30,6 +31,7 @@
         <!-- Vênus -->
         <group>
             <transform>
+                <rotate time="1,24" x="0" y="1" z="0"/>
                 <translate x="0" y="-50" z="180"/> <!-- Posição aleatória -->
                 <scale x="0.87" y="0.87" z="0.87"/> <!-- Tamanho de Vênus -->
             </transform>
@@ -40,6 +42,7 @@
         <!-- Terra -->
         <group>
             <transform>
+                <rotate time="2" x="0" y="1" z="0"/>
                 <translate x="-150" y="0" z="140"/> <!-- Posição aleatória --> 
                 <scale x="0.91" y="0.91" z="0.91"/> <!-- Tamanho da Terra -->
             </transform>
@@ -48,7 +51,8 @@
             </models>
             <!-- Lua -->                
             <group>
-                <transform>  
+                <transform> 
+                    <rotate time="0,1618" x="0" y="1" z="0"/>
                     <translate x="-5" y="5" z="0"/> <!-- Posição aleatória -->
                     <scale x="0.25" y="0.25" z="0.25"/> <!-- Tamanho da Lua -->
                 </transform>
@@ -59,6 +63,7 @@
         </group>    
         <group>
             <transform>
+                <rotate time="3,76" x="0" y="1" z="0"/>
                 <translate x="-150" y="50" z="170"/> <!-- Posição aleatória -->
                 <scale x="0.49" y="0.49" z="0.49"/> <!-- Tamanho de Marte -->
             </transform>
@@ -68,6 +73,7 @@
             <!-- Fobos -->
             <group>
                 <transform>  
+                    <rotate time="0,00198" x="0" y="1" z="0"/>
                     <translate x="-5" y="5" z="0"/> <!-- Posição aleatória -->
                     <scale x="0.0016" y="0.0016" z="0.0016"/> <!-- Tamanho de Fobos -->
                 </transform>
@@ -78,6 +84,7 @@
             <!-- Deimos -->
             <group>
                 <transform>  
+                    <rotate time="0,0834" x="0" y="1" z="0"/>
                     <translate x="5" y="5" z="0"/> <!-- Posição aleatória -->
                     <scale x="0.0009" y="0.0009" z="0.0009"/> <!-- Tamanho de Deimos -->
                 </transform>
@@ -89,6 +96,7 @@
         <!-- Júpiter -->
         <group>
             <transform>
+                <rotate time="23,72" x="0" y="1" z="0"/>
                 <translate x="450" y="80" z="250"/> <!-- Posição aleatória -->
                 <scale x="10.27" y="10.27" z="10.27"/> <!-- Tamanho de Júpiter -->
             </transform>
@@ -99,6 +107,7 @@
         <!-- Saturno -->
         <group>
             <transform>
+                <rotate time="58,92" x="0" y="1" z="0"/>
                 <translate x="500" y="-10" z="350"/> <!-- Posição aleatória -->
                 <scale x="8.65" y="8.65" z="8.65"/> <!-- Tamanho de Saturno -->
             </transform>
@@ -119,6 +128,7 @@
         <!-- Úrano -->
         <group>
             <transform>
+                <rotate time="168,02" x="0" y="1" z="0"/>
                 <translate x="550" y="70" z="300"/> <!-- Posição aleatória -->
                 <scale x="3.67" y="3.67" z="3.67"/> <!-- Tamanho de Úrano -->
             </transform>
@@ -129,6 +139,7 @@
         <!-- Netuno -->
         <group>
             <transform>
+                <rotate time="329,6" x="0" y="1" z="0"/>
                 <translate x="450" y="150" z="-10"/> <!-- Posição aleatória -->
                 <scale x="3.55" y="3.55" z="3.55"/> <!-- Tamanho de Netuno -->
             </transform>
@@ -140,26 +151,26 @@
         <group>
             <transform>
                 <translate time = "10" align="true"> <!-- O campo align diz se o objecto deve ser orientado na curva -->
-					<point x="285" y="0" z="85"/>
-                    <point x="243" y="-5" z="170"/>
-                    <point x="176" y="-10" z="235"/>
-                    <point x="93" y="-5" z="275"/>
-                    <point x="0" y="0" z="290"/>
-                    <point x="-93" y="5" z="275"/>
-                    <point x="-176" y="10" z="235"/>
-                    <point x="-243" y="5" z="170"/>
-                    <point x="-285" y="0" z="85"/>
-                    <point x="-300" y="0" z="0"/>
-                    <point x="-285" y="0" z="-85"/>
-                    <point x="-243" y="5" z="-170"/>
-                    <point x="-176" y="10" z="-235"/>
-                    <point x="-93" y="5" z="-275"/>
-                    <point x="0" y="0" z="-290"/>
-                    <point x="93" y="-5" z="-275"/>
-                    <point x="176" y="-10" z="-235"/>
-                    <point x="243" y="-5" z="-170"/>
                     <point x="285" y="0" z="-85"/>
-                    <point x="300" y="0" z="0"/>
+                    <point x="243" y="-5" z="-170"/>
+                    <point x="176" y="-10" z="-235"/>
+                    <point x="93" y="-5" z="-275"/>
+                    <point x="0" y="0" z="-290"/>
+                    <point x="-93" y="5" z="-275"/>
+                    <point x="-176" y="10" z="-235"/>
+                    <point x="-243" y="5" z="-170"/>
+                    <point x="-285" y="0" z="-85"/>
+                    <point x="-300" y="0" z="0"/>
+                    <point x="-285" y="0" z="85"/>
+                    <point x="-243" y="5" z="170"/>
+                    <point x="-176" y="10" z="235"/>
+                    <point x="-93" y="5" z="275"/>
+                    <point x="0" y="0" z="290"/>
+                    <point x="93" y="-5" z="275"/>
+                    <point x="176" y="-10" z="235"/>
+                    <point x="243" y="-5" z="170"/>
+                    <point x="285" y="0" z="85"/>
+					<point x="300" y="0" z="0"/>
 				</translate>
                 <rotate angle="-90" x="1" y="0" z="0"/>
                 <scale x="5" y="5" z="5"/> <!-- Tamanho do cometa -->
