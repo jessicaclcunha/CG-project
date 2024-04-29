@@ -111,3 +111,9 @@ void normalize(POINT &z) {
     set_Y(z, get_Y(z) / norm);
     set_Z(z, get_Z(z) / norm);
 }
+
+POINT subtract_points(POINT p1, POINT p2) {
+    POINT result;
+    result = new_point(get_X(p1) - get_X(p2), get_Y(p1) - get_Y(p2), get_Z(p1) - get_Z(p2));
+    return result;
+}

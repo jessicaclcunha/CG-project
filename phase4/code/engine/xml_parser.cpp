@@ -16,6 +16,8 @@ Camera create_new_camera() {
 MODEL create_new_model() {
     Model m;
     m.file = "";
+    m.texture_file = "";
+    m.colors = std::vector<COLOR>();
     return m;
 }
 
@@ -23,6 +25,7 @@ GROUP create_new_group() {
     Group g;
     g.models = std::vector<Model>();
     g.transforms = std::vector<Transform>();
+    g.children = std::vector<Group>();
     return g;
 }
 
@@ -32,6 +35,7 @@ WORLD create_world() {
     w.windowHeight = 0;
     w.camera = create_new_camera();
     w.groups = std::vector<GROUP>();
+    w.lights = std::vector<LIGHT>();
     return w;
 }
 
@@ -41,13 +45,66 @@ void parse_group_element(TiXmlElement* groupElement, Group& group) {
     if (modelsElement) {
         for (TiXmlElement* modelElement = modelsElement->FirstChildElement("model"); modelElement; modelElement = modelElement->NextSiblingElement("model")) {
             Model model;
+
             const char* fileAttribute = modelElement->Attribute("file");
             if (fileAttribute) {
                 model.file = fileAttribute;
-                group.models.push_back(model);
             } else {
                 std::cerr << "Error: Model element is missing 'file' attribute." << std::endl;
+                continue; // Skip this model if 'file' attribute is missing
             }
+
+            // Parse texture
+            TiXmlElement* textureElement = modelElement->FirstChildElement("texture");
+            if (textureElement) {
+                const char* textureFileAttribute = textureElement->Attribute("file");
+                if (textureFileAttribute) {
+                    model.texture_file = textureFileAttribute;
+                } else {
+                    std::cerr << "Error: Texture element is missing 'file' attribute." << std::endl;
+                }
+            }
+
+            // Parse colors
+            for (TiXmlElement* colorElement = modelElement->FirstChildElement("color"); colorElement; colorElement = colorElement->NextSiblingElement("color")) {
+                COLOR color;
+
+                for (TiXmlElement* childElement = colorElement->FirstChildElement(); childElement; childElement = childElement->NextSiblingElement()) {
+                    const char* colorType = childElement->Value();
+                    if (strcmp(colorType, "diffuse") == 0) {
+                        color.type = DIFFUSE;
+                        childElement->QueryFloatAttribute("R", &color.diffuse.r);
+                        childElement->QueryFloatAttribute("G", &color.diffuse.g);
+                        childElement->QueryFloatAttribute("B", &color.diffuse.b);
+                        model.colors.push_back(color);
+                    } else if (strcmp(colorType, "ambient") == 0) {
+                        color.type = AMBIENT;
+                        childElement->QueryFloatAttribute("R", &color.ambient.r);
+                        childElement->QueryFloatAttribute("G", &color.ambient.g);
+                        childElement->QueryFloatAttribute("B", &color.ambient.b);
+                        model.colors.push_back(color);
+                    } else if (strcmp(colorType, "specular") == 0) {
+                        color.type = SPECULAR;
+                        childElement->QueryFloatAttribute("R", &color.specular.r);
+                        childElement->QueryFloatAttribute("G", &color.specular.g);
+                        childElement->QueryFloatAttribute("B", &color.specular.b);
+                        model.colors.push_back(color);
+                    } else if (strcmp(colorType, "emissive") == 0) {
+                        color.type = EMISSIVE;
+                        childElement->QueryFloatAttribute("R", &color.emissive.r);
+                        childElement->QueryFloatAttribute("G", &color.emissive.g);
+                        childElement->QueryFloatAttribute("B", &color.emissive.b);
+                        model.colors.push_back(color);
+                    } else if (strcmp(colorType, "shininess") == 0) {
+                        color.type = SHININESS;
+                        childElement->QueryFloatAttribute("value", &color.shininess.value);
+                        model.colors.push_back(color);
+                    } else {
+                        std::cerr << "Error: Unknown color type '" << colorType << "'." << std::endl;
+                    }
+                }
+            }
+            group.models.push_back(model);
         }
     }
 
@@ -66,7 +123,6 @@ void parse_group_element(TiXmlElement* groupElement, Group& group) {
             } else if (strcmp(transformType, "scale") == 0) {
                 parse_scale_transform(childElement, transform);
                 group.transforms.push_back(transform);
-                
             } else {
                 std::cerr << "Error: Unknown transform type '" << transformType << "'." << std::endl;
             }
@@ -188,6 +244,45 @@ void parse_config_file(char* filename, WORLD& world) {
         parse_group_element(groupElement, group);
         world.groups.push_back(group);
     }
+
+    world.lights.clear();
+    // Parse lights
+    for (TiXmlElement* lightsElement = worldElement->FirstChildElement("lights"); lightsElement; lightsElement = lightsElement->NextSiblingElement("lights")) {
+        for (TiXmlElement* lightElement = lightsElement->FirstChildElement("light"); lightElement; lightElement = lightElement->NextSiblingElement("light")) {
+            LIGHT light;
+            const char* typeStr = lightElement->Attribute("type");
+            if (typeStr) {
+                std::string type(typeStr);
+                if (type == "point") {
+                    light.type = L_POINT;
+                    lightElement->QueryFloatAttribute("posx", &light.l_point.posX);
+                    lightElement->QueryFloatAttribute("posy", &light.l_point.posY);
+                    lightElement->QueryFloatAttribute("posz", &light.l_point.posZ);
+                } else if (type == "directional") {
+                    light.type = L_DIRECTIONAL;
+                    lightElement->QueryFloatAttribute("dirx", &light.l_directional.dirX);
+                    lightElement->QueryFloatAttribute("diry", &light.l_directional.dirY);
+                    lightElement->QueryFloatAttribute("dirz", &light.l_directional.dirZ);
+                } else if (type == "spotlight") {
+                    light.type = L_SPOTLIGHT;
+                    lightElement->QueryFloatAttribute("posx", &light.l_spotlight.posX);
+                    lightElement->QueryFloatAttribute("posy", &light.l_spotlight.posY);
+                    lightElement->QueryFloatAttribute("posz", &light.l_spotlight.posZ);
+                    lightElement->QueryFloatAttribute("dirz", &light.l_spotlight.dirX);
+                    lightElement->QueryFloatAttribute("diry", &light.l_spotlight.dirY);
+                    lightElement->QueryFloatAttribute("dirz", &light.l_spotlight.dirZ);
+                    lightElement->QueryFloatAttribute("cutoff", &light.l_spotlight.cutoff);
+                } else {
+                    // Handle unknown light type
+                    std::cerr << "Unknown light type: " << type << std::endl;
+                }
+                world.lights.push_back(light);
+            } else {
+                // Handle missing or invalid light type
+                std::cerr << "Missing or invalid light type." << std::endl;
+            }
+        }
+    }
 }
 
 void delete_world(WORLD &w) {
@@ -202,10 +297,17 @@ void delete_world(WORLD &w) {
     w.camera.projection.near = 0.0f;
     w.camera.projection.far = 0.0f;
     for (Group &group : w.groups) {
+        for (Model &model : group.models) {
+            model.file = "";
+            model.texture_file = "";
+            model.colors.clear();
+        }
         group.models.clear(); // Limpar os modelos do grupo
         group.transforms.clear(); // Limpar as transformações do grupo
+        group.children.clear(); // Limpar os filhos do grupo
     }
     w.groups.clear();
+
 }
 
 int get_windowWidth(WORLD w) {
@@ -399,4 +501,8 @@ void set_y_aux (TRANSFORM t, POINT y){
     set_X(t.y_aux, get_X(y));
     set_Y(t.y_aux, get_Y(y));
     set_Z(t.y_aux, get_Z(y));
+}
+
+std::vector<LIGHT> get_lights(WORLD w) {
+    return w.lights;
 }

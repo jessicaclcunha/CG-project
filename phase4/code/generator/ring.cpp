@@ -45,6 +45,17 @@ FIGURE generate_ring(float inner_radius, float outer_radius, int slices) {
         add_triangle(ring, t1);
         add_triangle(ring, t2);
 
+        // Adicione normais e texturas
+        ring->normals.push_back(new_point(0.0f, 1.0f, 0.0f)); // Normais apontando para cima
+        ring->normals.push_back(new_point(0.0f, 1.0f, 0.0f));
+        ring->normals.push_back(new_point(0.0f, 1.0f, 0.0f));
+        ring->normals.push_back(new_point(0.0f, 1.0f, 0.0f));
+
+        ring->textures.push_back(new_point(0.0f, 0.0f, 0.0f)); // Coordenadas de textura arbitrárias
+        ring->textures.push_back(new_point(1.0f, 0.0f, 0.0f));
+        ring->textures.push_back(new_point(0.0f, 1.0f, 0.0f));
+        ring->textures.push_back(new_point(1.0f, 1.0f, 0.0f));
+
         angle += delta_angle;
     }
 

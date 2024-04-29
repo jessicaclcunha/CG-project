@@ -55,7 +55,7 @@ std::vector<TRIANGLE> PAT(float radius, float height, int slices, int stacks, in
 }
 
 std::vector<TRIANGLE> merge_vectors (std::vector<TRIANGLE> v1, std::vector<TRIANGLE> v2) {
-     std::vector<TRIANGLE> result = std::vector<TRIANGLE>(); 
+    std::vector<TRIANGLE> result = std::vector<TRIANGLE>(); 
     result.reserve(v1.size() + v2.size()); //reserva espaço para a inserção
     result.insert(result.end(), v1.begin(), v1.end()); //insere os elementos do primeiro vetor
     result.insert(result.end(), v2.begin(), v2.end()); //insere os elementos do segundo vetor
@@ -84,7 +84,6 @@ std::vector<TRIANGLE> triangles_sort(std::vector<POINT> points) {
     return triangles;
 }
 
-
 FIGURE generate_cone(float radius, float height, int slices, int stacks){
     FIGURE f = create_figure_cone(height, radius, slices, stacks);
     std::vector<TRIANGLE> triangles = PAT(radius, height, slices, stacks, 0, 0);
@@ -92,6 +91,32 @@ FIGURE generate_cone(float radius, float height, int slices, int stacks){
         for (int slice_atual = 1; slice_atual <= slices; slice_atual++){
             triangles = merge_vectors(triangles, PAT(radius, height, slices, stacks, slice_atual, stack_atual));
         }
+    }
+
+    // Adicionar normais e texturas
+    for (const auto& triangle : triangles) {
+        // Calcular a normal para o triângulo atual
+        POINT p1 = get_vertex(triangle, 0);
+        POINT p2 = get_vertex(triangle, 1);
+        POINT p3 = get_vertex(triangle, 2);
+
+        POINT normal;
+        cross(subtract_points(p2, p1), subtract_points(p3, p1), &normal);
+        normalize(&normal);
+
+        // Adicionar a mesma normal para todos os vértices do triângulo
+        for (int i = 0; i < 3; ++i) {
+            f.normals.push_back(normal);
+        }
+
+        // Adicionar as coordenadas de textura (apenas a coordenada u é usada aqui)
+        POINT texture1 = new_point(0.0f, 0.0f, 0.0f);
+        POINT texture2 = new_point(1.0f, 0.0f, 0.0f);
+        POINT texture3 = new_point(0.5f, 1.0f, 0.0f);
+
+        f.texture.push_back(texture1);
+        f.texture.push_back(texture2);
+        f.texture.push_back(texture3);
     }
 
     add_triangles(f, triangles);

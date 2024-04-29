@@ -74,6 +74,21 @@ FIGURE generate_plane_XZ(int length, int divisions, float h, int baixo) {
             add_triangle(f, t1);
             add_triangle(f, t2);
 
+            // Adicione normais e texturas
+            f->normals.push_back(new_point(0.0f, 1.0f, 0.0f)); // Normais apontando para cima
+            f->normals.push_back(new_point(0.0f, 1.0f, 0.0f));
+            f->normals.push_back(new_point(0.0f, 1.0f, 0.0f));
+            f->normals.push_back(new_point(0.0f, 1.0f, 0.0f));
+            f->normals.push_back(new_point(0.0f, 1.0f, 0.0f));
+            f->normals.push_back(new_point(0.0f, 1.0f, 0.0f));
+
+            f->textures.push_back(new_point(0.0f, 0.0f, 0.0f)); // Coordenadas de textura arbitrárias
+            f->textures.push_back(new_point(1.0f, 0.0f, 0.0f));
+            f->textures.push_back(new_point(0.0f, 1.0f, 0.0f));
+            f->textures.push_back(new_point(1.0f, 0.0f, 0.0f));
+            f->textures.push_back(new_point(1.0f, 1.0f, 0.0f));
+            f->textures.push_back(new_point(0.0f, 1.0f, 0.0f));
+
         }
         Zs[0] += division; //aumentamos o Z do ponto inicial
         Zs[1] += division; //...
@@ -139,6 +154,21 @@ FIGURE generate_plane_XY(int length, int divisions, float h, int baixo) {
             add_triangle(f, t1);
             add_triangle(f, t2);
 
+            // Adicione normais e texturas
+            f->normals.push_back(new_point(0.0f, 0.0f, 1.0f)); // Normais apontando para cima
+            f->normals.push_back(new_point(0.0f, 0.0f, 1.0f));
+            f->normals.push_back(new_point(0.0f, 0.0f, 1.0f));
+            f->normals.push_back(new_point(0.0f, 0.0f, 1.0f));
+            f->normals.push_back(new_point(0.0f, 0.0f, 1.0f));
+            f->normals.push_back(new_point(0.0f, 0.0f, 1.0f));
+
+            f->textures.push_back(new_point(0.0f, 0.0f, 0.0f)); // Coordenadas de textura arbitrárias
+            f->textures.push_back(new_point(1.0f, 0.0f, 0.0f));
+            f->textures.push_back(new_point(0.0f, 1.0f, 0.0f));
+            f->textures.push_back(new_point(1.0f, 0.0f, 0.0f));
+            f->textures.push_back(new_point(1.0f, 1.0f, 0.0f));
+            f->textures.push_back(new_point(0.0f, 1.0f, 0.0f));
+
         }
         Ys[0] += division;
         Ys[1] += division;
@@ -200,6 +230,21 @@ FIGURE generate_plane_YZ(int length, int divisions, float h, int baixo) {
 
             add_triangle(f, t1);
             add_triangle(f, t2);
+
+            // Adicione normais e texturas
+            f->normals.push_back(new_point(1.0f, 0.0f, 0.0f)); // Normais apontando para cima
+            f->normals.push_back(new_point(1.0f, 0.0f, 0.0f));
+            f->normals.push_back(new_point(1.0f, 0.0f, 0.0f));
+            f->normals.push_back(new_point(1.0f, 0.0f, 0.0f));
+            f->normals.push_back(new_point(1.0f, 0.0f, 0.0f));
+            f->normals.push_back(new_point(1.0f, 0.0f, 0.0f));
+
+            f->textures.push_back(new_point(0.0f, 0.0f, 0.0f)); // Coordenadas de textura arbitrárias
+            f->textures.push_back(new_point(1.0f, 0.0f, 0.0f));
+            f->textures.push_back(new_point(0.0f, 1.0f, 0.0f));
+            f->textures.push_back(new_point(1.0f, 0.0f, 0.0f));
+            f->textures.push_back(new_point(1.0f, 1.0f, 0.0f));
+            f->textures.push_back(new_point(0.0f, 1.0f, 0.0f));
 
         }
         Zs[0] += division;

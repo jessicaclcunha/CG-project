@@ -224,6 +224,55 @@ void draw_figures(const GROUP &g, unsigned int *index) {
     glPopMatrix();
 }
 
+int get_nlight(int nLight) {
+    int light;
+    switch (nLight) {
+        case 0: light = GL_LIGHT0; break;
+        case 1: light = GL_LIGHT1; break;
+        case 2: light = GL_LIGHT2; break;
+        case 3: light = GL_LIGHT3; break;
+        case 4: light = GL_LIGHT4; break;
+        case 5: light = GL_LIGHT5; break;
+        case 6: light = GL_LIGHT6; break;
+        case 7: light = GL_LIGHT7; break;
+        default: exit(1);
+    }
+    return light;
+}
+
+void apply_lights() {
+    std::vector<LIGHT> lights = get_lights(world);
+    for (size_t i = 0; i < lights.size(); i++) {
+        LIGHT l = lights[i];
+        int light = get_nlight(i);
+        switch (l.type) {
+            case L_POINT:
+                glEnable(light);
+                glLightfv(light, GL_POSITION, (GLfloat[]){l.l_point.posX, l.l_point.posY, l.l_point.posZ, 1.0f});
+                break;
+            case L_DIRECTIONAL:
+                glEnable(light);
+                glLightfv(light, GL_POSITION, (GLfloat[]){l.l_directional.dirX, l.l_directional.dirY, l.l_directional.dirZ, 0.0f});
+                break;
+            case L_SPOTLIGHT:
+                glEnable(light);
+                glLightfv(light, GL_POSITION, (GLfloat[]){l.l_spotlight.posX, l.l_spotlight.posY, l.l_spotlight.posZ, 1.0f});
+                glLightfv(light, GL_SPOT_DIRECTION, (GLfloat[]){l.l_spotlight.dirX, l.l_spotlight.dirY, l.l_spotlight.dirZ});
+                glLightf(light, GL_SPOT_CUTOFF, l.l_spotlight.cutoff);
+                break;
+            default:
+                std::cerr << "Error: Unknown light type!" << std::endl;
+                break;
+        }
+    }
+
+    // Desabilitar as luzes restantes
+    for (size_t i = lights.size(); i < 8; i++) {
+        int light = get_nlight(i);
+        glDisable(light);
+    }
+}
+
 void renderScene(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
@@ -236,6 +285,8 @@ void renderScene(void) {
 
     glColor3f(WHITE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    apply_lights();
 
     unsigned int index = 0;
     for (const auto& group : world.groups) {
@@ -308,7 +359,7 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("Phase3");
+    glutCreateWindow("Phase4");
 
     parse_config_file(argv[1], world);
     glutInitWindowSize(get_windowWidth(world), get_windowHeight(world));

@@ -10,6 +10,8 @@
 #include "../utils/figure.hpp"
 #include "../utils/triangle.hpp"
 #include "../utils/matrix.hpp"
+#include "../engine/lights.hpp"
+#include "../engine/color.hpp"
 
 
 enum TRANSFORM_TYPE {
@@ -29,8 +31,11 @@ typedef struct Camera {
     } projection;
 }CAMERA;
 
+
 typedef struct Model {
     std::string file;
+    std::vector<COLOR> colors;
+    std::string texture_file;
 } MODEL;
 
 typedef struct Transform {
@@ -72,6 +77,7 @@ typedef struct world {
     int windowHeight;
     Camera camera;
     std::vector<GROUP> groups;
+    std::vector<LIGHT> lights;
 } WORLD;
 
 WORLD create_world ();
@@ -181,5 +187,7 @@ std::vector<POINT> get_transform_points(TRANSFORM t);
 POINT get_y_aux(TRANSFORM t);
 
 void set_y_aux (TRANSFORM t, POINT y);
+
+std::vector<LIGHT> get_lights(WORLD w);
 
 #endif // XML_PARSER_H

@@ -7,6 +7,8 @@ using namespace std;
 typedef struct figure {
     FIGURE_TYPE type;
     std::vector<TRIANGLE>* triangles;
+    std::vector<POINT> normals;
+    std::vector<POINT> textures;
     union {
         struct {
             float radius;
@@ -46,11 +48,21 @@ std::vector<TRIANGLE>* get_triangles(FIGURE figure) {
     return nullptr;
 }
 
+std::vector<POINT> get_normals(FIGURE figure) {
+    return figure->normals;
+}
+
+std::vector<POINT> get_textures(FIGURE figure) {
+    return figure->textures;
+}
+
 
 FIGURE create_figure_empty() {
     FIGURE f = (FIGURE)malloc(sizeof(struct figure));
     f->type = UNKNOWN;
-    f->triangles = new vector<TRIANGLE>();
+    f->triangles = new std::vector<TRIANGLE>();
+    f->normals = std::vector<POINT>();
+    f->textures = std::vector<POINT>();
     return f;
 }
 

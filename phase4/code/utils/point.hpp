@@ -47,4 +47,6 @@ void cross(const POINT a, const POINT b, POINT &result);
 
 void normalize(POINT &z);
 
+POINT subtract_points(POINT p1, POINT p2);
+
 #endif // POINT_H

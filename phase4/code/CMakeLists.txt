@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 # Project Name
-PROJECT(phase3)
+PROJECT(phase4)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -40,6 +40,10 @@ add_library(
     ./engine/xml_parser.hpp
 	./engine/catmull.cpp
 	./engine/catmull.hpp
+	./engine/color.cpp
+	./engine/color.hpp	
+	./engine/lights.cpp
+	./engine/lights.hpp
 )
 
 # Link tinyxml_lib com config_lib
