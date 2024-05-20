@@ -5,7 +5,6 @@
 #include <GL/glut.h>
 #endif
 
-#include <IL/il.h>
 #include <iostream>
 #include <list>
 #include <cmath>
@@ -26,8 +25,10 @@ int elapsed_time = 0;
 WORLD world;
 
 GLuint *buffers = NULL; // Array of buffer IDs for each figure
+GLuint *normalBuffers = NULL;
+GLuint *texBuffers = NULL;
 std::vector<unsigned int> buffers_sizes; // Size (in vertices) of each figure
-GLuint vertexCount, vertices, normals, texCoord, indices, indCount;
+std::vector<unsigned int> normalsbuf_size;
 
 float camX, camY, camZ; // Camera
 float LAX, LAY, LAZ;    // Look at
@@ -99,13 +100,34 @@ void init_vbo(const std::vector<MODEL>& models, int *index) {
     for (size_t i = 0; i < models.size(); ++i) {
         FIGURE figure = fileToFigure(models[i].file);
         std::vector<float> fig_vectors = figure_to_vectors(figure);
+        std::vector<float> fig_normals = figure_to_normals(figure);
+        std::vector<float> fig_textures = figure_to_textures(figure);
+        const std::string texture = models[i].texture_file;
 
         size_t total_size = fig_vectors.size();
 
-        // Gera e vincula o buffer de vértices
+        // Generate and bind the vertex buffer
         glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);
         glBufferData(GL_ARRAY_BUFFER, total_size * sizeof(float), fig_vectors.data(), GL_STATIC_DRAW);
         buffers_sizes.push_back(total_size / 3);
+
+        // Generate and bind the normal buffer
+        if (fig_normals.size() > 0) {
+            normalBuffers = new GLuint[models.size()];
+            glGenBuffers(models.size(), normalBuffers);
+            glBindBuffer(GL_ARRAY_BUFFER, normalBuffers[*index]);
+            glBufferData(GL_ARRAY_BUFFER, fig_normals.size() * sizeof(float), fig_normals.data(), GL_STATIC_DRAW);
+            normalsbuf_size.push_back(fig_normals.size() / 3);
+        }
+
+        // Generate and bind the texture buffer
+        if (!texture.empty()) {
+            texBuffers = new GLuint[models.size()];
+            glGenBuffers(models.size(), texBuffers);
+            glBindBuffer(GL_ARRAY_BUFFER, texBuffers[*index]);
+            glBufferData(GL_ARRAY_BUFFER, fig_textures.size() * sizeof(float), fig_textures.data(), GL_STATIC_DRAW);
+        }
+
         (*index)++;
     }
 }
@@ -193,43 +215,6 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
     }
 }
 
-/*
-int loadTexture(const std::string texture_file, int *index) {
-  unsigned int t, tw, th;
-  unsigned char *texData;
-  unsigned int texID;
-
-  ilInit();
-  ilEnable(IL_ORIGIN_SET);
-  ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
-  ilGenImages(1, &t);
-  ilBindImage(t);
-  ilLoadImage((ILstring)texture_file.c_str());
-  tw = ilGetInteger(IL_IMAGE_WIDTH);
-  th = ilGetInteger(IL_IMAGE_HEIGHT);
-  ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
-  texData = ilGetData();
-
-  glGenTextures(1, &texID);
-
-  glBindTexture(GL_TEXTURE_2D, texID);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                  GL_LINEAR_MIPMAP_LINEAR);
-
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-               texData);
-  glGenerateMipmap(GL_TEXTURE_2D);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  return texID;
-}
-*/
-
 void apply_normals(FIGURE figure) {
     std::vector<float> normals = figure_to_vectors(figure);
     for (size_t i = 0; i < normals.size(); i += 9) {
@@ -266,8 +251,18 @@ void draw_figures(const GROUP &g, unsigned int *index) {
     {
         if (*index < buffers_sizes.size()) 
         {
+
+
             glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);  // Use buffer for this figure
             glVertexPointer(3, GL_FLOAT, 0, 0);
+
+            if (normalsbuf_size.size() > 0) 
+            {
+                glBindBuffer(GL_ARRAY_BUFFER, normalBuffers[*index]);
+                glNormalPointer(GL_FLOAT, 0, 0);
+            }
+
+
             glDrawArrays(GL_TRIANGLES, 0, buffers_sizes[*index]);
             (*index)++;
         } 
@@ -307,15 +302,12 @@ void apply_lights() {
         int light = get_nlight(i);
         switch (l.type) {
             case L_POINT:
-                glEnable(light);
                 glLightfv(light, GL_POSITION, (GLfloat[]){l.l_point.posX, l.l_point.posY, l.l_point.posZ, 1.0f});
                 break;
             case L_DIRECTIONAL:
-                glEnable(light);
                 glLightfv(light, GL_POSITION, (GLfloat[]){l.l_directional.dirX, l.l_directional.dirY, l.l_directional.dirZ, 0.0f});
                 break;
             case L_SPOTLIGHT:
-                glEnable(light);
                 glLightfv(light, GL_POSITION, (GLfloat[]){l.l_spotlight.posX, l.l_spotlight.posY, l.l_spotlight.posZ, 1.0f});
                 glLightfv(light, GL_SPOT_DIRECTION, (GLfloat[]){l.l_spotlight.dirX, l.l_spotlight.dirY, l.l_spotlight.dirZ});
                 glLightf(light, GL_SPOT_CUTOFF, l.l_spotlight.cutoff);

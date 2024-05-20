@@ -14,6 +14,8 @@
 #include "triangle.hpp"
 #include "figure.hpp"
 
+using namespace std;
+
 // Definição completa do enum FIGURE_TYPE
 enum FIGURE_TYPE {
     UNKNOWN,
@@ -29,9 +31,9 @@ typedef struct figure *FIGURE;
 
 std::vector<TRIANGLE>* get_triangles(FIGURE figure);
 
-std::vector<POINT> get_normals(FIGURE figure);
+std::vector<POINT>* get_normals(FIGURE figure);
 
-std::vector<POINT> get_textures(FIGURE figure);
+std::vector<POINT>* get_textures(FIGURE figure);
 
 FIGURE create_figure_empty();
 
@@ -69,6 +71,8 @@ void add_normal(FIGURE f, POINT p);
 
 void add_texture(FIGURE f, POINT p);
 
-std::vector<POINT> figure_to_normals(FIGURE f);
+std::vector<float> figure_to_normals(FIGURE f);
+
+std::vector<float> figure_to_textures(FIGURE f);
 
 #endif /* FIGURE_HPP */

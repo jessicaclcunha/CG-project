@@ -1,14 +1,11 @@
-#define GL_SILENCE_DEPRECATION
 #include "figure.hpp"
 
-
-using namespace std;
 
 typedef struct figure {
     FIGURE_TYPE type;
     std::vector<TRIANGLE>* triangles;
-    std::vector<POINT> normals;
-    std::vector<POINT> textures;
+    std::vector<POINT>* normals;
+    std::vector<POINT>* textures;
     union {
         struct {
             float radius;
@@ -48,11 +45,11 @@ std::vector<TRIANGLE>* get_triangles(FIGURE figure) {
     return nullptr;
 }
 
-std::vector<POINT> get_normals(FIGURE figure) {
+std::vector<POINT>* get_normals(FIGURE figure) {
     return figure->normals;
 }
 
-std::vector<POINT> get_textures(FIGURE figure) {
+std::vector<POINT>* get_textures(FIGURE figure) {
     return figure->textures;
 }
 
@@ -61,8 +58,8 @@ FIGURE create_figure_empty() {
     FIGURE f = (FIGURE)malloc(sizeof(struct figure));
     f->type = UNKNOWN;
     f->triangles = new std::vector<TRIANGLE>();
-    f->normals = std::vector<POINT>();
-    f->textures = std::vector<POINT>();
+    f->normals = new std::vector<POINT>();
+    f->textures = new std::vector<POINT>();
     return f;
 }
 
@@ -75,7 +72,7 @@ FIGURE create_figure_plane_box (FIGURE_TYPE type, int length, int divisions) {
         case PLANE:
             f->plane.length = length;
             f->plane.divisions = divisions;
-            f->triangles = new vector<TRIANGLE>();
+            f->triangles = new std::vector<TRIANGLE>();
             break;
         case BOX:
             f->box.length = length;
@@ -466,20 +463,29 @@ std::vector<float> figure_to_vectors(const FIGURE& figure) {
 }
 
 void add_normal(FIGURE f, POINT p) {
-    f->normals.push_back(p);
+    f->normals->push_back(p);
 }
 
 void add_texture(FIGURE f, POINT p) {
-    f->textures.push_back(p);
+    f->textures->push_back(p);
 }
 
-std::vector<POINT> figure_to_normals(FIGURE f){
-    std::vector<POINT> normals;
-    if (f->normals.size() > 0){
-        normals.reserve(f->normals.size() * 3);
-        for (const POINT& normal : f->normals){
-            normals.push_back(normal);
-        }
+std::vector<float> figure_to_normals(FIGURE f){
+    std::vector<float> normals;
+    for (const POINT &normal : *(f->normals)) {
+        normals.push_back(get_X(normal));
+        normals.push_back(get_Y(normal));
+        normals.push_back(get_Z(normal));
     }
     return normals;
-} 
+}
+
+std::vector<float> figure_to_textures(FIGURE f){
+    std::vector<float> textures;
+    for (const POINT &texture : *(f->textures)) {
+        textures.push_back(get_X(texture));
+        textures.push_back(get_Y(texture));
+        textures.push_back(get_Z(texture));
+    }
+    return textures;
+}

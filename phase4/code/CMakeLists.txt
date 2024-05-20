@@ -40,10 +40,10 @@ add_library(
     ./engine/xml_parser.hpp
 	./engine/catmull.cpp
 	./engine/catmull.hpp
-	./engine/color.cpp
-	./engine/color.hpp	
-	./engine/lights.cpp
-	./engine/lights.hpp
+    ./engine/color.cpp
+    ./engine/color.hpp
+    ./engine/lights.cpp
+    ./engine/lights.hpp
 )
 
 # Link tinyxml_lib com config_lib
@@ -71,57 +71,30 @@ if  (WIN32)
 		message(ERROR ": GLUT not found")
 	endif (NOT EXISTS "${TOOLKITS_FOLDER}/glut/GL/glut.h" OR NOT EXISTS "${TOOLKITS_FOLDER}/glut/glut32.lib")	
 	
-	if (NOT EXISTS "${TOOLKITS_FOLDER}/glew/GL/glew.h" OR NOT EXISTS "${TOOLKITS_FOLDER}/glew/glew32.lib")
-		message(ERROR ": GLEW not found")
-	endif (NOT EXISTS "${TOOLKITS_FOLDER}/glew/GL/glew.h" OR NOT EXISTS "${TOOLKITS_FOLDER}/glew/glew32.lib")	
 	
-	if (NOT EXISTS "${TOOLKITS_FOLDER}/devil/IL/il.h" OR NOT EXISTS "${TOOLKITS_FOLDER}/devil/devIL.lib")
-		message(ERROR ": DevIL not found")
-	endif (NOT EXISTS "${TOOLKITS_FOLDER}/devil/IL/il.h" OR NOT EXISTS "${TOOLKITS_FOLDER}/devil/devIL.lib")	
+	include_directories(${TOOLKITS_FOLDER}/glut )
+	#target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} 
+	#									  ${TOOLKITS_FOLDER}/glut/glut32.lib)
+	target_link_libraries(generator.exe ${OPENGL_LIBRARIES} ${TOOLKITS_FOLDER}/glut/glut32.lib)
+	target_link_libraries(engine.exe ${OPENGL_LIBRARIES} ${TOOLKITS_FOLDER}/glut/glut32.lib)
 	
-	include_directories(${TOOLKITS_FOLDER}/glut ${TOOLKITS_FOLDER}/glew ${TOOLKITS_FOLDER}/devil)
-	target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} 
-										  ${TOOLKITS_FOLDER}/glut/glut32.lib 
-										  ${TOOLKITS_FOLDER}/devil/devIL.lib
-										  ${TOOLKITS_FOLDER}/glew/glew32.lib )
-	
-	if (EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll" AND EXISTS "${TOOLKITS_FOLDER}/glew/glew32.dll"
-													AND EXISTS "${TOOLKITS_FOLDER}/devil/devil.dll")
+	if (EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll" )
 		file(COPY ${TOOLKITS_FOLDER}/glut/glut32.dll DESTINATION ${CMAKE_BINARY_DIR})
-		file(COPY ${TOOLKITS_FOLDER}/devil/devil.dll DESTINATION ${CMAKE_BINARY_DIR})
-		file(COPY ${TOOLKITS_FOLDER}/glew/glew32.dll DESTINATION ${CMAKE_BINARY_DIR})
-	endif(EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll" AND EXISTS "${TOOLKITS_FOLDER}/glew/glew32.dll"
-													AND EXISTS "${TOOLKITS_FOLDER}/devil/devil.dll")
+	endif(EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll" )	
 	
-	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
-	 
-	else (WIN32) # Linux and Mac
+	#set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+else (WIN32) #Linux and Mac
 
-    set(CMAKE_CXX_FLAGS� "${CMAKE_CXX_FLAGS} Wno-deprecated")
-    
-    # Define os caminhos das bibliotecas e cabeçalhos do DevIL
-    set(IL_LIBRARIES "/Users/jessicacunha/Library/Caches/Homebrew/downloads/devil/1.8.0_6/lib")
-    set(IL_INCLUDE_DIR "/Users/jessicacunha/Library/Caches/Homebrew/downloads/devil/1.8.0_6/include")
-    set(ILU_LIBRARIES "/Users/jessicacunha/Library/Caches/Homebrew/downloads/devil/1.8.0_6/lib") # Somente se estiver usando ILU
-    
-    include_directories(${IL_INCLUDE_DIR})
-    include_directories(${ILU_INCLUDE_DIR}) # Somente se estiver usando ILU
-    
-    find_package(GLUT REQUIRED)
-    include_directories(${GLUT_INCLUDE_DIR})
-    link_directories(${GLUT_LIBRARY_DIRS})
-    add_definitions(${GLUT_DEFINITIONS})
-    
-    if (NOT APPLE)
-        find_package(GLEW REQUIRED)
-        include_directories(${GLEW_INCLUDE_DIRS})
-        link_libraries(${GLEW_LIBRARIES})
-    endif(NOT APPLE)
-
-    target_link_libraries(engine.exe ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${GLEW_LIBRARIES} ${IL_LIBRARIES} ${ILU_LIBRARIES})
-    
-    if(NOT GLUT_FOUND)
-       message(ERROR ": GLUT not found!")
-    endif(NOT GLUT_FOUND)
-    
+	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+	find_package(GLUT REQUIRED)
+	include_directories(${GLUT_INCLUDE_DIR})
+	link_directories(${GLUT_LIBRARY_DIRS})
+	add_definitions(${GLUT_DEFINITIONS})
+	
+	target_link_libraries(generator.exe ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
+	target_link_libraries(engine.exe ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
+	if(NOT GLUT_FOUND)
+	   message(ERROR ": GLUT not found!")
+	endif(NOT GLUT_FOUND)
+	
 endif(WIN32)
