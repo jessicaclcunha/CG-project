@@ -192,6 +192,43 @@ void save_file(FIGURE f, std::string filename) {
 
 
 
+void read_triangle_data(const std::string &line, FIGURE figure) {
+    float x1, y1, z1, x2, y2, z2, x3, y3, z3;
+    float n1, n2, n3, n4, n5, n6, n7, n8, n9;
+    float t1, t2, t3, t4, t5, t6, t7, t8, t9;
+    
+    sscanf(line.c_str(),
+           "[(%f, %f, %f) %f, %f, %f, %f, %f, %f,(%f, %f, %f) %f, %f, %f, %f, %f, %f,(%f, %f, %f) %f, %f, %f, %f, %f, %f]",
+           &x1, &y1, &z1, &n1, &n2, &n3, &t1, &t2, &t3,
+           &x2, &y2, &z2, &n4, &n5, &n6, &t4, &t5, &t6,
+           &x3, &y3, &z3, &n7, &n8, &n9, &t7, &t8, &t9);
+
+    POINT p1 = new_point(x1, y1, z1);
+    POINT p2 = new_point(x2, y2, z2);
+    POINT p3 = new_point(x3, y3, z3);
+
+    TRIANGLE triangle = create_triangle();
+    add_vertex(triangle, p1);
+    add_vertex(triangle, p2);
+    add_vertex(triangle, p3);
+    add_triangle(figure, triangle); 
+
+    POINT normal1 = new_point(n1, n2, n3);
+    POINT normal2 = new_point(n4, n5, n6);
+    POINT normal3 = new_point(n7, n8, n9);
+    add_normal(figure, normal1);
+    add_normal(figure, normal2);
+    add_normal(figure, normal3);
+
+    POINT texture1 = new_point(t1, t2, t3);
+    POINT texture2 = new_point(t4, t5, t6);
+    POINT texture3 = new_point(t7, t8, t9);
+
+    add_texture(figure, texture1);
+    add_texture(figure, texture2);
+    add_texture(figure, texture3);
+}
+
 FIGURE fileToFigure(const std::string& filepath) {
     std::ifstream file(filepath);
     if (!file.is_open()) {
@@ -199,139 +236,53 @@ FIGURE fileToFigure(const std::string& filepath) {
         return nullptr;
     }
 
-    FIGURE figure = create_figure_empty(); // Assumindo a existência dessa função que cria uma FIGURE vazia.
+    FIGURE figure = nullptr;
     std::string line;
+
     while (getline(file, line)) {
         std::istringstream iss(line);
         std::string type;
         iss >> type;
+
         if (type == "CONE") {
             float height, radius;
             int slices, stacks;
             iss >> height >> radius >> slices >> stacks;
-            figure = create_figure_cone(height, radius, slices, stacks); // Criando a figura com as especificações lidas.
-            while (getline(file, line) && !line.empty()) {
-                float x1, y1, z1, x2, y2, z2, x3, y3, z3;
-                sscanf(line.c_str(), "[(%f, %f, %f),(%f, %f, %f),(%f, %f, %f)]",
-                       &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
-
-                POINT p1 = new_point(x1, y1, z1);
-                POINT p2 = new_point(x2, y2, z2);
-                POINT p3 = new_point(x3, y3, z3);
-
-                TRIANGLE triangle = create_triangle();
-                add_vertex(triangle, p1);
-                add_vertex(triangle, p2);
-                add_vertex(triangle, p3);
-                add_triangle(figure, triangle); 
-            }// Adicionando o triângulo à figura.
+            figure = create_figure_cone(height, radius, slices, stacks);
         } else if (type == "SPHERE") {
             float radius;
             int slices, stacks;
             iss >> radius >> slices >> stacks;
-            figure = create_figure_sphere(radius, slices, stacks); 
-            while (getline(file, line) && !line.empty()) {
-                float x1, y1, z1, x2, y2, z2, x3, y3, z3;
-                sscanf(line.c_str(), "[(%f, %f, %f),(%f, %f, %f),(%f, %f, %f)]",
-                       &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
-
-                POINT p1 = new_point(x1, y1, z1);
-                POINT p2 = new_point(x2, y2, z2);
-                POINT p3 = new_point(x3, y3, z3);
-
-                TRIANGLE triangle = create_triangle();
-                add_vertex(triangle, p1);
-                add_vertex(triangle, p2);
-                add_vertex(triangle, p3);
-                add_triangle(figure, triangle); // Adicionando o triângulo à figura. 
-            }    
+            figure = create_figure_sphere(radius, slices, stacks);
         } else if (type == "PLANE") {
             int length, divisions;
             iss >> length >> divisions;
             figure = create_figure_plane_box(PLANE, length, divisions);
-            while (getline(file, line) && !line.empty()) {
-                float x1, y1, z1, x2, y2, z2, x3, y3, z3;
-                sscanf(line.c_str(), "[(%f, %f, %f),(%f, %f, %f),(%f, %f, %f)]",
-                       &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
-
-                POINT p1 = new_point(x1, y1, z1);
-                POINT p2 = new_point(x2, y2, z2);
-                POINT p3 = new_point(x3, y3, z3);
-
-                TRIANGLE triangle = create_triangle();
-                add_vertex(triangle, p1);
-                add_vertex(triangle, p2);
-                add_vertex(triangle, p3);
-                add_triangle(figure, triangle); // Adicionando o triângulo à figura. 
-            }    
         } else if (type == "BOX") {
             int length, divisions;
             iss >> length >> divisions;
             figure = create_figure_plane_box(BOX, length, divisions);
-            while (getline(file, line) && !line.empty()) {
-                float x1, y1, z1, x2, y2, z2, x3, y3, z3;
-                sscanf(line.c_str(), "[(%f, %f, %f),(%f, %f, %f),(%f, %f, %f)]",
-                       &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
-
-                POINT p1 = new_point(x1, y1, z1);
-                POINT p2 = new_point(x2, y2, z2);
-                POINT p3 = new_point(x3, y3, z3);
-
-                TRIANGLE triangle = create_triangle();
-                add_vertex(triangle, p1);
-                add_vertex(triangle, p2);
-                add_vertex(triangle, p3);
-                add_triangle(figure, triangle); // Adicionando o triângulo à figura. 
-            }    
-        }
-        else if (type == "RING") {
+        } else if (type == "RING") {
             float inner_radius, outer_radius;
             int slices;
             iss >> inner_radius >> outer_radius >> slices;
             figure = create_figure_ring(inner_radius, outer_radius, slices);
-            while (getline(file, line) && !line.empty()) {
-                float x1, y1, z1, x2, y2, z2, x3, y3, z3;
-                sscanf(line.c_str(), "[(%f, %f, %f),(%f, %f, %f),(%f, %f, %f)]",
-                       &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
-
-                POINT p1 = new_point(x1, y1, z1);
-                POINT p2 = new_point(x2, y2, z2);
-                POINT p3 = new_point(x3, y3, z3);
-
-                TRIANGLE triangle = create_triangle();
-                add_vertex(triangle, p1);
-                add_vertex(triangle, p2);
-                add_vertex(triangle, p3);
-                add_triangle(figure, triangle); // Adicionando o triângulo à figura. 
-            }    
-        
-        }
-        else if (type == "BEZIER") {
+        } else if (type == "BEZIER") {
             float tessellation;
-            char *patches_file;
+            std::string patches_file;
             iss >> tessellation >> patches_file;
-            figure = create_figure_bezier(tessellation, patches_file);
-            while(getline(file, line) && !line.empty()) {
-                float x1, y1, z1, x2, y2, z2, x3, y3, z3;
-                sscanf(line.c_str(), "[(%f, %f, %f),(%f, %f, %f),(%f, %f, %f)]",
-                       &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
+            figure = create_figure_bezier(tessellation, patches_file.c_str());
+        }
 
-                POINT p1 = new_point(x1, y1, z1);
-                POINT p2 = new_point(x2, y2, z2);
-                POINT p3 = new_point(x3, y3, z3);
-
-                TRIANGLE triangle = create_triangle();
-                add_vertex(triangle, p1);
-                add_vertex(triangle, p2);
-                add_vertex(triangle, p3);
-                add_triangle(figure, triangle); // Adicionando o triângulo à figura. 
-            
-            }
+        // Lendo dados de triângulos para a figura atual
+        while (getline(file, line) && !line.empty()) {
+            read_triangle_data(line, figure);
         }
     }
     file.close();
     return figure;
 }
+
 
 
 void concat_FIGURES (FIGURE f1, FIGURE f2) {
@@ -342,62 +293,38 @@ void concat_FIGURES (FIGURE f1, FIGURE f2) {
 
 void print_figura(FIGURE f) {
     if (f != NULL) {
-        if (f->type == PLANE) {
-            printf("Vertices:\n");
-            for (const TRIANGLE &triangulo : *(f->triangles)) {
-                std::vector<POINT>* vertexBegin = get_points(triangulo);
-                for (const POINT &vertex : *vertexBegin) {
-                    printf("(%.2f, %.2f, %.2f)\n", get_X(vertex), get_Y(vertex), get_Z(vertex));
-                }
-            }
+        std::vector<TRIANGLE>* triangles = f->triangles;
+        std::vector<POINT>* normals = get_normals(f);
+        std::vector<POINT>* textures = get_textures(f);
+
+        if (!triangles) {
+            printf("Error: No triangles in the figure.\n");
+            return;
         }
-        if (f->type == BOX){
-            printf("Vertices:\n");
-            for (const TRIANGLE &triangulo : *(f->triangles)) {
-                std::vector<POINT>* vertexBegin = get_points(triangulo);
-                for (const POINT &vertex : *vertexBegin) {
-                    printf("(%.2f, %.2f, %.2f)\n", get_X(vertex), get_Y(vertex), get_Z(vertex));
+
+        printf("Vertices:\n");
+        for (const TRIANGLE &triangulo : *triangles) {
+            std::vector<POINT>* vertexBegin = get_points(triangulo);
+            for (size_t j = 0; j < vertexBegin->size(); ++j) {
+                const POINT &vertex = (*vertexBegin)[j];
+                printf("(%.2f, %.2f, %.2f)", get_X(vertex), get_Y(vertex), get_Z(vertex));
+
+                // Imprimir informações sobre normais, se disponíveis
+                if (normals && j < normals->size()) {
+                    const POINT &normal = (*normals)[j];
+                    printf(" (%.2f, %.2f, %.2f)", get_X(normal), get_Y(normal), get_Z(normal));
                 }
-            }
-        }
-        if (f->type == SPHERE){
-            printf("Vertices:\n");
-            for (const TRIANGLE &triangulo : *(f->triangles)) {
-                std::vector<POINT>* vertexBegin = get_points(triangulo);
-                for (const POINT &vertex : *vertexBegin) {
-                    printf("(%.2f, %.2f, %.2f)\n", get_X(vertex), get_Y(vertex), get_Z(vertex));
-                }
-            }
-        }
-        if (f->type == CONE){
-            printf("Vertices:\n");
-            for (const TRIANGLE &triangulo : *(f->triangles)) {
-                std::vector<POINT>* vertexBegin = get_points(triangulo);
-                for (const POINT &vertex : *vertexBegin) {
-                    printf("(%.2f, %.2f, %.2f)\n", get_X(vertex), get_Y(vertex), get_Z(vertex));
-                }
-            }
-        }
-        if (f->type == RING){
-            printf("Vertices:\n");
-            for (const TRIANGLE &triangulo : *(f->triangles)) {
-                std::vector<POINT>* vertexBegin = get_points(triangulo);
-                for (const POINT &vertex : *vertexBegin) {
-                    printf("(%.2f, %.2f, %.2f)\n", get_X(vertex), get_Y(vertex), get_Z(vertex));
-                }
-            }
-        }
-        if(f->type == BEZIER){
-            printf("Vertices:\n");
-            for (const TRIANGLE &triangulo : *(f->triangles)) {
-                std::vector<POINT>* vertexBegin = get_points(triangulo);
-                for (const POINT &vertex : *vertexBegin) {
-                    printf("(%.2f, %.2f, %.2f)\n", get_X(vertex), get_Y(vertex), get_Z(vertex));
+
+                // Imprimir informações sobre texturas, se disponíveis
+                if (textures && j < textures->size()) {
+                    const POINT &texture = (*textures)[j];
+                    printf(" (%.2f, %.2f, %.2f)", get_X(texture), get_Y(texture), get_Z(texture));
                 }
             }
         }
     }
 }
+
 
 
 std::string print_triangulos(FIGURE f) {
@@ -408,6 +335,8 @@ std::string print_triangulos(FIGURE f) {
     }
 
     std::vector<TRIANGLE>* triangles = f->triangles;
+    std::vector<POINT>* normals = f->normals;
+    std::vector<POINT>* textures = f->textures;
 
     if (!triangles) {
         output = "Error: No triangles in the figure.";
@@ -416,15 +345,29 @@ std::string print_triangulos(FIGURE f) {
 
     for (const TRIANGLE &triangulo : *triangles) {
         std::vector<POINT>* vertices = get_points(triangulo);
+
         if (!vertices || vertices->size() != 3) {
             output += "Error: Invalid triangle - should have exactly 3 vertices.\n";
             continue;
         }
+
         output += "[";
         for (size_t j = 0; j < vertices->size(); ++j) {
             const POINT& point = (*vertices)[j];
-            char buffer[100]; // Buffer to store point coordinates
-            snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)", get_X(point), get_Y(point), get_Z(point));
+            char buffer[200]; // Buffer to store point coordinates and normals
+            if (normals && j < normals->size()) {
+                const POINT& normal = (*normals)[j];
+                snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f) %.2f, %.2f, %.2f", 
+                         get_X(point), get_Y(point), get_Z(point), get_X(normal), get_Y(normal), get_Z(normal));
+            } else {
+                snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)", get_X(point), get_Y(point), get_Z(point));
+            }
+
+            if (textures && j < textures->size()) {
+                const POINT& texture = (*textures)[j];
+                snprintf(buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), " %.2f, %.2f, %.2f", 
+                         get_X(texture), get_Y(texture), get_Z(texture));
+            }
             output += buffer;
             if (j < vertices->size() - 1) output += ",";
         }
@@ -433,6 +376,7 @@ std::string print_triangulos(FIGURE f) {
 
     return output;
 }
+
 
 void free_figure(FIGURE f) {
     if (f != NULL) {

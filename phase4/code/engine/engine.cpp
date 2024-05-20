@@ -97,6 +97,14 @@ void to_spherical() {
 void init_vbo(const std::vector<MODEL>& models, int *index) {
     buffers = new GLuint[models.size()];
     glGenBuffers(models.size(), buffers);
+
+    normalBuffers = new GLuint[models.size()];
+    glGenBuffers(models.size(), normalBuffers);
+
+    texBuffers = new GLuint[models.size()];
+    glGenBuffers(models.size(), texBuffers);
+
+
     for (size_t i = 0; i < models.size(); ++i) {
         FIGURE figure = fileToFigure(models[i].file);
         std::vector<float> fig_vectors = figure_to_vectors(figure);
@@ -246,13 +254,48 @@ void draw_figures(const GROUP &g, unsigned int *index) {
     apply_transforms(g, index);
 
     glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
 
     for (const auto& model : g.models) 
     {
         if (*index < buffers_sizes.size()) 
         {
-
-
+            std::vector<COLOR> colors = get_colors(model);
+            for (COLOR c : colors) {
+                std::vector<float> aux;
+                switch (c.type) {
+                    case C_DIFFUSE:
+                        aux.push_back(c.diffuse.r);
+                        aux.push_back(c.diffuse.g);
+                        aux.push_back(c.diffuse.b);
+                        glMaterialfv(GL_FRONT, GL_DIFFUSE, aux.data());
+                        break;
+                    case C_AMBIENT:
+                        aux.push_back(c.ambient.r);
+                        aux.push_back(c.ambient.g);
+                        aux.push_back(c.ambient.b);
+                        glMaterialfv(GL_FRONT, GL_AMBIENT, aux.data());
+                        break;
+                    case C_SPECULAR:
+                        aux.push_back(c.specular.r);
+                        aux.push_back(c.specular.g);
+                        aux.push_back(c.specular.b);
+                        glMaterialfv(GL_FRONT, GL_SPECULAR, aux.data());
+                        break;
+                    case C_EMISSIVE:
+                        aux.push_back(c.emissive.r);
+                        aux.push_back(c.emissive.g);
+                        aux.push_back(c.emissive.b);
+                        glMaterialfv(GL_FRONT, GL_EMISSION, aux.data());
+                        break;
+                    case C_SHININESS:
+                        glMaterialf(GL_FRONT, GL_SHININESS, c.shininess.value);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            
             glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);  // Use buffer for this figure
             glVertexPointer(3, GL_FLOAT, 0, 0);
 
@@ -271,6 +314,7 @@ void draw_figures(const GROUP &g, unsigned int *index) {
     }
 
     glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
 
 
     for (const auto& childGroup : get_group_children(g))
@@ -454,5 +498,8 @@ int main(int argc, char** argv) {
     glutMainLoop();
 
     delete[] buffers;  // Deallocate memory for buffers array
+    delete[] normalBuffers;
+    delete[] texBuffers;
+    
     return 0;
 }

@@ -72,31 +72,31 @@ void parse_group_element(TiXmlElement* groupElement, Group& group) {
                 for (TiXmlElement* childElement = colorElement->FirstChildElement(); childElement; childElement = childElement->NextSiblingElement()) {
                     const char* colorType = childElement->Value();
                     if (strcmp(colorType, "diffuse") == 0) {
-                        color.type = DIFFUSE;
+                        color.type = C_DIFFUSE;
                         childElement->QueryFloatAttribute("R", &color.diffuse.r);
                         childElement->QueryFloatAttribute("G", &color.diffuse.g);
                         childElement->QueryFloatAttribute("B", &color.diffuse.b);
                         model.colors.push_back(color);
                     } else if (strcmp(colorType, "ambient") == 0) {
-                        color.type = AMBIENT;
+                        color.type = C_AMBIENT;
                         childElement->QueryFloatAttribute("R", &color.ambient.r);
                         childElement->QueryFloatAttribute("G", &color.ambient.g);
                         childElement->QueryFloatAttribute("B", &color.ambient.b);
                         model.colors.push_back(color);
                     } else if (strcmp(colorType, "specular") == 0) {
-                        color.type = SPECULAR;
+                        color.type = C_SPECULAR;
                         childElement->QueryFloatAttribute("R", &color.specular.r);
                         childElement->QueryFloatAttribute("G", &color.specular.g);
                         childElement->QueryFloatAttribute("B", &color.specular.b);
                         model.colors.push_back(color);
                     } else if (strcmp(colorType, "emissive") == 0) {
-                        color.type = EMISSIVE;
+                        color.type = C_EMISSIVE;
                         childElement->QueryFloatAttribute("R", &color.emissive.r);
                         childElement->QueryFloatAttribute("G", &color.emissive.g);
                         childElement->QueryFloatAttribute("B", &color.emissive.b);
                         model.colors.push_back(color);
                     } else if (strcmp(colorType, "shininess") == 0) {
-                        color.type = SHININESS;
+                        color.type = C_SHININESS;
                         childElement->QueryFloatAttribute("value", &color.shininess.value);
                         model.colors.push_back(color);
                     } else {

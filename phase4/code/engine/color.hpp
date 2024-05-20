@@ -3,11 +3,11 @@
 #define COLOR_H
 
 enum COLOR_TYPE {
-    DIFFUSE,
-    AMBIENT,
-    SPECULAR,
-    EMISSIVE,
-    SHININESS
+    C_DIFFUSE,
+    C_AMBIENT,
+    C_SPECULAR,
+    C_EMISSIVE,
+    C_SHININESS
 };
 
 typedef struct color {
