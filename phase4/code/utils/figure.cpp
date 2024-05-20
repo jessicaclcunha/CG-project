@@ -464,3 +464,22 @@ std::vector<float> figure_to_vectors(const FIGURE& figure) {
     }
     return vectors;
 }
+
+void add_normal(FIGURE f, POINT p) {
+    f->normals.push_back(p);
+}
+
+void add_texture(FIGURE f, POINT p) {
+    f->textures.push_back(p);
+}
+
+std::vector<POINT> figure_to_normals(FIGURE f){
+    std::vector<POINT> normals;
+    if (f->normals.size() > 0){
+        normals.reserve(f->normals.size() * 3);
+        for (const POINT& normal : f->normals){
+            normals.push_back(normal);
+        }
+    }
+    return normals;
+} 

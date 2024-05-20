@@ -15,6 +15,8 @@ FIGURE generate_ring(float inner_radius, float outer_radius, int slices) {
 
     float delta_angle = 2 * M_PI / slices;
     float angle = 0.0f;
+    float delta_texture = 1.0f / slices;
+    float texture_coord = 0.0f;
 
     for (int i = 0; i < slices; ++i) {
         float x1 = outer_radius * cos(angle);
@@ -46,15 +48,19 @@ FIGURE generate_ring(float inner_radius, float outer_radius, int slices) {
         add_triangle(ring, t2);
 
         // Adicione normais e texturas
-        ring->normals.push_back(new_point(0.0f, 1.0f, 0.0f)); // Normais apontando para cima
-        ring->normals.push_back(new_point(0.0f, 1.0f, 0.0f));
-        ring->normals.push_back(new_point(0.0f, 1.0f, 0.0f));
-        ring->normals.push_back(new_point(0.0f, 1.0f, 0.0f));
+        add_normal(ring, new_point(0.0f, 1.0f, 0.0f));
+        add_normal(ring, new_point(0.0f, 1.0f, 0.0f));
+        add_normal(ring, new_point(0.0f, -1.0f, 0.0f));
+        add_normal(ring, new_point(0.0f, 1.0f, 0.0f));
+        add_normal(ring, new_point(0.0f, -1.0f, 0.0f));
+        add_normal(ring, new_point(0.0f, -1.0f, 0.0f));
 
-        ring->textures.push_back(new_point(0.0f, 0.0f, 0.0f)); // Coordenadas de textura arbitrárias
-        ring->textures.push_back(new_point(1.0f, 0.0f, 0.0f));
-        ring->textures.push_back(new_point(0.0f, 1.0f, 0.0f));
-        ring->textures.push_back(new_point(1.0f, 1.0f, 0.0f));
+        add_texture(ring, new_point(texture_coord, 0.0f, 0.0f)); // Coordenadas de textura variáveis
+        add_texture(ring, new_point(texture_coord + delta_texture, 0.0f, 0.0f));
+        add_texture(ring, new_point(texture_coord, 1.0f, 0.0f));
+        add_texture(ring, new_point(texture_coord + delta_texture, 0.0f, 0.0f));
+        add_texture(ring, new_point(texture_coord + delta_texture, 1.0f, 0.0f));
+        add_texture(ring, new_point(texture_coord, 1.0f, 0.0f));
 
         angle += delta_angle;
     }

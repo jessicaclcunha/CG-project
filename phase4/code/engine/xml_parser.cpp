@@ -77,6 +77,7 @@ void parse_group_element(TiXmlElement* groupElement, Group& group) {
                         childElement->QueryFloatAttribute("G", &color.diffuse.g);
                         childElement->QueryFloatAttribute("B", &color.diffuse.b);
                         model.colors.push_back(color);
+                        printf("%d %d %d", color.diffuse.r, color.diffuse.g, color.diffuse.b);
                     } else if (strcmp(colorType, "ambient") == 0) {
                         color.type = AMBIENT;
                         childElement->QueryFloatAttribute("R", &color.ambient.r);
@@ -505,4 +506,16 @@ void set_y_aux (TRANSFORM t, POINT y){
 
 std::vector<LIGHT> get_lights(WORLD w) {
     return w.lights;
+}
+
+std::vector<string> get_textures(WORLD w) {
+    std::vector<string> textures;
+    for (const auto &group : w.groups) {
+        for (const auto &model : group.models) {
+            if (!model.texture_file.empty()) {
+                textures.push_back(model.texture_file);
+            }
+        }
+    }
+    return textures;
 }

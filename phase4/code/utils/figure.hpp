@@ -65,4 +65,10 @@ std::vector<float> figure_to_vectors(const FIGURE& figure);
 
 void concat_FIGURES (FIGURE f1, FIGURE f2);
 
+void add_normal(FIGURE f, POINT p);
+
+void add_texture(FIGURE f, POINT p);
+
+std::vector<POINT> figure_to_normals(FIGURE f);
+
 #endif /* FIGURE_HPP */

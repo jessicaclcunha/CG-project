@@ -49,26 +49,25 @@ FIGURE generate_sphere(float radius, int slices, int stacks) {
             POINT normal3 = new_point(sin(theta) * cos(phi + 2 * M_PI / slices), cos(theta), sin(theta) * sin(phi + 2 * M_PI / slices));
             POINT normal4 = new_point(sin(nextTheta) * cos(phi + 2 * M_PI / slices), cos(nextTheta), sin(nextTheta) * sin(phi + 2 * M_PI / slices));
 
-            sphere->normals.push_back(normal1);
-            sphere->normals.push_back(normal3);
-            sphere->normals.push_back(normal2);
+            add_normal(sphere, normal1);
+            add_normal(sphere, normal3);
+            add_normal(sphere, normal2);
 
-            sphere->normals.push_back(normal3);
-            sphere->normals.push_back(normal4);
-            sphere->normals.push_back(normal2);
+            add_normal(sphere, normal2);
+            add_normal(sphere, normal3);
+            add_normal(sphere, normal4);
 
             POINT texture1 = new_point((float)j / slices, (float)i / stacks, 0.0f);
             POINT texture2 = new_point((float)(j + 1) / slices, (float)i / stacks, 0.0f);
             POINT texture3 = new_point((float)j / slices, (float)(i + 1) / stacks, 0.0f);
             POINT texture4 = new_point((float)(j + 1) / slices, (float)(i + 1) / stacks, 0.0f);
 
-            sphere->textures.push_back(texture1);
-            sphere->textures.push_back(texture2);
-            sphere->textures.push_back(texture3);
-
-            sphere->textures.push_back(texture2);
-            sphere->textures.push_back(texture4);
-            sphere->textures.push_back(texture3);
+            add_texture(sphere, texture1);
+            add_texture(sphere, texture2);
+            add_texture(sphere, texture3);
+            add_texture(sphere, texture2);
+            add_texture(sphere, texture4);
+            add_texture(sphere, texture3);
         }
     }
 
@@ -93,17 +92,17 @@ FIGURE generate_sphere(float radius, int slices, int stacks) {
 
         // Adicione normais e texturas
         POINT normalPoloNorte = new_point(0.0f, 1.0f, 0.0f);
-        sphere->normals.push_back(normalPoloNorte);
-        sphere->normals.push_back(normalPoloNorte);
-        sphere->normals.push_back(normalPoloNorte);
+        add_normal(sphere, normalPoloNorte);
+        add_normal(sphere, normalPoloNorte);
+        add_normal(sphere, normalPoloNorte);
 
         POINT texturePoloNorte1 = new_point(0.5f, 1.0f, 0.0f);
         POINT texturePoloNorte2 = new_point((float)(j + 1) / slices, 1.0f, 0.0f);
         POINT texturePoloNorte3 = new_point((float)j / slices, 1.0f, 0.0f);
 
-        sphere->textures.push_back(texturePoloNorte1);
-        sphere->textures.push_back(texturePoloNorte2);
-        sphere->textures.push_back(texturePoloNorte3);
+        add_texture(sphere, texturePoloNorte1);
+        add_texture(sphere, texturePoloNorte2);
+        add_texture(sphere, texturePoloNorte3);
     }
     // Adicionar o último triângulo conectando o último ponto ao primeiro
     std::vector<POINT> verticesTriangulo;
@@ -115,17 +114,17 @@ FIGURE generate_sphere(float radius, int slices, int stacks) {
 
     // Adicione normais e texturas
     POINT normalPoloNorte = new_point(0.0f, 1.0f, 0.0f);
-    sphere->normals.push_back(normalPoloNorte);
-    sphere->normals.push_back(normalPoloNorte);
-    sphere->normals.push_back(normalPoloNorte);
+    add_normal(sphere, normalPoloNorte);
+    add_normal(sphere, normalPoloNorte);
+    add_normal(sphere, normalPoloNorte);
 
     POINT texturePoloNorte1 = new_point(0.5f, 1.0f, 0.0f);
     POINT texturePoloNorte2 = new_point(1.0f, 1.0f, 0.0f);
     POINT texturePoloNorte3 = new_point(0.0f, 1.0f, 0.0f);
 
-    sphere->textures.push_back(texturePoloNorte1);
-    sphere->textures.push_back(texturePoloNorte2);
-    sphere->textures.push_back(texturePoloNorte3);
+    add_texture(sphere, texturePoloNorte1);
+    add_texture(sphere, texturePoloNorte2);
+    add_texture(sphere, texturePoloNorte3);
 
     return sphere;
 }

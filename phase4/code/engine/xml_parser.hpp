@@ -190,4 +190,6 @@ void set_y_aux (TRANSFORM t, POINT y);
 
 std::vector<LIGHT> get_lights(WORLD w);
 
+std::vector<string> get_textures(WORLD w);
+
 #endif // XML_PARSER_H

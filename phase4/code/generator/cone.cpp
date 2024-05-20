@@ -92,33 +92,6 @@ FIGURE generate_cone(float radius, float height, int slices, int stacks){
             triangles = merge_vectors(triangles, PAT(radius, height, slices, stacks, slice_atual, stack_atual));
         }
     }
-
-    // Adicionar normais e texturas
-    for (const auto& triangle : triangles) {
-        // Calcular a normal para o triângulo atual
-        POINT p1 = get_vertex(triangle, 0);
-        POINT p2 = get_vertex(triangle, 1);
-        POINT p3 = get_vertex(triangle, 2);
-
-        POINT normal;
-        cross(subtract_points(p2, p1), subtract_points(p3, p1), &normal);
-        normalize(&normal);
-
-        // Adicionar a mesma normal para todos os vértices do triângulo
-        for (int i = 0; i < 3; ++i) {
-            f.normals.push_back(normal);
-        }
-
-        // Adicionar as coordenadas de textura (apenas a coordenada u é usada aqui)
-        POINT texture1 = new_point(0.0f, 0.0f, 0.0f);
-        POINT texture2 = new_point(1.0f, 0.0f, 0.0f);
-        POINT texture3 = new_point(0.5f, 1.0f, 0.0f);
-
-        f.texture.push_back(texture1);
-        f.texture.push_back(texture2);
-        f.texture.push_back(texture3);
-    }
-
     add_triangles(f, triangles);
     
     return f;

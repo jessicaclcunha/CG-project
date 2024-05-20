@@ -1,12 +1,11 @@
-#define GL_SILENCE_DEPRECATION
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
 #include <GL/glew.h>
 #include <GL/glut.h>
-#include <IL/il.h>
 #endif
 
+#include <IL/il.h>
 #include <iostream>
 #include <list>
 #include <cmath>
@@ -28,6 +27,7 @@ WORLD world;
 
 GLuint *buffers = NULL; // Array of buffer IDs for each figure
 std::vector<unsigned int> buffers_sizes; // Size (in vertices) of each figure
+GLuint vertexCount, vertices, normals, texCoord, indices, indCount;
 
 float camX, camY, camZ; // Camera
 float LAX, LAY, LAZ;    // Look at
@@ -122,8 +122,6 @@ void renderCatmullRomCurve(std::vector<POINT> points, int numSamples) {
     glEnd();
 }
 
-
-
 void apply_transforms(const GROUP& group, unsigned int *index) {
     for (const auto& transform : get_group_transforms(group)) 
     {
@@ -193,6 +191,68 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
             }
         }
     }
+}
+
+/*
+int loadTexture(const std::string texture_file, int *index) {
+  unsigned int t, tw, th;
+  unsigned char *texData;
+  unsigned int texID;
+
+  ilInit();
+  ilEnable(IL_ORIGIN_SET);
+  ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
+  ilGenImages(1, &t);
+  ilBindImage(t);
+  ilLoadImage((ILstring)texture_file.c_str());
+  tw = ilGetInteger(IL_IMAGE_WIDTH);
+  th = ilGetInteger(IL_IMAGE_HEIGHT);
+  ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+  texData = ilGetData();
+
+  glGenTextures(1, &texID);
+
+  glBindTexture(GL_TEXTURE_2D, texID);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                  GL_LINEAR_MIPMAP_LINEAR);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               texData);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  return texID;
+}
+*/
+
+void apply_normals(FIGURE figure) {
+    std::vector<float> normals = figure_to_vectors(figure);
+    for (size_t i = 0; i < normals.size(); i += 9) {
+        float x1 = normals[i];
+        float y1 = normals[i + 1];
+        float z1 = normals[i + 2];
+        float x2 = normals[i + 3];
+        float y2 = normals[i + 4];
+        float z2 = normals[i + 5];
+        float x3 = normals[i + 6];
+        float y3 = normals[i + 7];
+        float z3 = normals[i + 8];
+
+        float v1[3] = {x2 - x1, y2 - y1, z2 - z1};
+        float v2[3] = {x3 - x1, y3 - y1, z3 - z1};
+
+        float nx = v1[1] * v2[2] - v1[2] * v2[1];
+        float ny = v1[2] * v2[0] - v1[0] * v2[2];
+        float nz = v1[0] * v2[1] - v1[1] * v2[0];
+
+        glNormal3f(nx, ny, nz);
+    }
+
 }
 
 void draw_figures(const GROUP &g, unsigned int *index) {
@@ -383,6 +443,11 @@ int main(int argc, char** argv) {
 
     int index = 0;
     init_vbo(models, &index);
+
+    std::vector<string> textures = get_textures(world);
+    for (size_t i = 0; i < textures.size(); i++) {
+        //loadTexture(textures[i], &index);
+    }
 
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
