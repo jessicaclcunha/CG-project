@@ -421,28 +421,26 @@ std::string print_triangulos(FIGURE f) {
 
     }
 
-        output += "[NORMAIS:\n";
-        
-        for (size_t j = 0; j < normals->size(); ++j) {
-            for (size_t j = 0; j < normals->size(); ++j) {
-                const POINT& point = (*normals)[j];
-                char buffer[100]; // Buffer to store point coordinates
-                snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)\n", get_X(point), get_Y(point), get_Z(point));
-                output += buffer;
-            }
-        }
-        output += "]\n";
-        output += "[TEXTURAS:\n";
+    output += "[NORMAIS:\n";
 
-        for (size_t j = 0; j < textures->size(); ++j) {
-            for (size_t j = 0; j < textures->size(); ++j) {
-                const POINT& point = (*textures)[j];
-                char buffer[100]; // Buffer to store point coordinates
-                snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)\n", get_X(point), get_Y(point), get_Z(point));
-                output += buffer;
-            }
-        }
-        output += "]\n";
+    for (size_t j = 0; j < normals->size(); ++j) 
+    {
+        const POINT& normal = (*normals)[j];
+        char buffer[100]; // Buffer to store point coordinates
+        snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)\n", get_X(normal), get_Y(normal), get_Z(normal));
+        output += buffer;
+    }
+    output += "]\n";
+    output += "[TEXTURAS:\n";
+
+    for (size_t j = 0; j < textures->size(); ++j) 
+    {
+        const POINT& texture = (*textures)[j];
+        char buffer[100]; // Buffer to store point coordinates
+        snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)\n", get_X(texture), get_Y(texture), get_Z(texture));
+        output += buffer;
+    }
+    output += "]\n";
 
     return output;
 }

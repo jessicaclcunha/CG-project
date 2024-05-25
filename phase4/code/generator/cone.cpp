@@ -4,93 +4,96 @@
 using namespace std;
 
 POINT calcula_pontos(float radius, float height, int slices, int stacks, int slice_atual, int stack_atual) {
-    double y = (stack_atual-1) * height/stacks;
-    radius = (height-y) * (radius / height);
-    double theta = 2 * M_PI * slice_atual / slices; // Calcula o ângulo em radianos
-    double x = radius * cos(theta); // Coordenada x
-    double z = radius * sin(theta); // Coordenada z
-    POINT p = new_point(x, y, z);
-    return p;
+    double y = stack_atual * height / stacks;
+    double atual_radius = (height - y) * (radius / height);
+    double theta = 2 * M_PI * slice_atual / slices;
+    double x = atual_radius * cos(theta);
+    double z = atual_radius * sin(theta);
+    return new_point(x, y, z);
 }
 
-POINT calcula_normal(float radius, float height, int slices, int stacks, int slice_atual, int stack_atual) {
-    double y = (stack_atual-1) * height/stacks;
+POINT calcula_normal(float radius, float height, int slices, int slice_atual) {
     double theta = 2 * M_PI * slice_atual / slices;
-    double x = radius * cos(theta);
-    double z = radius * sin(theta);
-    POINT normal = new_point(x, -height, z); // O vetor normal não normalizado
-    normalize(normal); // Normaliza o vetor normal
+    double x = cos(theta);
+    double z = sin(theta);
+    
+    // A inclinação da superfície lateral do cone é dada pela relação entre altura e raio.
+    // Normal não normalizada
+    double nx = x * height;
+    double ny = radius;
+    double nz = z * height;
+
+    POINT normal = new_point(nx, ny, nz);
+    normalize(normal);
     return normal;
 }
-
 
 POINT calcula_textura(float radius, float height, int slices, int stacks, int slice_atual, int stack_atual) {
     float u = (float) slice_atual / slices;
     float v = (float) stack_atual / stacks;
-    return new_point(u, v, 0); // Adiciona a coordenada de textura (u, v)
+    return new_point(u, v, 0);
 }
 
 std::vector<TRIANGLE> PAT(float radius, float height, int slices, int stacks, int slice_atual, int stack_atual) {
-    std::vector<POINT> pontos = std::vector<POINT>();
-    if (slice_atual == 0 && stack_atual == 0) {
+    std::vector<POINT> pontos;
+
+    if (stack_atual == 0) {
         POINT p1 = new_point(0, 0, 0);
-        POINT p2 = calcula_pontos(radius, height, slices, stacks, 1, 1);
-        POINT p3 = calcula_pontos(radius, height, slices, stacks, 2, 1);
-        POINT p4 = calcula_pontos(radius, height, slices, stacks, 3, 1);
-        POINT p5 = calcula_pontos(radius, height, slices, stacks, 4, 1);
+        POINT p2 = calcula_pontos(radius, height, slices, stacks, slice_atual, 1);
+        POINT p3 = calcula_pontos(radius, height, slices, stacks, (slice_atual + 1) % slices, 1);
         pontos.push_back(p1);
         pontos.push_back(p2);
         pontos.push_back(p3);
-        pontos.push_back(p4);
-        pontos.push_back(p5);
     } else if (stack_atual == stacks) {
-        POINT p1 = calcula_pontos(radius, height, slices, stacks, slice_atual, stack_atual);
-        POINT p2 = new_point(0, height, 0); // Vértice do cone
-        POINT p3 = calcula_pontos(radius, height, slices, stacks, slice_atual + 1, stack_atual);
+        POINT p1 = calcula_pontos(radius, height, slices, stacks, slice_atual, stacks - 1);
+        POINT p2 = new_point(0, height, 0);
+        POINT p3 = calcula_pontos(radius, height, slices, stacks, (slice_atual + 1) % slices, stacks - 1);
         pontos.push_back(p1);
         pontos.push_back(p2);
         pontos.push_back(p3);
     } else {
         POINT p1 = calcula_pontos(radius, height, slices, stacks, slice_atual, stack_atual);
         POINT p2 = calcula_pontos(radius, height, slices, stacks, slice_atual, stack_atual + 1);
-        POINT p3 = calcula_pontos(radius, height, slices, stacks, slice_atual + 1, stack_atual + 1);
-        POINT p4 = calcula_pontos(radius, height, slices, stacks, slice_atual + 1, stack_atual);
+        POINT p3 = calcula_pontos(radius, height, slices, stacks, (slice_atual + 1) % slices, stack_atual + 1);
+        POINT p4 = calcula_pontos(radius, height, slices, stacks, (slice_atual + 1) % slices, stack_atual);
         pontos.push_back(p1);
         pontos.push_back(p2);
         pontos.push_back(p3);
         pontos.push_back(p4);
     }
+
     std::vector<TRIANGLE> triangles = triangles_sort(pontos);
     return triangles;
 }
 
 std::vector<TRIANGLE> triangles_sort(std::vector<POINT> points) {
-    std::vector<TRIANGLE> triangles = std::vector<TRIANGLE>();
-    POINT p1 = new_point(0,0,0);
-    if (equals_point(points[0], p1) == 1){
+    std::vector<TRIANGLE> triangles;
+    if (points.size() == 3) {
         TRIANGLE t = create_triangle();
         add_vertex(t, points[0]);
-        add_vertex(t, points[1]);     // Ponto atual no loop
-        add_vertex(t, points[4]); // Próximo ponto subsequente
+        add_vertex(t, points[1]);
+        add_vertex(t, points[2]);
         triangles.push_back(t);
-    }
-    // Loop começa em 1, pois o primeiro ponto (points[0]) é sempre usado
-    for (size_t i = 1; i < points.size() - 1; i++) {
-        // Cria um triângulo com o primeiro ponto do vetor e cada par de pontos seguintes
-        TRIANGLE t = create_triangle();
-        add_vertex(t, points[0]);     // Primeiro ponto do vetor, sempre utilizado
-        add_vertex(t, points[i]);     // Ponto atual no loop
-        add_vertex(t, points[i + 1]); // Próximo ponto subsequente
-        triangles.push_back(t);
+    } else if (points.size() == 4) {
+        TRIANGLE t1 = create_triangle();
+        add_vertex(t1, points[0]);
+        add_vertex(t1, points[1]);
+        add_vertex(t1, points[2]);
+        triangles.push_back(t1);
+        TRIANGLE t2 = create_triangle();
+        add_vertex(t2, points[0]);
+        add_vertex(t2, points[2]);
+        add_vertex(t2, points[3]);
+        triangles.push_back(t2);
     }
     return triangles;
 }
 
 std::vector<TRIANGLE> merge_vectors(std::vector<TRIANGLE> v1, std::vector<TRIANGLE> v2) {
-    std::vector<TRIANGLE> result = std::vector<TRIANGLE>();
-    result.reserve(v1.size() + v2.size()); // reserva espaço para a inserção
-    result.insert(result.end(), v1.begin(), v1.end()); // insere os elementos do primeiro vetor
-    result.insert(result.end(), v2.begin(), v2.end()); // insere os elementos do segundo vetor
+    std::vector<TRIANGLE> result;
+    result.reserve(v1.size() + v2.size());
+    result.insert(result.end(), v1.begin(), v1.end());
+    result.insert(result.end(), v2.begin(), v2.end());
     return result;
 }
 
@@ -99,33 +102,43 @@ FIGURE generate_cone(float radius, float height, int slices, int stacks) {
     std::vector<TRIANGLE> triangles;
     std::vector<POINT> textures;
     std::vector<POINT> normais;
-    for (int stack_atual = 0; stack_atual <= stacks; stack_atual++) 
-    {
-        for (int slice_atual = 0; slice_atual < slices; slice_atual++) 
-        {
-            triangles = merge_vectors(triangles, PAT(radius, height, slices, stacks, slice_atual, stack_atual));
+
+    for (int stack_atual = 0; stack_atual <= stacks; stack_atual++) {
+        for (int slice_atual = 0; slice_atual < slices; slice_atual++) {
+            std::vector<TRIANGLE> t = PAT(radius, height, slices, stacks, slice_atual, stack_atual);
+            triangles = merge_vectors(triangles, t);
+
             if (stack_atual == 0) {
+                // Normais para a base do cone
+                normais.push_back(new_point(0, -1, 0));
+                normais.push_back(new_point(0, -1, 0));
                 normais.push_back(new_point(0, -1, 0));
             } else if (stack_atual == stacks) {
-               normais.push_back(new_point(0, 1, 0));
+                // Normais para o vértice do cone
+                normais.push_back(new_point(0, 1, 0));
+                normais.push_back(new_point(0, 1, 0));
+                normais.push_back(new_point(0, 1, 0));
             } else {
-                POINT normal = calcula_normal(radius, height, slices, stacks, slice_atual, stack_atual);
-                normais.push_back(normal); 
+                // Normais para a superfície lateral do cone
+                POINT normal = calcula_normal(radius, height, slices, slice_atual);
+                normais.push_back(normal);
+                normais.push_back(normal);
+                normais.push_back(normal);
+                normais.push_back(normal);
             }
-            textures.push_back (calcula_textura(radius, height, slices, stacks, slice_atual, stack_atual));
-        }   
+
+            textures.push_back(calcula_textura(radius, height, slices, stacks, slice_atual, stack_atual));
+            textures.push_back(calcula_textura(radius, height, slices, stacks, slice_atual, stack_atual));
+            textures.push_back(calcula_textura(radius, height, slices, stacks, slice_atual, stack_atual));
+            if (stack_atual != 0 && stack_atual != stacks) {
+                textures.push_back(calcula_textura(radius, height, slices, stacks, slice_atual, stack_atual));
+            }
+        }
     }
-    add_triangles(f, triangles); // Adiciona os triângulos à figura
-    //print_figura_vertices(f);
+
+    add_triangles(f, triangles);
     add_normals(f, normais);
-    //print_figura_normais(f);
     add_textures(f, textures);
-    /*print_figura_texturas(f);
-    printf ("\nTexturas default:\n");
-    for (const POINT& texturas: textures) {
-        printf("Ponto(x: %f, y: %f, z:%f)\n", get_X(texturas), get_Y(texturas), get_Z(texturas));
-    }
-    */
-   //printf_normais(f);
+
     return f;
 }

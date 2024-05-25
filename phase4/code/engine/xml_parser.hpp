@@ -164,6 +164,18 @@ std::vector<MODEL> get_models(WORLD &w);
 
 std::vector<TRANSFORM> get_group_transforms(GROUP g);
 
+void parse_diffuse_color(TiXmlElement* colorElement, COLOR& color);
+
+void parse_ambient_color(TiXmlElement* colorElement, COLOR& color);
+
+void parse_specular_color(TiXmlElement* colorElement, COLOR& color);
+
+void parse_emissive_color(TiXmlElement* colorElement, COLOR& color);
+
+void parse_shininess_color(TiXmlElement* colorElement, COLOR& color);
+
+void parse_color_element(TiXmlElement* colorElement, Model& model);
+
 void parse_translate_transform(TiXmlElement* translateElement, Transform& transform);
 
 void parse_rotate_transform(TiXmlElement* rotateElement, Transform& transform);

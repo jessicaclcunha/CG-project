@@ -66,45 +66,11 @@ void parse_group_element(TiXmlElement* groupElement, Group& group) {
             }
 
             // Parse colors
-            for (TiXmlElement* colorElement = modelElement->FirstChildElement("color"); colorElement; colorElement = colorElement->NextSiblingElement("color")) {
-                COLOR color;
+            // Parse colors
+            for (TiXmlElement* colorElement = modelElement->FirstChildElement("color"); colorElement; colorElement = colorElement->NextSiblingElement("color"))
+                parse_color_element(colorElement, model);
 
-                for (TiXmlElement* childElement = colorElement->FirstChildElement(); childElement; childElement = childElement->NextSiblingElement()) {
-                    const char* colorType = childElement->Value();
-                    if (strcmp(colorType, "diffuse") == 0) {
-                        color.type = C_DIFFUSE;
-                        childElement->QueryFloatAttribute("R", &color.diffuse.r);
-                        childElement->QueryFloatAttribute("G", &color.diffuse.g);
-                        childElement->QueryFloatAttribute("B", &color.diffuse.b);
-                        model.colors.push_back(color);
-                    } else if (strcmp(colorType, "ambient") == 0) {
-                        color.type = C_AMBIENT;
-                        childElement->QueryFloatAttribute("R", &color.ambient.r);
-                        childElement->QueryFloatAttribute("G", &color.ambient.g);
-                        childElement->QueryFloatAttribute("B", &color.ambient.b);
-                        model.colors.push_back(color);
-                    } else if (strcmp(colorType, "specular") == 0) {
-                        color.type = C_SPECULAR;
-                        childElement->QueryFloatAttribute("R", &color.specular.r);
-                        childElement->QueryFloatAttribute("G", &color.specular.g);
-                        childElement->QueryFloatAttribute("B", &color.specular.b);
-                        model.colors.push_back(color);
-                    } else if (strcmp(colorType, "emissive") == 0) {
-                        color.type = C_EMISSIVE;
-                        childElement->QueryFloatAttribute("R", &color.emissive.r);
-                        childElement->QueryFloatAttribute("G", &color.emissive.g);
-                        childElement->QueryFloatAttribute("B", &color.emissive.b);
-                        model.colors.push_back(color);
-                    } else if (strcmp(colorType, "shininess") == 0) {
-                        color.type = C_SHININESS;
-                        childElement->QueryFloatAttribute("value", &color.shininess.value);
-                        model.colors.push_back(color);
-                    } else {
-                        std::cerr << "Error: Unknown color type '" << colorType << "'." << std::endl;
-                    }
-                }
-            }
-            group.models.push_back(model);
+
         }
     }
 
@@ -136,6 +102,62 @@ void parse_group_element(TiXmlElement* groupElement, Group& group) {
         group.children.push_back(childGroup);
     }
 }
+
+void parse_diffuse_color(TiXmlElement* colorElement, COLOR& color) {
+    color.type = C_DIFFUSE;
+    colorElement->QueryFloatAttribute("R", &color.diffuse.r);
+    colorElement->QueryFloatAttribute("G", &color.diffuse.g);
+    colorElement->QueryFloatAttribute("B", &color.diffuse.b);
+}
+
+void parse_ambient_color(TiXmlElement* colorElement, COLOR& color) {
+    color.type = C_AMBIENT;
+    colorElement->QueryFloatAttribute("R", &color.ambient.r);
+    colorElement->QueryFloatAttribute("G", &color.ambient.g);
+    colorElement->QueryFloatAttribute("B", &color.ambient.b);
+}
+
+void parse_specular_color(TiXmlElement* colorElement, COLOR& color) {
+    color.type = C_SPECULAR;
+    colorElement->QueryFloatAttribute("R", &color.specular.r);
+    colorElement->QueryFloatAttribute("G", &color.specular.g);
+    colorElement->QueryFloatAttribute("B", &color.specular.b);
+}
+
+void parse_emissive_color(TiXmlElement* colorElement, COLOR& color) {
+    color.type = C_EMISSIVE;
+    colorElement->QueryFloatAttribute("R", &color.emissive.r);
+    colorElement->QueryFloatAttribute("G", &color.emissive.g);
+    colorElement->QueryFloatAttribute("B", &color.emissive.b);
+}
+
+void parse_shininess_color(TiXmlElement* colorElement, COLOR& color) {
+    color.type = C_SHININESS;
+    colorElement->QueryFloatAttribute("value", &color.shininess.value);
+}
+
+void parse_color_element(TiXmlElement* colorElement, Model& model) {
+    COLOR color;
+
+    for (TiXmlElement* childElement = colorElement->FirstChildElement(); childElement; childElement = childElement->NextSiblingElement()) {
+        const char* colorType = childElement->Value();
+        if (strcmp(colorType, "diffuse") == 0) {
+            parse_diffuse_color(childElement, color);
+        } else if (strcmp(colorType, "ambient") == 0) {
+            parse_ambient_color(childElement, color);
+        } else if (strcmp(colorType, "specular") == 0) {
+            parse_specular_color(childElement, color);
+        } else if (strcmp(colorType, "emissive") == 0) {
+            parse_emissive_color(childElement, color);
+        } else if (strcmp(colorType, "shininess") == 0) {
+            parse_shininess_color(childElement, color);
+        } else {
+            std::cerr << "Error: Unknown color type '" << colorType << "'." << std::endl;
+        }
+        model.colors.push_back(color);
+    }
+}
+
 
 void parse_translate_transform(TiXmlElement* translateElement, Transform& transform) {
     transform.type = TRANSLATE;
@@ -282,7 +304,7 @@ void parse_config_file(char* filename, WORLD& world) {
                 std::cerr << "Missing or invalid light type." << std::endl;
             }
         }
-    }
+    } 
 }
 
 void delete_world(WORLD &w) {
