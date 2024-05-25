@@ -191,7 +191,6 @@ void save_file(FIGURE f, std::string filename) {
 }
 
 
-
 void read_triangle_data(const std::string &line, FIGURE figure) {
     float x1, y1, z1, x2, y2, z2, x3, y3, z3;
     float n1, n2, n3, n4, n5, n6, n7, n8, n9;
@@ -293,7 +292,7 @@ void concat_FIGURES (FIGURE f1, FIGURE f2) {
     }
 }
 
-void print_figura(FIGURE f) {
+void print_figura_vertices(FIGURE f) {
     if (f != NULL) {
         std::vector<TRIANGLE>* triangles = f->triangles;
         std::vector<POINT>* normals = get_normals(f);
@@ -309,27 +308,34 @@ void print_figura(FIGURE f) {
             std::vector<POINT>* vertexBegin = get_points(triangulo);
             for (size_t j = 0; j < vertexBegin->size(); ++j) {
                 const POINT &vertex = (*vertexBegin)[j];
-                printf("(%.2f, %.2f, %.2f)", get_X(vertex), get_Y(vertex), get_Z(vertex));
-
-                // Imprimir informações sobre normais, se disponíveis
-                if (normals && j < normals->size()) {
-                    const POINT &normal = (*normals)[j];
-                    printf(" (%.2f, %.2f, %.2f)\n", get_X(normal), get_Y(normal), get_Z(normal)); 
-                } 
-                // Imprimir informações sobre texturas, se disponíveis
-                if (textures && j < textures->size()) {
-                    const POINT &texture = (*textures)[j];
-                    printf(" (%.2f, %.2f, %.2f)", get_X(texture), get_Y(texture), get_Z(texture));
-                }
-
+                printf("(%.2f, %.2f, %.2f)\n", get_X(vertex), get_Y(vertex), get_Z(vertex));
             }
         }
     }
 }
 
+void printf_normais (FIGURE f){
+    std::vector<POINT>* normais = get_normals(f);
+    for (const POINT& normal: *normais) {
+        printf("Ponto(x: %f, y: %f, z:%f)\n", get_X(normal), get_Y(normal), get_Z(normal));
+    }
+}
 
 
+void printf_texturas (FIGURE f){
+    std::vector<POINT>* textures = get_textures(f);
+    for (const POINT& textura: *textures) {
+        printf("Ponto(x: %f, y: %f, z:%f)\n", get_X(textura), get_Y(textura), get_Z(textura));
+    }
+}
+
+
+/*
 std::string print_triangulos(FIGURE f) {
+    //printf ("OLA:\n");
+    //printf_normais (f);
+    //printf ("ADEUS;\n");
+
     std::string output;
     if (!f) {
         output = "Error: Invalid figure.";
@@ -337,8 +343,8 @@ std::string print_triangulos(FIGURE f) {
     }
 
     std::vector<TRIANGLE>* triangles = f->triangles;
-    std::vector<POINT>* normals = f->normals;
-    std::vector<POINT>* textures = f->textures;
+    std::vector<POINT>* normals = get_normals(f);
+    std::vector<POINT>* textures = get_textures(f);
 
     if (!triangles) {
         output = "Error: No triangles in the figure.";
@@ -354,24 +360,89 @@ std::string print_triangulos(FIGURE f) {
         }
 
         output += "[";
-        for (size_t j = 0; j < vertices->size(); ++j) {
-            const POINT& point = (*vertices)[j];
-            char buffer[200]; // Buffer to store point coordinates and normals
-            //printf ("Textures size: %lu\n", textures->size());
-            //printf ("Normals size: %lu\n", normals->size());
-            if (normals && j < normals->size() && textures && textures->size()) {
-                const POINT& normal = (*normals)[j];
-                const POINT& texture = (*textures)[j];
-                snprintf(buffer, sizeof(buffer) - strlen(buffer), "(%.2f, %.2f, %.2f) %.2f, %.2f, %.2f, %.2f, %.2f, %.2f",
-                         get_X(point), get_Y(point), get_Z(point), get_X(normal), get_Y(normal), get_Z(normal),get_X(texture), get_Y(texture), get_Z(texture));
-            } else {
-                snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)", get_X(point), get_Y(point), get_Z(point));
+        char buffer[1024];
+
+        for (const TRIANGLE &triangulo : *triangles) {
+            std::vector<POINT>* vertexBegin = get_points(triangulo);
+            for (size_t j = 0; j < vertexBegin->size(); j++) {
+                const POINT &vertex = (*vertexBegin)[j];
+                snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)\n", get_X(vertex), get_Y(vertex), get_Z(vertex));
+                output += buffer;
             }
-            output += buffer;
-            if (j < vertices->size() - 1) output += ",";
         }
+        /*for (const POINT& normal: *normals) {
+            snprintf(buffer, sizeof (buffer), "Normal(x: %f, y: %f, z:%f)\n", get_X(normal), get_Y(normal), get_Z(normal));
+        }
+        output += buffer;
+        buffer[0] = '\0';
+        for (const POINT& textura: *textures) {
+        snprintf(buffer, sizeof (buffer),"Textura(x: %f, y: %f, z:%f)\n", get_X(textura), get_Y(textura), get_Z(textura));
+        }
+        output += buffer;      
         output += "]\n";
     }
+
+    return output;
+}
+*/
+
+std::string print_triangulos(FIGURE f) {
+    std::string output;
+    if (!f) {
+        output = "Error: Invalid figure.";
+        return output;
+    }
+
+    std::vector<TRIANGLE>* triangles = f->triangles;
+    std::vector<POINT>* normals = get_normals(f);
+    std::vector<POINT>* textures = get_textures(f);
+
+    if (!triangles) {
+        output = "Error: No triangles in the figure.";
+        return output;
+    }
+
+    output += "VERTICES:\n";
+    for (const TRIANGLE &triangulo : *triangles) {
+        std::vector<POINT>* vertices = get_points(triangulo);
+        if (!vertices || vertices->size() != 3) {
+            output += "Error: Invalid triangle - should have exactly 3 vertices.\n";
+            continue;
+        }
+        for (size_t j = 0; j < vertices->size(); ++j) {
+            output += "[";
+            const POINT& point = (*vertices)[j];
+            char buffer[100]; // Buffer to store point coordinates
+            snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)", get_X(point), get_Y(point), get_Z(point));
+            output += buffer;
+            if (j < vertices->size() - 1) output += ",";
+            output += "]\n";
+        }
+
+    }
+
+        output += "[NORMAIS:\n";
+        
+        for (size_t j = 0; j < normals->size(); ++j) {
+            for (size_t j = 0; j < normals->size(); ++j) {
+                const POINT& point = (*normals)[j];
+                char buffer[100]; // Buffer to store point coordinates
+                snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)\n", get_X(point), get_Y(point), get_Z(point));
+                output += buffer;
+            }
+        }
+        output += "]\n";
+        output += "[TEXTURAS:\n";
+
+        for (size_t j = 0; j < textures->size(); ++j) {
+            for (size_t j = 0; j < textures->size(); ++j) {
+                const POINT& point = (*textures)[j];
+                char buffer[100]; // Buffer to store point coordinates
+                snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)\n", get_X(point), get_Y(point), get_Z(point));
+                output += buffer;
+            }
+        }
+        output += "]\n";
 
     return output;
 }
@@ -406,12 +477,33 @@ std::vector<float> figure_to_vectors(const FIGURE& figure) {
 }
 
 void add_normal(FIGURE f, POINT p) {
-    f->normals->push_back(p);
+    if (f != nullptr) {
+        f->normals->push_back(p);
+    }
 }
 
 void add_texture(FIGURE f, POINT p) {
-    f->textures->push_back(p);
+    if (f != nullptr) {
+        f->textures->push_back(p);
+    }
 }
+
+void add_normals(FIGURE f, const std::vector<POINT>& normals) {
+    if (f != nullptr) {
+        for (const POINT& normal : normals) {
+            add_normal(f, normal);
+        }
+    }
+}
+
+void add_textures(FIGURE f, const std::vector<POINT>& textures) {
+    if (f != nullptr) {
+        for (const POINT& texture : textures) {
+            add_texture(f, texture);
+        }
+    }
+}
+
 
 std::vector<float> figure_to_normals(FIGURE f){
     std::vector<float> normals;

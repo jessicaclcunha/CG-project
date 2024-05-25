@@ -55,7 +55,11 @@ FIGURE fileToFigure(const std::string& filename);
 
 void add_triangles(FIGURE f, std::vector<TRIANGLE> t);
 
-void print_figura(FIGURE f);
+void print_figura_vertices(FIGURE f);
+
+void printf_normais (FIGURE f);
+
+void printf_texturas (FIGURE f);
 
 int number_triangles(FIGURE f);
 
@@ -70,6 +74,10 @@ void concat_FIGURES (FIGURE f1, FIGURE f2);
 void add_normal(FIGURE f, POINT p);
 
 void add_texture(FIGURE f, POINT p);
+
+void add_normals(FIGURE f, const std::vector<POINT>& normals);
+
+void add_textures(FIGURE f, const std::vector<POINT>& textures);
 
 std::vector<float> figure_to_normals(FIGURE f);
 
