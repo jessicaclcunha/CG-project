@@ -19,16 +19,17 @@ FIGURE generate_plane_XZ(int length, int divisions, float h, int baixo) {
     float Xs[4] = {x1, x2, x3, x4}; //array dos X's
     float Zs[4] = {z1, z2, z3, z4}; //arrays dos Z's
 
+    POINT normal = new_point(0.0f, 1.0f, 0.0f);
+
     //isto serve para inverter, pois vamos usar isto para criar a box (verificar mesmo se queremos usar isto, caso não seja necessário, apagar)
     if (baixo == 1){
         Xs[1] = x3;
         Xs[2] = x2;
         Zs[1] = z3;
         Zs[2] = z2;
-    } 
 
-    //ao usarmos estes dois ciclos for, vamos criar os vários pontos do plano de maneira a que fiquem divididos nas várias partes que queremos
-   // printf("XZ\n");
+        set_Y(normal, -1.0f);
+    } 
     for (int linha = 0; linha < divisions; linha++){ //itera sobre o eixo do Z (neste caso)
         for (int coluna = 0; coluna < divisions; coluna++){ //itera sobre o eixo do X
             // Primeiro triângulo do quadrado
@@ -47,13 +48,7 @@ FIGURE generate_plane_XZ(int length, int divisions, float h, int baixo) {
             POINT p5 = new_point(Xs[3] + coluna * division, h, Zs[3]);
             POINT p6 = new_point(Xs[2] + coluna * division, h, Zs[2]);
 
-            /*print_point(p1);
-            print_point(p2);
-            print_point(p3);
-
-            print_point(p4);
-            print_point(p5);
-            print_point(p6);*/
+ 
 
             // Inicialize vetores vazios
             std::vector<POINT> vertices1;
@@ -76,12 +71,12 @@ FIGURE generate_plane_XZ(int length, int divisions, float h, int baixo) {
 
             // Adicione normais e texturas
 
-            add_normal(f, new_point(0.0f, 1.0f, 0.0f)); // Normais apontando para cima
-            add_normal(f, new_point(0.0f, 1.0f, 0.0f));
-            add_normal(f, new_point(0.0f, 1.0f, 0.0f));
-            add_normal(f, new_point(0.0f, 1.0f, 0.0f));
-            add_normal(f, new_point(0.0f, 1.0f, 0.0f));
-            add_normal(f, new_point(0.0f, 1.0f, 0.0f));
+            add_normal(f, normal); // Normais apontando para cima
+            add_normal(f, normal);
+            add_normal(f, normal);
+            add_normal(f, normal);
+            add_normal(f, normal);
+            add_normal(f, normal);
 
             add_texture(f, new_point(0.0f, 0.0f, 0.0f)); // Coordenadas de textura arbitrárias
             add_texture(f, new_point(1.0f, 0.0f, 0.0f));
@@ -115,11 +110,14 @@ FIGURE generate_plane_XY(int length, int divisions, float h, int baixo) {
     float Xs[4] = {x1, x2, x3, x4};
     float Ys[4] = {y1, y2, y3, y4};
 
+    POINT normal = new_point(0.0f, 0.0f, 1.0f);
+
     if (baixo == 1){
         Xs[1] = x3;
         Xs[2] = x2;
         Ys[1] = y3;
         Ys[2] = y2;
+        set_Z(normal, -1.0f);
     }
     //printf("XY\n");
     for (int linha = 0; linha < divisions; linha++){
@@ -156,12 +154,12 @@ FIGURE generate_plane_XY(int length, int divisions, float h, int baixo) {
             add_triangle(f, t2);
 
             // Adicione normais e texturas
-            add_normal(f, new_point(0.0f, 0.0f, 1.0f)); // Normais apontando para cima
-            add_normal(f, new_point(0.0f, 0.0f, 1.0f));
-            add_normal(f, new_point(0.0f, 0.0f, 1.0f));
-            add_normal(f, new_point(0.0f, 0.0f, 1.0f));
-            add_normal(f, new_point(0.0f, 0.0f, 1.0f));
-            add_normal(f, new_point(0.0f, 0.0f, 1.0f));
+            add_normal(f, normal); // Normais apontando para cima
+            add_normal(f, normal);
+            add_normal(f, normal);
+            add_normal(f, normal);
+            add_normal(f, normal);
+            add_normal(f, normal);
 
             add_texture(f, new_point(0.0f, 0.0f, 0.0f)); // Coordenadas de textura arbitrárias
             add_texture(f, new_point(1.0f, 0.0f, 0.0f));
@@ -192,11 +190,14 @@ FIGURE generate_plane_YZ(int length, int divisions, float h, int baixo) {
     float Ys[4] = {y1, y2, y3, y4};
     float Zs[4] = {z1, z2, z3, z4};
 
+    POINT normal = new_point(1.0f, 0.0f, 0.0f);
+
     if (baixo == 1){
         Ys[1] = y3;
         Ys[2] = y2;
         Zs[1] = z3;
         Zs[2] = z2;
+        set_X(normal, -1.0f);
     }
     //printf ("YZ\n");
     for (int linha = 0; linha < divisions; linha++){
@@ -232,12 +233,12 @@ FIGURE generate_plane_YZ(int length, int divisions, float h, int baixo) {
             add_triangle(f, t2);
 
             // Adicione normais e texturas
-            add_normal(f, new_point(1.0f, 0.0f, 0.0f)); // Normais apontando para cima
-            add_normal(f, new_point(1.0f, 0.0f, 0.0f));
-            add_normal(f, new_point(1.0f, 0.0f, 0.0f));
-            add_normal(f, new_point(1.0f, 0.0f, 0.0f));
-            add_normal(f, new_point(1.0f, 0.0f, 0.0f));
-            add_normal(f, new_point(1.0f, 0.0f, 0.0f));
+            add_normal(f, normal); // Normais apontando para cima
+            add_normal(f, normal);
+            add_normal(f, normal);
+            add_normal(f, normal);
+            add_normal(f, normal);
+            add_normal(f, normal);
 
             add_texture(f, new_point(0.0f, 0.0f, 0.0f)); // Coordenadas de textura arbitrárias
             add_texture(f, new_point(1.0f, 0.0f, 0.0f));

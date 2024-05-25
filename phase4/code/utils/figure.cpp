@@ -198,7 +198,7 @@ void read_triangle_data(const std::string &line, FIGURE figure) {
     float t1, t2, t3, t4, t5, t6, t7, t8, t9;
     
     sscanf(line.c_str(),
-           "[(%f, %f, %f) %f, %f, %f, %f, %f, %f,(%f, %f, %f) %f, %f, %f, %f, %f, %f,(%f, %f, %f) %f, %f, %f, %f, %f, %f]",
+           "[(%f, %f, %f) %f, %f, %f %f, %f, %f,(%f, %f, %f) %f, %f, %f %f, %f, %f,(%f, %f, %f) %f, %f, %f %f, %f, %f]",
            &x1, &y1, &z1, &n1, &n2, &n3, &t1, &t2, &t3,
            &x2, &y2, &z2, &n4, &n5, &n6, &t4, &t5, &t6,
            &x3, &y3, &z3, &n7, &n8, &n9, &t7, &t8, &t9);
@@ -288,6 +288,8 @@ FIGURE fileToFigure(const std::string& filepath) {
 void concat_FIGURES (FIGURE f1, FIGURE f2) {
     if (f2) {
         f1->triangles->insert(f1->triangles->end(), f2->triangles->begin(), f2->triangles->end());
+        f1->normals->insert(f1->normals->end(), f2->normals->begin(), f2->normals->end());
+        f1->textures->insert(f1->textures->end(), f2->textures->begin(), f2->textures->end());
     }
 }
 
@@ -312,14 +314,14 @@ void print_figura(FIGURE f) {
                 // Imprimir informações sobre normais, se disponíveis
                 if (normals && j < normals->size()) {
                     const POINT &normal = (*normals)[j];
-                    printf(" (%.2f, %.2f, %.2f)", get_X(normal), get_Y(normal), get_Z(normal));
-                }
-
+                    printf(" (%.2f, %.2f, %.2f)\n", get_X(normal), get_Y(normal), get_Z(normal)); 
+                } 
                 // Imprimir informações sobre texturas, se disponíveis
                 if (textures && j < textures->size()) {
                     const POINT &texture = (*textures)[j];
                     printf(" (%.2f, %.2f, %.2f)", get_X(texture), get_Y(texture), get_Z(texture));
                 }
+
             }
         }
     }
@@ -355,18 +357,15 @@ std::string print_triangulos(FIGURE f) {
         for (size_t j = 0; j < vertices->size(); ++j) {
             const POINT& point = (*vertices)[j];
             char buffer[200]; // Buffer to store point coordinates and normals
-            if (normals && j < normals->size()) {
+            //printf ("Textures size: %lu\n", textures->size());
+            //printf ("Normals size: %lu\n", normals->size());
+            if (normals && j < normals->size() && textures && textures->size()) {
                 const POINT& normal = (*normals)[j];
-                snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f) %.2f, %.2f, %.2f", 
-                         get_X(point), get_Y(point), get_Z(point), get_X(normal), get_Y(normal), get_Z(normal));
+                const POINT& texture = (*textures)[j];
+                snprintf(buffer, sizeof(buffer) - strlen(buffer), "(%.2f, %.2f, %.2f) %.2f, %.2f, %.2f, %.2f, %.2f, %.2f",
+                         get_X(point), get_Y(point), get_Z(point), get_X(normal), get_Y(normal), get_Z(normal),get_X(texture), get_Y(texture), get_Z(texture));
             } else {
                 snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)", get_X(point), get_Y(point), get_Z(point));
-            }
-
-            if (textures && j < textures->size()) {
-                const POINT& texture = (*textures)[j];
-                snprintf(buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), " %.2f, %.2f, %.2f", 
-                         get_X(texture), get_Y(texture), get_Z(texture));
             }
             output += buffer;
             if (j < vertices->size() - 1) output += ",";
