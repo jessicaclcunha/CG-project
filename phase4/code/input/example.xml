@@ -13,8 +13,7 @@
             <scale x="2" y="1" z="1" />
         </transform>
         <models>
-            <model file="/Users/jessicacunha/Desktop/CG-project/phase2/code/outputs/plane.3d" /> 
-            <model file="/Users/jessicacunha/Desktop/CG-project/phase2/code/outputs/cone.3d" />
+            <model file="/Users/jessicacunha/Desktop/CG-project/phase4/code/outputs/cone_1_2_4_3.3d" /> 
         </models>
     </group>
 </world>

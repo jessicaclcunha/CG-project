@@ -50,10 +50,17 @@ FIGURE generate_ring(float inner_radius, float outer_radius, int slices) {
         // Adicione normais e texturas
         add_normal(ring, new_point(0.0f, 1.0f, 0.0f));
         add_normal(ring, new_point(0.0f, 1.0f, 0.0f));
-        add_normal(ring, new_point(0.0f, -1.0f, 0.0f));
         add_normal(ring, new_point(0.0f, 1.0f, 0.0f));
+        add_normal(ring, new_point(0.0f, 1.0f, 0.0f));
+        add_normal(ring, new_point(0.0f, 1.0f, 0.0f));
+        add_normal(ring, new_point(0.0f, 1.0f, 0.0f));
+
         add_normal(ring, new_point(0.0f, -1.0f, 0.0f));
         add_normal(ring, new_point(0.0f, -1.0f, 0.0f));
+        add_normal(ring, new_point(0.0f, -1.0f, 0.0f));
+        add_normal(ring, new_point(0.0f, -1.0f, 0.0f));
+        add_normal(ring, new_point(0.0f, -1.0f, 0.0f));
+        
 
         add_texture(ring, new_point(texture_coord, 0.0f, 0.0f)); // Coordenadas de textura variáveis
         add_texture(ring, new_point(texture_coord + delta_texture, 0.0f, 0.0f));

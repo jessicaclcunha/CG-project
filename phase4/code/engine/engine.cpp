@@ -104,9 +104,11 @@ void init_vbo(const std::vector<MODEL>& models, int *index) {
     texBuffers = new GLuint[models.size()];
     glGenBuffers(models.size(), texBuffers);
 
-
+    printf("%lu\n", models.size());
     for (size_t i = 0; i < models.size(); ++i) {
+        printf("Entrou\n");
         FIGURE figure = fileToFigure(models[i].file);
+        printf("Saiu\n");
         std::vector<float> fig_vectors = figure_to_vectors(figure);
         std::vector<float> fig_normals = figure_to_normals(figure);
         std::vector<float> fig_textures = figure_to_textures(figure);
@@ -478,7 +480,9 @@ int main(int argc, char** argv) {
     std::vector<MODEL> models = get_models(world);
 
     int index = 0;
+    printf("AQUI1\n");
     init_vbo(models, &index);
+    printf("AQUI2\n");
 
     std::vector<string> textures = get_textures(world);
     for (size_t i = 0; i < textures.size(); i++) {

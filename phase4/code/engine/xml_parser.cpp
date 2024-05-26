@@ -66,11 +66,10 @@ void parse_group_element(TiXmlElement* groupElement, Group& group) {
             }
 
             // Parse colors
-            // Parse colors
             for (TiXmlElement* colorElement = modelElement->FirstChildElement("color"); colorElement; colorElement = colorElement->NextSiblingElement("color"))
                 parse_color_element(colorElement, model);
 
-
+            group.models.push_back(model);
         }
     }
 
