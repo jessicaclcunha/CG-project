@@ -110,14 +110,14 @@ FIGURE generate_plane_XY(int length, int divisions, float h, int baixo) {
     float Xs[4] = {x1, x2, x3, x4};
     float Ys[4] = {y1, y2, y3, y4};
 
-    POINT normal = new_point(0.0f, 0.0f, 1.0f);
+    POINT normal = new_point(0.0f, 0.0f, -1.0f);
 
     if (baixo == 1){
         Xs[1] = x3;
         Xs[2] = x2;
         Ys[1] = y3;
         Ys[2] = y2;
-        set_Z(normal, -1.0f);
+        set_Z(normal, 1.0f);
     }
     //printf("XY\n");
     for (int linha = 0; linha < divisions; linha++){
@@ -190,14 +190,14 @@ FIGURE generate_plane_YZ(int length, int divisions, float h, int baixo) {
     float Ys[4] = {y1, y2, y3, y4};
     float Zs[4] = {z1, z2, z3, z4};
 
-    POINT normal = new_point(1.0f, 0.0f, 0.0f);
+    POINT normal = new_point(-1.0f, 0.0f, 0.0f);
 
     if (baixo == 1){
         Ys[1] = y3;
         Ys[2] = y2;
         Zs[1] = z3;
         Zs[2] = z2;
-        set_X(normal, -1.0f);
+        set_X(normal, 1.0f);
     }
     //printf ("YZ\n");
     for (int linha = 0; linha < divisions; linha++){

@@ -194,7 +194,7 @@ void save_file(FIGURE f, std::string filename) {
 FIGURE fileToFigure(const std::string& filepath) {
     std::ifstream file(filepath);
     if (!file.is_open()) {
-        std::cerr << "Erro ao abrir o arquivo." << std::endl;
+        std::cerr << "Erro ao abrir o arquivo. figure.cpp" << std::endl;
         return nullptr;
     }
 
@@ -294,11 +294,14 @@ FIGURE fileToFigure(const std::string& filepath) {
                     POINT texture = new_point(x, y, z);
                     add_texture(figure, texture);
                 }
+            } else {
+                printf("LINHA INVALIDA: %s\n", line.c_str());
             }
+
         }
-            print_figura_vertices(figure);
-            printf_normais(figure); 
-            printf_texturas(figure);
+            //print_figura_vertices(figure);
+            //printf_normais(figure); 
+            //printf_texturas(figure);
     }
 
     file.close();
@@ -386,7 +389,7 @@ std::string print_triangulos(FIGURE f) {
 
     }
 
-    output += "NORMAIS:\n";
+    output += "\nNORMAIS:\n";
 
     for (size_t j = 0; j < normals->size(); ++j) 
     {
@@ -395,7 +398,7 @@ std::string print_triangulos(FIGURE f) {
         snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)\n", get_X(normal), get_Y(normal), get_Z(normal));
         output += buffer;
     }
-    output += "TEXTURAS:\n";
+    output += "\nTEXTURAS:\n";
 
     for (size_t j = 0; j < textures->size(); ++j) 
     {

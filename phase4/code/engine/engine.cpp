@@ -41,6 +41,8 @@ float frames = 0;
 bool axis_on = false;
 bool spherical_on = false;
 bool trajectory_on = false;
+bool normais_on = false;
+
 
 void framerate() {
     frames++;
@@ -94,7 +96,23 @@ void to_spherical() {
     camZ = radius * cos(alpha) * cos(beta);
 }
 
-void init_vbo(const std::vector<MODEL>& models, int *index) {
+int get_nlight(int nLight) {
+    int light;
+    switch (nLight) {
+        case 0: light = GL_LIGHT0; break;
+        case 1: light = GL_LIGHT1; break;
+        case 2: light = GL_LIGHT2; break;
+        case 3: light = GL_LIGHT3; break;
+        case 4: light = GL_LIGHT4; break;
+        case 5: light = GL_LIGHT5; break;
+        case 6: light = GL_LIGHT6; break;
+        case 7: light = GL_LIGHT7; break;
+        default: exit(1);
+    }
+    return light;
+}
+
+void init_vbo(const std::vector<MODEL>& models, int *index, std::vector<LIGHT> &lights) {
     buffers = new GLuint[models.size()];
     glGenBuffers(models.size(), buffers);
 
@@ -104,11 +122,8 @@ void init_vbo(const std::vector<MODEL>& models, int *index) {
     texBuffers = new GLuint[models.size()];
     glGenBuffers(models.size(), texBuffers);
 
-    printf("%lu\n", models.size());
     for (size_t i = 0; i < models.size(); ++i) {
-        printf("Entrou\n");
         FIGURE figure = fileToFigure(models[i].file);
-        printf("Saiu\n");
         std::vector<float> fig_vectors = figure_to_vectors(figure);
         std::vector<float> fig_normals = figure_to_normals(figure);
         std::vector<float> fig_textures = figure_to_textures(figure);
@@ -137,9 +152,26 @@ void init_vbo(const std::vector<MODEL>& models, int *index) {
             glBindBuffer(GL_ARRAY_BUFFER, texBuffers[*index]);
             glBufferData(GL_ARRAY_BUFFER, fig_textures.size() * sizeof(float), fig_textures.data(), GL_STATIC_DRAW);
         }
-
         (*index)++;
     }
+
+
+    if(lights.size() > 0)
+    {
+        glEnable(GL_LIGHTING); 
+		glEnable(GL_RESCALE_NORMAL);
+        GLfloat white[4] = {1.0,1.0,1.0,1.0};
+		for(int i = 0; i < lights.size(); i++){
+			glEnable(get_nlight(i));
+            glLightfv(get_nlight(i), GL_DIFFUSE, white);
+            glLightfv(get_nlight(i), GL_SPECULAR, white);
+		}
+		
+		float amb[4] = { 1.0f, 1.0f, 1.0f, 0.4f };
+		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb);
+    	
+	}
+    
 }
 
 void renderCatmullRomCurve(std::vector<POINT> points, int numSamples) {
@@ -225,32 +257,29 @@ void apply_transforms(const GROUP& group, unsigned int *index) {
     }
 }
 
-void apply_normals(FIGURE figure) {
-    std::vector<float> normals = figure_to_vectors(figure);
-    for (size_t i = 0; i < normals.size(); i += 9) {
-        float x1 = normals[i];
-        float y1 = normals[i + 1];
-        float z1 = normals[i + 2];
-        float x2 = normals[i + 3];
-        float y2 = normals[i + 4];
-        float z2 = normals[i + 5];
-        float x3 = normals[i + 6];
-        float y3 = normals[i + 7];
-        float z3 = normals[i + 8];
 
-        float v1[3] = {x2 - x1, y2 - y1, z2 - z1};
-        float v2[3] = {x3 - x1, y3 - y1, z3 - z1};
-
-        float nx = v1[1] * v2[2] - v1[2] * v2[1];
-        float ny = v1[2] * v2[0] - v1[0] * v2[2];
-        float nz = v1[0] * v2[1] - v1[1] * v2[0];
-
-        glNormal3f(nx, ny, nz);
+void apply_normals(MODEL model) {
+    if (get_lights(world).size() > 0)
+        glDisable(GL_LIGHTING);
+    glColor3f(RED);
+    FIGURE figure = fileToFigure(model.file);
+    std::vector<float> normals = figure_to_normals(figure);
+    std::vector<float> points = figure_to_vectors(figure);
+    glBegin(GL_LINES);
+    for (size_t i = 0; i < normals.size(); i+=3) {
+        glVertex3f(points[i],points[i+1],points[i+2]);
+        glVertex3f(points[i] + normals[i],points[i+1] + normals[i+1],points[i+2] + normals[i+2]);
     }
+    glEnd();
+    if (get_lights(world).size() > 0)
+        glEnable(GL_LIGHTING);
 
 }
 
+
 void draw_figures(const GROUP &g, unsigned int *index) {
+    
+    printf("Drawing :)\n");
     glPushMatrix();
 
     apply_transforms(g, index);
@@ -258,37 +287,40 @@ void draw_figures(const GROUP &g, unsigned int *index) {
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
 
-    for (const auto& model : g.models) 
-    {
-        if (*index < buffers_sizes.size()) 
-        {
+    // Ensure lighting is enabled
+    glEnable(GL_LIGHTING);
+
+    for (const auto& model : g.models) {
+        if(normais_on)
+            apply_normals(model);
+        if (*index < buffers_sizes.size()) {
             std::vector<COLOR> colors = get_colors(model);
-            for (COLOR c : colors) {
-                std::vector<float> aux;
+            for (const COLOR &c : colors) {
+                GLfloat aux[4] = {1.0f, 1.0f, 1.0f, 1.0f}; // Initialize with 4 elements for RGBA
                 switch (c.type) {
                     case C_DIFFUSE:
-                        aux.push_back(c.diffuse.r);
-                        aux.push_back(c.diffuse.g);
-                        aux.push_back(c.diffuse.b);
-                        glMaterialfv(GL_FRONT, GL_DIFFUSE, aux.data());
+                        aux[0] = c.diffuse.r;
+                        aux[1] = c.diffuse.g;
+                        aux[2] = c.diffuse.b;
+                        glMaterialfv(GL_FRONT, GL_DIFFUSE, aux);
                         break;
                     case C_AMBIENT:
-                        aux.push_back(c.ambient.r);
-                        aux.push_back(c.ambient.g);
-                        aux.push_back(c.ambient.b);
-                        glMaterialfv(GL_FRONT, GL_AMBIENT, aux.data());
+                        aux[0] = c.ambient.r;
+                        aux[1] = c.ambient.g;
+                        aux[2] = c.ambient.b;
+                        glMaterialfv(GL_FRONT, GL_AMBIENT, aux);
                         break;
                     case C_SPECULAR:
-                        aux.push_back(c.specular.r);
-                        aux.push_back(c.specular.g);
-                        aux.push_back(c.specular.b);
-                        glMaterialfv(GL_FRONT, GL_SPECULAR, aux.data());
+                        aux[0] = c.specular.r;
+                        aux[1] = c.specular.g;
+                        aux[2] = c.specular.b;
+                        glMaterialfv(GL_FRONT, GL_SPECULAR, aux);
                         break;
                     case C_EMISSIVE:
-                        aux.push_back(c.emissive.r);
-                        aux.push_back(c.emissive.g);
-                        aux.push_back(c.emissive.b);
-                        glMaterialfv(GL_FRONT, GL_EMISSION, aux.data());
+                        aux[0] = c.emissive.r;
+                        aux[1] = c.emissive.g;
+                        aux[2] = c.emissive.b;
+                        glMaterialfv(GL_FRONT, GL_EMISSION, aux);
                         break;
                     case C_SHININESS:
                         glMaterialf(GL_FRONT, GL_SHININESS, c.shininess.value);
@@ -297,49 +329,49 @@ void draw_figures(const GROUP &g, unsigned int *index) {
                         break;
                 }
             }
+            if (!normalsbuf_size.empty()) {
+                glBindBuffer(GL_ARRAY_BUFFER, normalBuffers[*index]);
+                glNormalPointer(GL_FLOAT, 0, 0);
+            } else {
+                printf("Normais vazias??\n");
+            }
             
             glBindBuffer(GL_ARRAY_BUFFER, buffers[*index]);  // Use buffer for this figure
             glVertexPointer(3, GL_FLOAT, 0, 0);
 
-            if (normalsbuf_size.size() > 0) 
-            {
-                glBindBuffer(GL_ARRAY_BUFFER, normalBuffers[*index]);
-                glNormalPointer(GL_FLOAT, 0, 0);
-            }
-
-
+            
             glDrawArrays(GL_TRIANGLES, 0, buffers_sizes[*index]);
             (*index)++;
-        } 
-        else
+        } else {
             std::cerr << "Index out of range for buffers_sizes!" << std::endl;
+        }
     }
 
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
 
+    // Disable lighting after rendering
+    glDisable(GL_LIGHTING);
 
-    for (const auto& childGroup : get_group_children(g))
-        draw_figures(childGroup, index);
+    std::vector<GROUP> children = get_group_children(g);
+
+    // Debug output to check children count
+    std::cout << "Group has " << children.size() << " children" << std::endl;
+
+    for (const auto& childGroup : children) {
+        if (&childGroup != nullptr) {
+            std::cout << "Drawing child group" << std::endl;
+            draw_figures(childGroup, index);
+        } else {
+            std::cerr << "Encountered a null child group!" << std::endl;
+        }
+    }
 
     glPopMatrix();
 }
 
-int get_nlight(int nLight) {
-    int light;
-    switch (nLight) {
-        case 0: light = GL_LIGHT0; break;
-        case 1: light = GL_LIGHT1; break;
-        case 2: light = GL_LIGHT2; break;
-        case 3: light = GL_LIGHT3; break;
-        case 4: light = GL_LIGHT4; break;
-        case 5: light = GL_LIGHT5; break;
-        case 6: light = GL_LIGHT6; break;
-        case 7: light = GL_LIGHT7; break;
-        default: exit(1);
-    }
-    return light;
-}
+      
+
 
 void apply_lights() {
     std::vector<LIGHT> lights = get_lights(world);
@@ -369,6 +401,7 @@ void apply_lights() {
         int light = get_nlight(i);
         glDisable(light);
     }
+
 }
 
 void renderScene(void) {
@@ -382,7 +415,7 @@ void renderScene(void) {
         to_spherical();
 
     glColor3f(WHITE);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     apply_lights();
 
@@ -448,6 +481,9 @@ void keyboardFunc(unsigned char key, int x, int y) {
     case 't':
         trajectory_on = !trajectory_on;
         break;
+    case 'n':
+        normais_on = !normais_on;
+        break;
     
     }
     glutPostRedisplay();
@@ -478,11 +514,10 @@ int main(int argc, char** argv) {
     beta = asin(camY / radius);
 
     std::vector<MODEL> models = get_models(world);
+    std::vector<LIGHT> lights = get_lights(world);
 
     int index = 0;
-    printf("AQUI1\n");
-    init_vbo(models, &index);
-    printf("AQUI2\n");
+    init_vbo(models, &index, lights);
 
     std::vector<string> textures = get_textures(world);
     for (size_t i = 0; i < textures.size(); i++) {
