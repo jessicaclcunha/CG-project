@@ -1,4 +1,5 @@
 // sphere.hpp
+#define GL_SILENCE_DEPRECATION
 #ifndef SPHERE_H
 #define SPHERE_H
 

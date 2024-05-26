@@ -117,3 +117,21 @@ POINT subtract_points(POINT p1, POINT p2) {
     result = new_point(get_X(p1) - get_X(p2), get_Y(p1) - get_Y(p2), get_Z(p1) - get_Z(p2));
     return result;
 }
+
+void safe_normalize(POINT& p) {
+    float length = sqrt(get_X(p)* get_X(p) + get_Y(p) * get_Y(p) + get_Z(p) * get_Z(p));
+    if (length > 0.000001f) { // Avoid division by zero
+        
+        float a = get_X(p);
+        a /= length;
+        set_X(p,a); 
+
+        float b = get_Y(p);
+        b /= length;
+        set_Y(p,b); 
+        
+        float c = get_Z(p);
+        c /= length;
+        set_Z(p,c); 
+    }
+}

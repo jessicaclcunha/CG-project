@@ -1,4 +1,5 @@
 // matrix.hpp
+#define GL_SILENCE_DEPRECATION
 #ifndef MATRIX_H
 #define MATRIX_H
 

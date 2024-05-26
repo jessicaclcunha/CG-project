@@ -1,4 +1,5 @@
 // box.hpp
+#define GL_SILENCE_DEPRECATION
 #ifndef BOX_H
 #define BOX_H
 

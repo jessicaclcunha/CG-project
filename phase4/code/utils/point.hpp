@@ -1,5 +1,5 @@
 //não acho que haja nada a acrescentar
-
+#define GL_SILENCE_DEPRECATION
 // point.hpp
 #ifndef POINT_H
 #define POINT_H
@@ -48,5 +48,7 @@ void cross(const POINT a, const POINT b, POINT &result);
 void normalize(POINT &z);
 
 POINT subtract_points(POINT p1, POINT p2);
+
+void safe_normalize(POINT& p);
 
 #endif // POINT_H

@@ -1,4 +1,5 @@
 // cone.hpp
+#define GL_SILENCE_DEPRECATION
 #include <string>
 #include <vector>
 #include <cmath>
@@ -10,9 +11,9 @@
 
 POINT calcula_pontos(float radius, float height, int slices, int stacks, int slice_atual, int stack_atual);
 
-POINT calcula_normal(float radius, float height, int slices, int stacks, int slice_atual, int stack_atual);
+POINT calcula_normal(float radius, float height, int slices, int slice_atual);
 
-POINT calcula_textura(float radius, float height, int slices, int stacks, int slice_atual, int stack_atual);
+POINT calcula_textura(int slices, int stacks, int slice_atual, int stack_atual);
 
 std::vector<TRIANGLE> PAT(float radius, float height, int slices, int stacks, int slice_atual, int stack_atual);
 

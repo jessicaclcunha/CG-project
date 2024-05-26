@@ -1,4 +1,5 @@
 // color.hpp
+#define GL_SILENCE_DEPRECATION
 #ifndef COLOR_H
 #define COLOR_H
 

@@ -1,3 +1,4 @@
+#define GL_SILENCE_DEPRECATION
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
@@ -10,6 +11,7 @@
 #include <cmath>
 #include <vector>
 #include "xml_parser.hpp"
+#include "lights.hpp"
 #include "catmull.hpp"
 
 #define RED 1.0f, 0.0f, 0.0f
@@ -46,10 +48,11 @@ bool normais_on = false;
 
 void framerate() {
     frames++;
-    char title[50];
+
     int time = glutGet(GLUT_ELAPSED_TIME);
     if (time - elapsed_time > 1000) {
-        sprintf(title, "PHASE3 - Engine | FPS: %4.2f", frames * 1000.0 / (time - elapsed_time));
+        char title[256];
+        snprintf(title, sizeof(title), "PHASE3 - Engine | FPS: %4.2f", frames * 1000.0 / (time - elapsed_time));
         glutSetWindowTitle(title);
         elapsed_time = time;
         frames = 0;
@@ -112,7 +115,8 @@ int get_nlight(int nLight) {
     return light;
 }
 
-void init_vbo(const std::vector<MODEL>& models, int *index, std::vector<LIGHT> &lights) {
+
+void init_vbo(const std::vector<MODEL>& models, int *index) {
     buffers = new GLuint[models.size()];
     glGenBuffers(models.size(), buffers);
 
@@ -154,23 +158,6 @@ void init_vbo(const std::vector<MODEL>& models, int *index, std::vector<LIGHT> &
         }
         (*index)++;
     }
-
-
-    if(lights.size() > 0)
-    {
-        glEnable(GL_LIGHTING); 
-		glEnable(GL_RESCALE_NORMAL);
-        GLfloat white[4] = {1.0,1.0,1.0,1.0};
-		for(int i = 0; i < lights.size(); i++){
-			glEnable(get_nlight(i));
-            glLightfv(get_nlight(i), GL_DIFFUSE, white);
-            glLightfv(get_nlight(i), GL_SPECULAR, white);
-		}
-		
-		float amb[4] = { 1.0f, 1.0f, 1.0f, 0.4f };
-		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb);
-    	
-	}
     
 }
 
@@ -186,7 +173,7 @@ void renderCatmullRomCurve(std::vector<POINT> points, int numSamples) {
     glEnd();
 }
 
-void apply_transforms(const GROUP& group, unsigned int *index) {
+void apply_transforms(const GROUP& group) {
     for (const auto& transform : get_group_transforms(group)) 
     {
         switch (transform.type) 
@@ -279,16 +266,14 @@ void apply_normals(MODEL model) {
 
 void draw_figures(const GROUP &g, unsigned int *index) {
     
-    printf("Drawing :)\n");
     glPushMatrix();
 
-    apply_transforms(g, index);
+    apply_transforms(g);
+    
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
 
-    // Ensure lighting is enabled
-    glEnable(GL_LIGHTING);
 
     for (const auto& model : g.models) {
         if(normais_on)
@@ -296,30 +281,30 @@ void draw_figures(const GROUP &g, unsigned int *index) {
         if (*index < buffers_sizes.size()) {
             std::vector<COLOR> colors = get_colors(model);
             for (const COLOR &c : colors) {
-                GLfloat aux[4] = {1.0f, 1.0f, 1.0f, 1.0f}; // Initialize with 4 elements for RGBA
+                GLfloat aux[3] = {1.0f, 1.0f, 1.0f}; // Initialize with 4 elements for RGBA
                 switch (c.type) {
                     case C_DIFFUSE:
-                        aux[0] = c.diffuse.r;
-                        aux[1] = c.diffuse.g;
-                        aux[2] = c.diffuse.b;
+                        aux[0] = c.diffuse.r/255.0f;
+                        aux[1] = c.diffuse.g/255.0f;
+                        aux[2] = c.diffuse.b/255.0f;
                         glMaterialfv(GL_FRONT, GL_DIFFUSE, aux);
                         break;
                     case C_AMBIENT:
-                        aux[0] = c.ambient.r;
-                        aux[1] = c.ambient.g;
-                        aux[2] = c.ambient.b;
-                        glMaterialfv(GL_FRONT, GL_AMBIENT, aux);
+                        aux[0] = c.ambient.r/255.0f;
+                        aux[1] = c.ambient.g/255.0f;
+                        aux[2] = c.ambient.b/255.0f;
+                        glMaterialfv(GL_FRONT, GL_AMBIENT,aux);
                         break;
                     case C_SPECULAR:
-                        aux[0] = c.specular.r;
-                        aux[1] = c.specular.g;
-                        aux[2] = c.specular.b;
+                        aux[0] = c.specular.r/255.0f;
+                        aux[1] = c.specular.g/255.0f;
+                        aux[2] = c.specular.b/255.0f;
                         glMaterialfv(GL_FRONT, GL_SPECULAR, aux);
                         break;
                     case C_EMISSIVE:
-                        aux[0] = c.emissive.r;
-                        aux[1] = c.emissive.g;
-                        aux[2] = c.emissive.b;
+                        aux[0] = c.emissive.r/255.0f;
+                        aux[1] = c.emissive.g/255.0f;
+                        aux[2] = c.emissive.b/255.0f;
                         glMaterialfv(GL_FRONT, GL_EMISSION, aux);
                         break;
                     case C_SHININESS:
@@ -350,58 +335,49 @@ void draw_figures(const GROUP &g, unsigned int *index) {
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
 
-    // Disable lighting after rendering
-    glDisable(GL_LIGHTING);
 
     std::vector<GROUP> children = get_group_children(g);
-
-    // Debug output to check children count
-    std::cout << "Group has " << children.size() << " children" << std::endl;
-
     for (const auto& childGroup : children) {
-        if (&childGroup != nullptr) {
-            std::cout << "Drawing child group" << std::endl;
             draw_figures(childGroup, index);
-        } else {
-            std::cerr << "Encountered a null child group!" << std::endl;
-        }
     }
 
     glPopMatrix();
 }
 
-      
 
 
 void apply_lights() {
     std::vector<LIGHT> lights = get_lights(world);
-    for (size_t i = 0; i < lights.size(); i++) {
-        LIGHT l = lights[i];
-        int light = get_nlight(i);
-        switch (l.type) {
-            case L_POINT:
-                glLightfv(light, GL_POSITION, (GLfloat[]){l.l_point.posX, l.l_point.posY, l.l_point.posZ, 1.0f});
+    for (size_t i = 0; i < lights.size(); i++) 
+    {
+            int nLight = get_nlight(i);
+            glEnable(nLight);
+            if (lights[i].type == L_POINT)
+            {
+                POINT p = new_point(get_light_posX(lights[i]), get_light_posY(lights[i]), get_light_posZ(lights[i]));
+                normalize(p);
+                float light_point[] = {get_X(p), get_Y(p), get_Z(p)};
+                glLightfv(nLight, GL_POSITION, light_point);
                 break;
-            case L_DIRECTIONAL:
-                glLightfv(light, GL_POSITION, (GLfloat[]){l.l_directional.dirX, l.l_directional.dirY, l.l_directional.dirZ, 0.0f});
-                break;
-            case L_SPOTLIGHT:
-                glLightfv(light, GL_POSITION, (GLfloat[]){l.l_spotlight.posX, l.l_spotlight.posY, l.l_spotlight.posZ, 1.0f});
-                glLightfv(light, GL_SPOT_DIRECTION, (GLfloat[]){l.l_spotlight.dirX, l.l_spotlight.dirY, l.l_spotlight.dirZ});
-                glLightf(light, GL_SPOT_CUTOFF, l.l_spotlight.cutoff);
-                break;
-            default:
-                std::cerr << "Error: Unknown light type!" << std::endl;
-                break;
-        }
-    }
+            }
+            if (lights[i].type == L_DIRECTIONAL)
+            {
+                POINT p = new_point(get_light_dirX(lights[i]), get_light_dirY(lights[i]), get_light_dirZ(lights[i]));
+                normalize(p);
+                float light_directional[] = {get_X(p), get_Y(p), get_Z(p)};
+                glLightfv(nLight, GL_POSITION, light_directional);
 
-    // Desabilitar as luzes restantes
-    for (size_t i = lights.size(); i < 8; i++) {
-        int light = get_nlight(i);
-        glDisable(light);
+            }
+            if(lights[i].type == L_SPOTLIGHT)
+            {
+                float light_spotlight_pos[] = {get_light_posX(lights[i]), get_light_posY(lights[i]), get_light_posZ(lights[i])};
+                float light_spotlight_dir[] = {get_light_spot_dirX(lights[i]), get_light_spot_dirY(lights[i]), get_light_spot_dirZ(lights[i])};
+                glLightfv(nLight, GL_POSITION, light_spotlight_pos);
+                glLightfv(nLight, GL_SPOT_DIRECTION, light_spotlight_dir);
+                glLightf(nLight, GL_SPOT_CUTOFF, get_light_spot_cutoff(lights[i]));
+                glLightf(nLight, GL_SPOT_EXPONENT, 0.0);
+            }
     }
-
 }
 
 void renderScene(void) {
@@ -414,15 +390,19 @@ void renderScene(void) {
     if (spherical_on)
         to_spherical();
 
+    apply_lights();
+
     glColor3f(WHITE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    apply_lights();
+    
+    glEnable(GL_LIGHTING);
 
     unsigned int index = 0;
     for (const auto& group : world.groups) {
         draw_figures(group, &index);
     }
+
+    glDisable(GL_LIGHTING);
 
     framerate();
 
@@ -496,6 +476,7 @@ int main(int argc, char** argv) {
     glutCreateWindow("Phase4");
 
     parse_config_file(argv[1], world);
+
     glutInitWindowSize(get_windowWidth(world), get_windowHeight(world));
     camX = get_position_camX(world);
     camY = get_position_camY(world);
@@ -512,12 +493,26 @@ int main(int argc, char** argv) {
 	radius = sqrt(camX * camX + camY * camY + camZ * camZ);
     alpha = acos(camZ / radius);
     beta = asin(camY / radius);
-
     std::vector<MODEL> models = get_models(world);
     std::vector<LIGHT> lights = get_lights(world);
+     if(lights.size() > 0)
+    {
+        glEnable(GL_LIGHTING); 
+		glEnable(GL_RESCALE_NORMAL);
+        GLfloat white[4] = {1.0,1.0,1.0,1.0};
+		for(int i = 0; i < (int)lights.size(); i++){
+			glEnable(get_nlight(i));
+            glLightfv(get_nlight(i), GL_DIFFUSE, white);
+            glLightfv(get_nlight(i), GL_SPECULAR, white);
+		}
+		
+		float amb[4] = { 1.0f, 1.0f, 1.0f, 0.4f };
+		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb);
+    	
+	}
 
     int index = 0;
-    init_vbo(models, &index, lights);
+    init_vbo(models, &index);
 
     std::vector<string> textures = get_textures(world);
     for (size_t i = 0; i < textures.size(); i++) {
@@ -527,6 +522,7 @@ int main(int argc, char** argv) {
     glutDisplayFunc(renderScene);
     glutReshapeFunc(changeSize);
     glutKeyboardFunc(keyboardFunc);
+    glutIdleFunc(renderScene);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);

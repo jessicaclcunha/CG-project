@@ -1,4 +1,5 @@
 // triangle.hpp
+#define GL_SILENCE_DEPRECATION
 #ifndef TRIANGLE_H
 #define TRIANGLE_H
 

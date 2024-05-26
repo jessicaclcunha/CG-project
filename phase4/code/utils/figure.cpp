@@ -254,7 +254,7 @@ FIGURE fileToFigure(const std::string& filepath) {
             figure = create_figure_ring(inner_radius, outer_radius, slices);
         } else if (type == "BEZIER") {
             float tessellation = 0.0f;
-            char * patches_file;
+            char * patches_file = nullptr;
             int triangles = 0;
 
             std::getline(file, line); sscanf(line.c_str(), "Tessellation: %f", &tessellation);
@@ -321,8 +321,6 @@ void concat_FIGURES (FIGURE f1, FIGURE f2) {
 void print_figura_vertices(FIGURE f) {
     if (f != NULL) {
         std::vector<TRIANGLE>* triangles = f->triangles;
-        std::vector<POINT>* normals = get_normals(f);
-        std::vector<POINT>* textures = get_textures(f);
 
         if (!triangles) {
             printf("Error: No triangles in the figure.\n");

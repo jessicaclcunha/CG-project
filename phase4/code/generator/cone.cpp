@@ -28,7 +28,7 @@ POINT calcula_normal(float radius, float height, int slices, int slice_atual) {
     return normal;
 }
 
-POINT calcula_textura(float radius, float height, int slices, int stacks, int slice_atual, int stack_atual) {
+POINT calcula_textura(int slices, int stacks, int slice_atual, int stack_atual) {
     float u = (float) slice_atual / slices;
     float v = (float) stack_atual / stacks;
     return new_point(u, v, 0);
@@ -127,11 +127,11 @@ FIGURE generate_cone(float radius, float height, int slices, int stacks) {
                 normais.push_back(normal);
             }
 
-            textures.push_back(calcula_textura(radius, height, slices, stacks, slice_atual, stack_atual));
-            textures.push_back(calcula_textura(radius, height, slices, stacks, slice_atual, stack_atual));
-            textures.push_back(calcula_textura(radius, height, slices, stacks, slice_atual, stack_atual));
+            textures.push_back(calcula_textura(slices, stacks, slice_atual, stack_atual));
+            textures.push_back(calcula_textura(slices, stacks, slice_atual, stack_atual));
+            textures.push_back(calcula_textura(slices, stacks, slice_atual, stack_atual));
             if (stack_atual != 0 && stack_atual != stacks) {
-                textures.push_back(calcula_textura(radius, height, slices, stacks, slice_atual, stack_atual));
+                textures.push_back(calcula_textura(slices, stacks, slice_atual, stack_atual));
             }
         }
     }

@@ -1,4 +1,5 @@
 // ring.hpp
+#define GL_SILENCE_DEPRECATION
 #ifndef RING_H
 #define RING_H
 

@@ -1,4 +1,5 @@
 // xml_parser.hpp
+#define GL_SILENCE_DEPRECATION
 #ifndef XML_PARSER_H
 #define XML_PARSER_H
 

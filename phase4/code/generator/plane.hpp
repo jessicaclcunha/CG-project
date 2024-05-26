@@ -1,4 +1,5 @@
 // plane.hpp
+#define GL_SILENCE_DEPRECATION
 #ifndef PLANE_H
 #define PLANE_H
 

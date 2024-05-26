@@ -1,3 +1,4 @@
+#define GL_SILENCE_DEPRECATION
 #ifndef FIGURE_HPP
 #define FIGURE_HPP
 

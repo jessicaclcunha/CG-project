@@ -1,4 +1,5 @@
 // catmull.hpp
+#define GL_SILENCE_DEPRECATION
 #ifndef CATMULL_H
 #define CATMULL_H
 

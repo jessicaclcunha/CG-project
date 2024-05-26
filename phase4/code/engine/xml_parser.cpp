@@ -265,26 +265,23 @@ void parse_config_file(char* filename, WORLD& world) {
         parse_group_element(groupElement, group);
         world.groups.push_back(group);
     }
-
     world.lights.clear();
     // Parse lights
     for (TiXmlElement* lightsElement = worldElement->FirstChildElement("lights"); lightsElement; lightsElement = lightsElement->NextSiblingElement("lights")) {
         for (TiXmlElement* lightElement = lightsElement->FirstChildElement("light"); lightElement; lightElement = lightElement->NextSiblingElement("light")) {
-            LIGHT light;
-            const char* typeStr = lightElement->Attribute("type");
-            if (typeStr) {
-                std::string type(typeStr);
-                if (type == "point") {
+            LIGHT light = init_light();
+            const char* type = lightElement->Attribute("type");
+                if (strcmp(type, "point") == 0) {
                     light.type = L_POINT;
                     lightElement->QueryFloatAttribute("posx", &light.l_point.posX);
                     lightElement->QueryFloatAttribute("posy", &light.l_point.posY);
                     lightElement->QueryFloatAttribute("posz", &light.l_point.posZ);
-                } else if (type == "directional") {
+                } else if (strcmp (type, "directional") == 0) {
                     light.type = L_DIRECTIONAL;
                     lightElement->QueryFloatAttribute("dirx", &light.l_directional.dirX);
                     lightElement->QueryFloatAttribute("diry", &light.l_directional.dirY);
                     lightElement->QueryFloatAttribute("dirz", &light.l_directional.dirZ);
-                } else if (type == "spotlight") {
+                } else if (strcmp (type, "spot") == 0) {
                     light.type = L_SPOTLIGHT;
                     lightElement->QueryFloatAttribute("posx", &light.l_spotlight.posX);
                     lightElement->QueryFloatAttribute("posy", &light.l_spotlight.posY);
@@ -297,11 +294,10 @@ void parse_config_file(char* filename, WORLD& world) {
                     // Handle unknown light type
                     std::cerr << "Unknown light type: " << type << std::endl;
                 }
+                //printf ("Position: %f %f %f\n", light.l_point.posX, light.l_point.posY, light.l_point.posZ);
+                //printf ("Direction: %f %f %f\n", light.l_directional.dirX, light.l_directional.dirY, light.l_directional.dirZ);
+                //printf ("Spotlight: %f %f %f %f %f %f %f\n", light.l_spotlight.posX, light.l_spotlight.posY, light.l_spotlight.posZ, light.l_spotlight.dirX, light.l_spotlight.dirY, light.l_spotlight.dirZ, light.l_spotlight.cutoff);
                 world.lights.push_back(light);
-            } else {
-                // Handle missing or invalid light type
-                std::cerr << "Missing or invalid light type." << std::endl;
-            }
         }
     } 
 }
