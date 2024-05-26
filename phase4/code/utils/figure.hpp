@@ -51,9 +51,7 @@ void add_triangle(FIGURE f, TRIANGLE t);
 
 void save_file(FIGURE f, std::string filename);
 
-void read_triangle_data(const std::string &line, FIGURE figure, int num_triangulos);
-
-FIGURE fileToFigure(const std::string& filename);
+FIGURE fileToFigure(const std::string& filepath);
 
 void add_triangles(FIGURE f, std::vector<TRIANGLE> t);
 

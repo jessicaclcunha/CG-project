@@ -191,43 +191,6 @@ void save_file(FIGURE f, std::string filename) {
 }
 
 
-void read_triangle_data(const std::string &line, FIGURE figure, int num_triangulos) {
-    float x1, y1, z1, x2, y2, z2, x3, y3, z3;
-    float n1, n2, n3, n4, n5, n6, n7, n8, n9;
-    float t1, t2, t3, t4, t5, t6, t7, t8, t9;
-    
-    sscanf(line.c_str(),
-           "[(%f, %f, %f) %f, %f, %f %f, %f, %f,(%f, %f, %f) %f, %f, %f %f, %f, %f,(%f, %f, %f) %f, %f, %f %f, %f, %f]",
-           &x1, &y1, &z1, &n1, &n2, &n3, &t1, &t2, &t3,
-           &x2, &y2, &z2, &n4, &n5, &n6, &t4, &t5, &t6,
-           &x3, &y3, &z3, &n7, &n8, &n9, &t7, &t8, &t9);
-
-    POINT p1 = new_point(x1, y1, z1);
-    POINT p2 = new_point(x2, y2, z2);
-    POINT p3 = new_point(x3, y3, z3);
-
-    TRIANGLE triangle = create_triangle();
-    add_vertex(triangle, p1);
-    add_vertex(triangle, p2);
-    add_vertex(triangle, p3);
-    add_triangle(figure, triangle); 
-
-    POINT normal1 = new_point(n1, n2, n3);
-    POINT normal2 = new_point(n4, n5, n6);
-    POINT normal3 = new_point(n7, n8, n9);
-    add_normal(figure, normal1);
-    add_normal(figure, normal2);
-    add_normal(figure, normal3);
-
-    POINT texture1 = new_point(t1, t2, t3);
-    POINT texture2 = new_point(t4, t5, t6);
-    POINT texture3 = new_point(t7, t8, t9);
-
-    add_texture(figure, texture1);
-    add_texture(figure, texture2);
-    add_texture(figure, texture3);
-}
-
 FIGURE fileToFigure(const std::string& filepath) {
     std::ifstream file(filepath);
     if (!file.is_open()) {
@@ -235,145 +198,109 @@ FIGURE fileToFigure(const std::string& filepath) {
         return nullptr;
     }
 
-    FIGURE figure = nullptr;
+    FIGURE figure = create_figure_empty();
     std::string line;
 
     while (getline(file, line)) {
         std::istringstream iss(line);
         std::string type;
-        int triangles;
         iss >> type;
         if (type == "CONE") {
             float height = 0.0f, radius = 0.0f;
-            int slices = 0, stacks = 0;
+            int slices = 0, stacks = 0, triangles = 0;
 
-            std::getline(file, line);
-            std::istringstream height_iss(line);
-            std::string dummy;
-            height_iss >> dummy >> height; // Ignora "Height:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream radius_iss(line);
-            radius_iss >> dummy >> radius; // Ignora "Radius:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream slices_iss(line);
-            slices_iss >> dummy >> slices; // Ignora "Slices:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream stacks_iss(line);
-            stacks_iss >> dummy >> stacks; // Ignora "Stacks:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream triangles_iss(line);
-            triangles_iss >> dummy >> triangles; // Ignora "Triangulos:" e lê o valor
+            std::getline(file, line); sscanf(line.c_str(), "Height: %f", &height);
+            std::getline(file, line); sscanf(line.c_str(), "Radius: %f", &radius);
+            std::getline(file, line); sscanf(line.c_str(), "Slices: %d", &slices);
+            std::getline(file, line); sscanf(line.c_str(), "Stacks: %d", &stacks);
+            std::getline(file, line); sscanf(line.c_str(), "Triangulos: %d", &triangles);
 
             figure = create_figure_cone(height, radius, slices, stacks);
         } else if (type == "SPHERE") {
             float radius = 0.0f;
-            int slices = 0, stacks = 0;
+            int slices = 0, stacks = 0, triangles = 0;
 
-            std::getline(file, line);
-            std::istringstream radius_iss(line);
-            std::string dummy;
-            radius_iss >> dummy >> radius; // Ignora "Radius:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream slices_iss(line);
-            slices_iss >> dummy >> slices; // Ignora "Slices:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream stacks_iss(line);
-            stacks_iss >> dummy >> stacks; // Ignora "Stacks:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream triangles_iss(line);
-            triangles_iss >> dummy >> triangles; // Ignora "Triangulos:" e lê o valor
+            std::getline(file, line); sscanf(line.c_str(), "Radius: %f", &radius);
+            std::getline(file, line); sscanf(line.c_str(), "Slices: %d", &slices);
+            std::getline(file, line); sscanf(line.c_str(), "Stacks: %d", &stacks);
+            std::getline(file, line); sscanf(line.c_str(), "Triangulos: %d", &triangles);
 
             figure = create_figure_sphere(radius, slices, stacks);
         } else if (type == "PLANE") {
-            int length = 0, divisions = 0;
+            int length = 0, divisions = 0, triangles = 0;
 
-            std::getline(file, line);
-            std::istringstream length_iss(line);
-            std::string dummy;
-            length_iss >> dummy >> length; // Ignora "Length:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream divisions_iss(line);
-            divisions_iss >> dummy >> divisions; // Ignora "Divisions:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream triangles_iss(line);
-            triangles_iss >> dummy >> triangles; // Ignora "Triangulos:" e lê o valor
+            std::getline(file, line); sscanf(line.c_str(), "Length: %d", &length);
+            std::getline(file, line); sscanf(line.c_str(), "Divisions: %d", &divisions);
+            std::getline(file, line); sscanf(line.c_str(), "Triangulos: %d", &triangles);
 
             figure = create_figure_plane_box(PLANE, length, divisions);
-
         } else if (type == "BOX") {
-            int length = 0, divisions = 0;
+            int length = 0, divisions = 0, triangles = 0;
 
-            std::getline(file, line);
-            std::istringstream length_iss(line);
-            std::string dummy;
-            length_iss >> dummy >> length; // Ignora "Length:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream divisions_iss(line);
-            divisions_iss >> dummy >> divisions; // Ignora "Divisions:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream triangles_iss(line);
-            triangles_iss >> dummy >> triangles; // Ignora "Triangulos:" e lê o valor
+            std::getline(file, line); sscanf(line.c_str(), "Length: %d", &length);
+            std::getline(file, line); sscanf(line.c_str(), "Divisions: %d", &divisions);
+            std::getline(file, line); sscanf(line.c_str(), "Triangulos: %d", &triangles);
 
             figure = create_figure_plane_box(BOX, length, divisions);
-
         } else if (type == "RING") {
             float inner_radius = 0.0f, outer_radius = 0.0f;
-            int slices = 0;
+            int slices = 0, triangles = 0;
 
-            std::getline(file, line);
-            std::istringstream inner_radius_iss(line);
-            std::string dummy;
-            inner_radius_iss >> dummy >> inner_radius; // Ignora "InnerRadius:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream outer_radius_iss(line);
-            outer_radius_iss >> dummy >> outer_radius; // Ignora "OuterRadius:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream slices_iss(line);
-            slices_iss >> dummy >> slices; // Ignora "Slices:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream triangles_iss(line);
-            triangles_iss >> dummy >> triangles; // Ignora "Triangulos:" e lê o valor
+            std::getline(file, line); sscanf(line.c_str(), "InnerRadius: %f", &inner_radius);
+            std::getline(file, line); sscanf(line.c_str(), "OuterRadius: %f", &outer_radius);
+            std::getline(file, line); sscanf(line.c_str(), "Slices: %d", &slices);
+            std::getline(file, line); sscanf(line.c_str(), "Triangulos: %d", &triangles);
 
             figure = create_figure_ring(inner_radius, outer_radius, slices);
         } else if (type == "BEZIER") {
             float tessellation = 0.0f;
-            std::string patches_file;
+            char * patches_file;
+            int triangles = 0;
 
-            std::getline(file, line);
-            std::istringstream tessellation_iss(line);
-            std::string dummy;
-            tessellation_iss >> dummy >> tessellation; // Ignora "Tessellation:" e lê o valor
+            std::getline(file, line); sscanf(line.c_str(), "Tessellation: %f", &tessellation);
+            std::getline(file, line); std::istringstream patches_file_iss(line); patches_file_iss >> patches_file;
+            std::getline(file, line); sscanf(line.c_str(), "Triangulos: %d", &triangles);
 
-            std::getline(file, line);
-            std::istringstream patches_file_iss(line);
-            patches_file_iss >> dummy >> patches_file; // Ignora "PatchesFile:" e lê o valor
-
-            std::getline(file, line);
-            std::istringstream triangles_iss(line);
-            triangles_iss >> dummy >> triangles; // Ignora "Triangulos:" e lê o valor
-
-            figure = create_figure_bezier(tessellation, patches_file.c_str());
+            figure = create_figure_bezier(tessellation, patches_file);
         }
 
-        // Lendo dados de triângulos para a figura atual
         while (getline(file, line) && !line.empty()) {
-            read_triangle_data(line, figure, triangles);
+            if (line == "VERTICES:") {
+                while (getline(file, line) && !line.empty() && line[0] == '[') {
+                    float x1, y1, z1, x2, y2, z2, x3, y3, z3;
+                    sscanf(line.c_str(), "[(%f, %f, %f)(%f, %f, %f)(%f, %f, %f)]",
+                           &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
+                    POINT p1 = new_point(x1, y1, z1);
+                    POINT p2 = new_point(x2, y2, z2);
+                    POINT p3 = new_point(x3, y3, z3);
+
+                    TRIANGLE triangle = create_triangle();
+                    add_vertex(triangle, p1);
+                    add_vertex(triangle, p2);
+                    add_vertex(triangle, p3);
+                    add_triangle(figure, triangle);
+                }
+            } else if (line == "NORMAIS:") {
+                while (getline(file, line) && !line.empty() && line[0] == '(') {
+                    float x, y, z;
+                    sscanf(line.c_str(), "(%f, %f, %f)", &x, &y, &z);
+                    POINT normal = new_point(x, y, z);
+                    add_normal(figure, normal);
+                }
+            } else if (line == "TEXTURAS:") {
+                while (getline(file, line) && !line.empty() && line[0] == '(') {
+                    float x, y, z;
+                    sscanf(line.c_str(), "(%f, %f, %f)", &x, &y, &z);
+                    POINT texture = new_point(x, y, z);
+                    add_texture(figure, texture);
+                }
+            }
         }
+            print_figura_vertices(figure);
+            printf_normais(figure); 
+            printf_texturas(figure);
     }
+
     file.close();
     return figure;
 }
@@ -413,7 +340,7 @@ void print_figura_vertices(FIGURE f) {
 void printf_normais (FIGURE f){
     std::vector<POINT>* normais = get_normals(f);
     for (const POINT& normal: *normais) {
-        printf("Ponto(x: %f, y: %f, z:%f)\n", get_X(normal), get_Y(normal), get_Z(normal));
+        printf("Normais(x: %f, y: %f, z:%f)\n", get_X(normal), get_Y(normal), get_Z(normal));
     }
 }
 
@@ -421,66 +348,9 @@ void printf_normais (FIGURE f){
 void printf_texturas (FIGURE f){
     std::vector<POINT>* textures = get_textures(f);
     for (const POINT& textura: *textures) {
-        printf("Ponto(x: %f, y: %f, z:%f)\n", get_X(textura), get_Y(textura), get_Z(textura));
+        printf("Texturas(x: %f, y: %f, z:%f)\n", get_X(textura), get_Y(textura), get_Z(textura));
     }
 }
-
-
-/*
-std::string print_triangulos(FIGURE f) {
-    //printf ("OLA:\n");
-    //printf_normais (f);
-    //printf ("ADEUS;\n");
-
-    std::string output;
-    if (!f) {
-        output = "Error: Invalid figure.";
-        return output;
-    }
-
-    std::vector<TRIANGLE>* triangles = f->triangles;
-    std::vector<POINT>* normals = get_normals(f);
-    std::vector<POINT>* textures = get_textures(f);
-
-    if (!triangles) {
-        output = "Error: No triangles in the figure.";
-        return output;
-    }
-
-    for (const TRIANGLE &triangulo : *triangles) {
-        std::vector<POINT>* vertices = get_points(triangulo);
-
-        if (!vertices || vertices->size() != 3) {
-            output += "Error: Invalid triangle - should have exactly 3 vertices.\n";
-            continue;
-        }
-
-        output += "[";
-        char buffer[1024];
-
-        for (const TRIANGLE &triangulo : *triangles) {
-            std::vector<POINT>* vertexBegin = get_points(triangulo);
-            for (size_t j = 0; j < vertexBegin->size(); j++) {
-                const POINT &vertex = (*vertexBegin)[j];
-                snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)\n", get_X(vertex), get_Y(vertex), get_Z(vertex));
-                output += buffer;
-            }
-        }
-        /*for (const POINT& normal: *normals) {
-            snprintf(buffer, sizeof (buffer), "Normal(x: %f, y: %f, z:%f)\n", get_X(normal), get_Y(normal), get_Z(normal));
-        }
-        output += buffer;
-        buffer[0] = '\0';
-        for (const POINT& textura: *textures) {
-        snprintf(buffer, sizeof (buffer),"Textura(x: %f, y: %f, z:%f)\n", get_X(textura), get_Y(textura), get_Z(textura));
-        }
-        output += buffer;      
-        output += "]\n";
-    }
-
-    return output;
-}
-*/
 
 std::string print_triangulos(FIGURE f) {
     std::string output;
@@ -505,12 +375,14 @@ std::string print_triangulos(FIGURE f) {
             output += "Error: Invalid triangle - should have exactly 3 vertices.\n";
             continue;
         }
+        output += "[";
         for (size_t j = 0; j < vertices->size(); ++j) {
             const POINT& point = (*vertices)[j];
             char buffer[100]; // Buffer to store point coordinates
-            snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)\n", get_X(point), get_Y(point), get_Z(point));
+            snprintf(buffer, sizeof(buffer), "(%.2f, %.2f, %.2f)", get_X(point), get_Y(point), get_Z(point));
             output += buffer;
         }
+        output += "]\n";
 
     }
 
